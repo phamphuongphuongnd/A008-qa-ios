@@ -105,6 +105,8 @@ export {
   ADVERSE_KINDS,
   FCRA_REQUIRED_LINES,
   MISSING_INFO_WARNING,
+  REPORT_ADDRESS_PLACEHOLDER,
+  REPORT_PHONE_PLACEHOLDER,
   defaultReportInfluenced,
   letterData,
   noticeRequirement,

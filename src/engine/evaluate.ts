@@ -50,10 +50,9 @@ export function evaluateCriterion(c: Criterion, rental: RentalInput, applicant: 
   }
 }
 
-const KIND_RANK: Record<Issue['kind'], number> = { mismatch: 0, needs_review: 2, unconfirmed: 3, missing: 4 };
-const OUTCOME_RANK: Record<Outcome, number> = { not_met: 0, needs_review: 1, missing: 2, met: 3, not_reviewed: 4 };
+const KIND_RANK: Record<Issue['kind'], number> = { mismatch: 0, needs_review: 1, missing: 2 };
 
-/** Mismatch → Not met → Needs review → Missing (§3.1); ties keep criterion order. */
+/** Mismatch → Needs review → Missing (§3.1); ties keep criterion order. */
 export function sortIssues(issues: readonly Issue[], order: readonly string[]): Issue[] {
   const pos = new Map(order.map((id, i) => [id, i]));
   return issues
@@ -61,7 +60,6 @@ export function sortIssues(issues: readonly Issue[], order: readonly string[]): 
     .sort(
       (a, b) =>
         KIND_RANK[a.issue.kind] - KIND_RANK[b.issue.kind] ||
-        OUTCOME_RANK[a.issue.outcome] - OUTCOME_RANK[b.issue.outcome] ||
         (pos.get(a.issue.criterionId) ?? 0) - (pos.get(b.issue.criterionId) ?? 0) ||
         a.i - b.i,
     )

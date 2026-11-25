@@ -43,6 +43,10 @@ export interface DecisionInput {
   reportInfluenced: boolean;
 }
 
+/** Sample / mockup placeholders for the report company (§8): never real, unverified details. */
+export const REPORT_ADDRESS_PLACEHOLDER = '[Mailing address from the report]';
+export const REPORT_PHONE_PLACEHOLDER = '[Phone from the report]';
+
 /** Decisions that can be adverse actions (§3.15). */
 export const ADVERSE_KINDS: ReadonlySet<DecisionKind> = new Set(['deny', 'approve_with_conditions', 'withdraw_offer']);
 

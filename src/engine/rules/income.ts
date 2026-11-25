@@ -68,7 +68,7 @@ export function evaluateIncome(
   const voucherApplied = c.params.applyToTenantShare && applicant.hasVoucher === true;
 
   if (voucherApplied && applicant.voucherMonthlyCents == null) {
-    // TODO(question): product.md §3.3 does not say what to do when "Monthly amount it pays" is left blank.
+    // Voucher "Yes" with a blank amount → Missing (product.md §3.3, Phương chốt 2026-11-25).
     return makeResult(c, title, {
       outcome: 'missing',
       reason: 'Enter the monthly amount the voucher pays to check income against the tenant’s share',

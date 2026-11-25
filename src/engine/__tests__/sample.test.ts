@@ -74,6 +74,12 @@ describe('§8 #2 Priya Raman', () => {
   it('"2 items missing"', () => {
     expect(e.summary).toEqual({ ready: false, missingCount: 2, text: '2 items missing' });
   });
+  it('Not met (C1, C5) is never an issue; issues = the 2 Missing only', () => {
+    expect(e.issues.map((i) => [i.kind, i.code])).toEqual([
+      ['missing', 'C4'],
+      ['missing', 'C6'],
+    ]);
+  });
   it('Deny for C5 requires an FCRA adverse action notice', () => {
     const reasons = reasonOptions(e.results).filter((r) => r.code === 'C5');
     const n = noticeRequirement(
@@ -82,6 +88,8 @@ describe('§8 #2 Priya Raman', () => {
     );
     expect(n.letter).toBe('adverse_action');
     expect(n.canExport).toBe(true);
+    expect(priya.report?.companyAddress).toBe('[Mailing address from the report]');
+    expect(priya.report?.companyPhone).toBe('[Phone from the report]');
   });
 });
 
@@ -183,5 +191,5 @@ describe('§8 Compare', () => {
 });
 
 function rank(k: string): number {
-  return { mismatch: 0, needs_review: 1, unconfirmed: 2, missing: 3 }[k] ?? 9;
+  return { mismatch: 0, needs_review: 1, missing: 2 }[k] ?? 9;
 }
