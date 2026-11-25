@@ -4,32 +4,8 @@
     "notMet": "Not met",
     "missing": "Missing",
     "needsReview": "Needs review",
-    "afterOffer": "After offer",
     "claimed": "Claimed",
     "verified": "Verified",
     "mismatch": "Mismatch"
-  },
-  "field": {
-    "empty": "Not set",
-    "chooseDate": "Choose a date",
-    "clear": "Clear"
-  },
-  "form": {
-    "stepOf": "Step {{step}} of {{total}}",
-    "pageOf": "Page {{page}} of {{count}}"
-  },
-  "signature": {
-    "clear": "Clear",
-    "clearA11y": "Clear {{label}}",
-    "placeholder": "Sign here with your finger",
-    "empty": "{{label}}, not signed yet. Draw with one finger.",
-    "captured": "{{label}} captured"
-  },
-  "legal": {
-    "short": "Evenlease is a checklist, not legal advice."
-  },
-  "gallery": {
-    "title": "UI kit",
-    "theme": "Theme"
   }
 }
