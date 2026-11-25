@@ -24,7 +24,7 @@
 ## Bước 3 — Làm app theo mockup (phiên điều phối chạy `PLAN.md`)
 - [x] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev` (mở trên A13 dời sang dòng ghép cuối)
 - [x] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
-- [ ] 1C DB: schema SQLite, repository, `useLive`, map ↔ engine, dữ liệu mẫu §8, `src/files`
+- [x] 1C DB: schema SQLite, repository, `useLive`, map ↔ engine, dữ liệu mẫu §8, `src/files`
 - [ ] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/`, dev client mới trên A13
 - [ ] 2A Logic căn + tiêu chí (F-02, F-03) + PDF tiêu chí công bố
 - [ ] 2B Logic hồ sơ, Applicant mode, giấy tờ (F-04 – F-07) + PDF đơn trống
