@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rental application — start</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <div class="row" style="padding: 54px 12px 10px 20px; background: var(--acs)">
+    <i class="i s i-hand" aria-hidden="true" style="color: var(--ac)"></i>
+    <p class="sm grow" style="font-weight: 650; color: var(--ac)">Applicant mode</p>
+    <button class="btn txt" style="height: 36px; gap: 6px"><i class="i s i-lock" aria-hidden="true"></i>Landlord</button>
+  </div>
+  <main class="body" style="justify-content: center; gap: 18px; padding: 0 28px">
+    <div class="av" style="width: 64px; height: 64px; border-radius: 20px" aria-hidden="true"><i class="i l i-key"></i></div>
+    <p class="cap">Rental application</p>
+    <h1 class="h1">1428 Maple St, Unit B</h1>
+    <p class="sub num" style="font-size: 16px">Columbus, OH · $1,650/mo · 2 bedrooms</p>
+    <div class="card" style="gap: 12px">
+      <div class="row" style="gap: 12px"><i class="i i-clock" aria-hidden="true" style="color: var(--ac)"></i><p class="sm">About 10 minutes · 7 short steps</p></div>
+      <div class="row" style="gap: 12px; align-items: flex-start"><i class="i i-lock" aria-hidden="true" style="color: var(--ac)"></i><p class="sm">Your answers are saved only on this landlord's phone.</p></div>
+      <div class="row" style="gap: 12px; align-items: flex-start"><i class="i i-shield" aria-hidden="true" style="color: var(--ac)"></i><p class="sm"><b>Do not enter your Social Security number.</b> If a screening report is needed, the screening company will ask you directly.</p></div>
+    </div>
+    <a class="sm" href="S05-Published.dc.html" style="color: var(--ac); font-weight: 600">Read this rental's criteria</a>
+  </main>
+  <div style="padding: 12px 28px 40px">
+    <a class="btn block" href="S08a-ApplicantHousehold.dc.html">Start</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.dark ? 'dark' : '' }; }
+}
+</script>
+</body>
+</html>

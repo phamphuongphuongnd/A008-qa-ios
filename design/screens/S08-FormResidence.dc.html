@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Application — where you've lived</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <header class="top back" style="min-height: 0; padding-bottom: 4px">
+    <a class="ib" href="S07-AddApplicant.dc.html" aria-label="Back"><i class="i i-left" aria-hidden="true"></i></a>
+    <div class="t"><p class="cap">Marcus Webb · 3 of 7</p><h1 class="h2">Where you've lived</h1></div>
+    <span class="chip">Draft saved</span>
+  </header>
+  <div class="prog" style="margin: 6px 20px 10px" role="progressbar" aria-valuenow="3" aria-valuemin="1" aria-valuemax="7" aria-label="Step 3 of 7"><i style="width: 43%"></i></div>
+  <main class="body" style="gap: 12px">
+    <p class="sub">Past 3 years. Include renting, owning, or living with family.</p>
+    <div class="card" style="gap: 12px">
+      <div class="row"><p class="h3 grow">Current address</p><button class="ib" aria-label="Remove address" style="width: 36px; height: 36px; color: var(--tx2)"><i class="i s i-trash" aria-hidden="true"></i></button></div>
+      <div class="fld"><label for="a1">Address</label><input class="in" id="a1" value="512 Oak Ridge Rd, Apt 4, Columbus, OH"></div>
+      <div class="row" style="gap: 10px">
+        <div class="fld grow"><label for="f1">From</label><input class="in num" id="f1" value="Mar 2022"></div>
+        <div class="fld grow"><label for="t1">To</label><div class="in" id="t1" style="gap: 8px"><span class="cb on" aria-hidden="true"><i class="i s i-check"></i></span>I live here now</div></div>
+      </div>
+      <div class="col" style="gap: 6px"><span class="lbl">Type</span><div class="opts"><span class="opt on">Rent</span><span class="opt">Own</span><span class="opt">With family</span><span class="opt">Other</span></div></div>
+      <div class="fld"><label for="r1">Monthly rent</label><input class="in num" id="r1" value="$1,200"></div>
+      <div class="fld"><label for="l1">Landlord or manager name</label><input class="in" id="l1" value="Gail Porter"></div>
+      <div class="row" style="gap: 10px">
+        <div class="fld grow"><label for="p1">Landlord phone</label><input class="in num" id="p1" value="(614) 555-0142"></div>
+      </div>
+      <div class="fld"><label for="w1">Why are you moving?</label><input class="in" id="w1" value="Need a second bedroom"></div>
+    </div>
+    <button class="btn sec block"><i class="i i-plus" aria-hidden="true"></i>Add an earlier address</button>
+    <p class="hint" style="display: flex; gap: 6px; align-items: center"><i class="i s i-check" aria-hidden="true" style="color: var(--ac)"></i>Covers the past 3 years</p>
+  </main>
+  <div class="row" style="padding: 12px 20px 34px; border-top: 1px solid var(--bd); background: var(--bg); gap: 10px">
+    <button class="btn sec" style="width: 120px">Back</button>
+    <a class="btn grow" href="S08-FormConsent.dc.html">Next</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.dark ? 'dark' : '' }; }
+}
+</script>
+</body>
+</html>

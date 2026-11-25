@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Criteria</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 1640px">
+  <header class="top back">
+    <a class="ib" href="S03-RentalEditor.dc.html" aria-label="Back"><i class="i i-left" aria-hidden="true"></i></a>
+    <div class="t"><p class="cap">Step 2 of 2 · 1428 Maple St</p><h1 class="h2">Criteria</h1></div>
+  </header>
+  <main class="body" style="gap: 10px">
+    <p class="sub">Write these before you see applicants. Everyone is checked against the same list.</p>
+    <sc-for list="{{crit}}" as="c" hint-placeholder-count="10">
+      <div class="card" style="gap: 8px; padding: 14px 16px; opacity: {{c.op}}">
+        <div class="row" style="align-items: flex-start">
+          <div class="grow col" style="gap: 3px">
+            <p style="font-weight: 650">{{c.title}}</p>
+            <p class="sub sm">{{c.desc}}</p>
+          </div>
+          <button class="sw {{c.cls}}" role="switch" aria-checked="{{c.on}}" aria-label="{{c.title}}" onClick="{{c.toggle}}"></button>
+        </div>
+        <sc-if value="{{c.hasParam}}" hint-placeholder-val="{{ true }}">
+          <div class="row" style="gap: 8px">
+            <button class="ib" aria-label="Decrease" style="width: 36px; height: 36px; background: var(--sf2)"><span aria-hidden="true" style="font-weight: 700">−</span></button>
+            <span class="num" style="font-weight: 700; font-size: 17px; min-width: 64px; text-align: center">{{c.param}}</span>
+            <button class="ib" aria-label="Increase" style="width: 36px; height: 36px; background: var(--sf2)"><i class="i s i-plus" aria-hidden="true"></i></button>
+            <span class="sub sm grow">{{c.unit}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{c.hasSub}}" hint-placeholder-val="{{ false }}">
+          <div class="row" style="gap: 10px; padding-top: 4px; border-top: 1px solid var(--bd)">
+            <p class="sm grow">{{c.sub}}</p>
+            <button class="sw on" role="switch" aria-checked="true" aria-label="{{c.sub}}"></button>
+          </div>
+        </sc-if>
+        <sc-if value="{{c.hasWarn}}" hint-placeholder-val="{{ false }}">
+          <div class="ban wn" style="padding: 10px 12px"><i class="i s i-alert" aria-hidden="true"></i><p class="sm">{{c.warn}}</p></div>
+        </sc-if>
+        <a class="sm" href="S25-Guide.dc.html" style="color: var(--ac); font-weight: 600; text-decoration: none">Why this matters</a>
+      </div>
+    </sc-for>
+    <a class="btn sec block" href="S04b-Guardrail.dc.html"><i class="i i-plus" aria-hidden="true"></i>Add your own yes/no criterion</a>
+    <div class="card" style="gap: 6px">
+      <p class="cap">Policies (not scored)</p>
+      <div class="kv"><span>Smoking</span><span style="font-weight: 600">Non-smoking property</span></div>
+      <div class="kv"><span>Deposit</span><span class="num" style="font-weight: 600">$1,650</span></div>
+      <div class="kv"><span>Application fee</span><span style="font-weight: 600">None</span></div>
+    </div>
+    <p class="legal">Evenlease is a checklist, not legal advice. Laws vary by state and city.</p>
+  </main>
+  <div style="padding: 12px 20px 34px; border-top: 1px solid var(--bd); background: var(--bg)">
+    <a class="btn block" href="S05-Published.dc.html">Preview published criteria</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":1640}}'>
+class Component extends DCLogic {
+  constructor(p) { super(p); this.state = { off: { C9: true, C10: false } }; }
+  renderVals() {
+    const off = this.state.off;
+    const base = [
+      { id: 'C1', title: 'Income: at least 3.0× the rent', desc: 'Household gross monthly income, all adults combined.', hasParam: true, param: '3.0×', unit: 'Common range 2.5–3×', hasSub: true, sub: 'Apply to the tenant’s share when a housing voucher pays part of the rent' },
+      { id: 'C2', title: 'At least 12 months of rental or home-ownership history', desc: 'First-time renters won’t meet this — consider a co-signer.', hasParam: true, param: '12', unit: 'months' },
+      { id: 'C3', title: 'No eviction judgment in the past 5 years', desc: 'Settled or dismissed cases are flagged for review, never auto-failed.', hasParam: true, param: '5', unit: 'years' },
+      { id: 'C4', title: 'Previous landlord would rent to them again', desc: 'From your reference call. Confirm the landlord really owns the property.' },
+      { id: 'C5', title: 'No unpaid balance owed to a past landlord', desc: 'From the screening report or the landlord reference.' },
+      { id: 'C6', title: 'Required documents provided', desc: 'Photo ID · Proof of income (2 recent pay stubs, offer letter, or benefits / voucher letter)' },
+      { id: 'C7', title: 'Occupancy: up to 2 people per bedroom', desc: 'Max 4 people for 2 bedrooms. Check your local occupancy code.', hasParam: true, param: '2', unit: 'per bedroom' },
+      { id: 'C8', title: 'Pet policy: cats and dogs, max 2', desc: 'Assistance animals are not pets and are always allowed.' },
+      { id: 'C9', title: 'Credit score of at least 600', desc: 'Off by default. No score is never a fail.', warnTxt: 'Many renters with vouchers or no credit history have low or no scores. Some states limit this criterion.' },
+      { id: 'C10', title: 'Criminal history review (after a conditional offer)', desc: 'Convictions only, past 7 years. Never an automatic no.', warnTxt: 'Some cities ban this step (Oakland, Berkeley) or delay it (NYC, Maryland). Check local law.' }
+    ];
+    const crit = base.map((c) => {
+      const on = !off[c.id];
+      return { ...c, hasParam: !!c.hasParam, hasSub: !!c.hasSub && on, on, cls: on ? 'on' : '', op: on ? '1' : '0.72',
+        hasWarn: !!c.warnTxt && on, warn: c.warnTxt || '',
+        toggle: () => this.setState({ off: { ...off, [c.id]: on } }) };
+    });
+    return { theme: this.props.dark ? 'dark' : '', crit };
+  }
+}
+</script>
+</body>
+</html>

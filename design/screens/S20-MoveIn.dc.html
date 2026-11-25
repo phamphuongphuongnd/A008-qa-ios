@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Move-in checklist</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <header class="top back">
+    <a class="ib" href="S06-RentalHub.dc.html" aria-label="Back"><i class="i i-left" aria-hidden="true"></i></a>
+    <div class="t"><p class="cap">Jordan Ellis · Jan 1, 2027</p><h1 class="h2">Move-in checklist</h1></div>
+    <span class="chip">5/8 rooms</span>
+  </header>
+  <main class="body">
+    <div class="card" style="gap: 10px">
+      <div class="row"><p class="h3 grow">Kitchen</p><span class="b met"><i class="i s i-check" aria-hidden="true"></i>Done</span></div>
+      <sc-for list="{{items}}" as="it" hint-placeholder-count="4">
+        <div class="row" style="gap: 8px">
+          <span class="sm grow" style="font-weight: 600">{{it.n}}</span>
+          <div class="seg" style="padding: 2px"><sc-for list="{{it.o}}" as="o" hint-placeholder-count="3"><button class="{{o.c}}" style="height: 30px; font-size: 12px; padding: 0 8px">{{o.l}}</button></sc-for></div>
+        </div>
+      </sc-for>
+      <div class="ban wn" style="padding: 10px 12px"><i class="i s i-camera" aria-hidden="true"></i><p class="sm grow">Stove: chip on left front burner</p><span class="thumb" style="width: 40px; height: 40px" role="img" aria-label="Photo of stove chip"><i class="i s i-camera" aria-hidden="true"></i></span></div>
+    </div>
+    <div class="card" style="padding: 4px 16px; gap: 0">
+      <div class="li"><span class="grow" style="font-weight: 600">Bedroom 1</span><span class="b met"><i class="i s i-check" aria-hidden="true"></i>Done</span></div>
+      <div class="li"><span class="grow" style="font-weight: 600">Bedroom 2</span><span class="b miss"><i class="i s i-circle" aria-hidden="true"></i>To do</span></div>
+      <div class="li"><span class="grow" style="font-weight: 600">Meter readings</span><span class="sub sm num">Electric 18,402 · Water —</span></div>
+      <div class="li"><span class="grow" style="font-weight: 600">Keys handed over</span><span class="num" style="font-weight: 600">3</span></div>
+      <div class="li"><span class="grow" style="font-weight: 600">Smoke &amp; CO alarms tested</span><span class="b met"><i class="i s i-check" aria-hidden="true"></i>Yes</span></div>
+    </div>
+    <div class="row" style="gap: 10px">
+      <div class="sig grow" style="height: 72px; display: flex; align-items: center; justify-content: center" role="img" aria-label="Landlord signature, not signed"><span class="sub sm">Landlord signs</span></div>
+      <div class="sig grow" style="height: 72px; display: flex; align-items: center; justify-content: center" role="img" aria-label="Tenant signature, not signed"><span class="sub sm">Tenant signs</span></div>
+    </div>
+  </main>
+  <div class="row" style="padding: 12px 20px 34px; border-top: 1px solid var(--bd); background: var(--bg); gap: 10px">
+    <button class="btn sec grow"><i class="i i-plus" aria-hidden="true"></i>Room</button>
+    <button class="btn grow" disabled><i class="i i-doc" aria-hidden="true"></i>Export PDF</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (on) => ['Good', 'Fair', 'Damaged'].map((l) => ({ l, c: l === on ? 'on' : '' }));
+    const items = [
+      { n: 'Walls & paint', o: mk('Good') },
+      { n: 'Floors', o: mk('Good') },
+      { n: 'Appliances', o: mk('Fair') },
+      { n: 'Cabinets & sink', o: mk('Good') }
+    ];
+    return { theme: this.props.dark ? 'dark' : '', items };
+  }
+}
+</script>
+</body>
+</html>

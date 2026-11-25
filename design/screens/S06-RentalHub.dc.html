@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>1428 Maple St — applicants</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <header class="top back">
+    <a class="ib" href="Main.dc.html" aria-label="Back to rentals"><i class="i i-left" aria-hidden="true"></i></a>
+    <div class="t"><h1 class="h3" style="font-size: 19px">1428 Maple St, Unit B</h1><p class="sub num">$1,650/mo · 2 bd · Available Jan 1</p></div>
+    <button class="ib" aria-label="More actions"><i class="i i-more" aria-hidden="true"></i></button>
+  </header>
+  <main class="body">
+    <div class="row" style="gap: 6px">
+      <span class="chip"><i class="i s i-columns" aria-hidden="true"></i>Compare mode</span>
+      <span class="chip">Sample</span>
+      <a class="chip ac" href="S05-Published.dc.html" style="text-decoration: none">Criteria · 9 on</a>
+    </div>
+    <div class="row" style="gap: 10px">
+      <a class="btn grow" href="S07-AddApplicant.dc.html"><i class="i i-plus" aria-hidden="true"></i>Add applicant</a>
+      <a class="btn sec" href="S17-Compare.dc.html" style="padding: 0 16px"><i class="i i-columns" aria-hidden="true"></i>Compare</a>
+    </div>
+    <div class="row"><p class="cap grow">Applicants · in order received</p><span class="sub sm">4</span></div>
+    <div class="card" style="padding: 0 16px; gap: 0">
+      <sc-for list="{{apps}}" as="a" hint-placeholder-count="4">
+        <a class="li" href="{{a.href}}">
+          <span class="av" aria-hidden="true">{{a.ini}}</span>
+          <div class="grow col" style="gap: 2px">
+            <p style="font-weight: 650">{{a.name}}</p>
+            <p class="sub sm num">Received {{a.when}}</p>
+            <p class="sm" style="font-weight: 600; color: {{a.sumColor}}">{{a.sum}}</p>
+          </div>
+          <span class="chip {{a.chipCls}}">{{a.status}}</span>
+        </a>
+      </sc-for>
+    </div>
+    <div class="row" style="gap: 10px">
+      <a class="btn sec grow" href="S19-DecisionFile.dc.html" style="height: 44px; font-size: 15px"><i class="i s i-doc" aria-hidden="true"></i>Decision file</a>
+      <button class="btn sec grow" style="height: 44px; font-size: 15px"><i class="i s i-printer" aria-hidden="true"></i>Blank form</button>
+    </div>
+    <p class="legal" style="margin-top: auto">Not a ranking. Applicants are listed in the order received.</p>
+  </main>
+  <nav class="tabs" aria-label="Main">
+    <a class="tab on" href="Main.dc.html" aria-current="page"><i class="i i-home" aria-hidden="true"></i>Rentals</a>
+    <a class="tab" href="S25-Guide.dc.html"><i class="i i-book" aria-hidden="true"></i>Guide</a>
+    <a class="tab" href="S21-Settings.dc.html"><i class="i i-gear" aria-hidden="true"></i>Settings</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = 'var(--ac)', mute = 'var(--tx2)';
+    return {
+      theme: this.props.dark ? 'dark' : '',
+      apps: [
+        { ini: 'JE', name: 'Jordan Ellis', when: 'Dec 2, 9:14 AM', sum: 'Ready to decide', sumColor: ok, status: 'In review', chipCls: 'ac', href: 'S09-Ready.dc.html' },
+        { ini: 'PR', name: 'Priya Raman', when: 'Dec 2, 2:40 PM', sum: '2 items missing', sumColor: mute, status: 'In review', chipCls: '', href: 'S15-Decision.dc.html' },
+        { ini: 'MW', name: 'Marcus Webb', when: 'Dec 3, 11:05 AM', sum: '1 item missing · 2 mismatches', sumColor: 'var(--wn)', status: 'In review', chipCls: '', href: 'S09-Issues.dc.html' },
+        { ini: 'DO', name: 'Dana Ortiz', when: 'Dec 4, 8:20 AM', sum: 'Ready to decide · 1 to review', sumColor: ok, status: 'New', chipCls: '', href: 'S09-Ready.dc.html' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Application — consent and signature</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <header class="top back" style="min-height: 0; padding-bottom: 4px">
+    <a class="ib" href="S08-FormResidence.dc.html" aria-label="Back"><i class="i i-left" aria-hidden="true"></i></a>
+    <div class="t"><p class="cap">Marcus Webb · 6 of 7</p><h1 class="h2">Consent &amp; signature</h1></div>
+  </header>
+  <div class="prog" style="margin: 6px 20px 10px" role="progressbar" aria-valuenow="6" aria-valuemin="1" aria-valuemax="7" aria-label="Step 6 of 7"><i style="width: 86%"></i></div>
+  <main class="body" style="gap: 12px">
+    <div class="card" style="gap: 12px">
+      <div class="row" style="align-items: flex-start; gap: 12px"><span class="cb on" aria-hidden="true"><i class="i s i-check"></i></span><p class="sm">I authorize the landlord to contact my current and previous landlords and employers to verify this application, and to review a screening report I provide or authorize.</p></div>
+      <div class="row" style="align-items: flex-start; gap: 12px"><span class="cb on" aria-hidden="true"><i class="i s i-check"></i></span><p class="sm">I certify the information in this application is true and complete.</p></div>
+    </div>
+    <div class="col" style="gap: 6px">
+      <div class="row"><span class="lbl grow">Signature</span><button class="btn txt" style="height: 32px">Clear</button></div>
+      <div class="sig" role="img" aria-label="Signature captured">
+        <svg viewBox="0 0 340 110" width="100%" height="110" aria-hidden="true"><path d="M30 72c18-30 30-38 36-22s-10 30 4 18 22-40 30-26-4 30 10 18 18-24 30-20 2 22 16 14 26-18 40-14 20 8 34 2" fill="none" stroke="var(--tx)" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <span style="position: absolute; left: 16px; right: 16px; bottom: 22px; height: 1px; background: var(--bd)"></span>
+      </div>
+    </div>
+    <div class="row" style="gap: 10px">
+      <div class="fld grow"><label for="nm">Printed name</label><input class="in" id="nm" value="Marcus Webb"></div>
+      <div class="fld" style="width: 128px"><label for="dt">Date</label><input class="in num" id="dt" value="Dec 3, 2026"></div>
+    </div>
+    <div class="card" style="gap: 8px">
+      <p class="lbl">Landlord only</p>
+      <div class="row"><i class="i i-camera" aria-hidden="true" style="color: var(--ac)"></i><p class="grow sm" style="font-weight: 600">Attach photos of the paper form</p><span class="chip">2 pages</span></div>
+      <div class="row"><i class="i i-clock" aria-hidden="true" style="color: var(--ac)"></i><p class="grow sm" style="font-weight: 600">Received on</p><span class="num sm" style="font-weight: 600">Dec 3, 11:05 AM</span></div>
+      <p class="hint">Use the time you actually received it. It locks after you save.</p>
+    </div>
+  </main>
+  <div class="row" style="padding: 12px 20px 34px; border-top: 1px solid var(--bd); background: var(--bg); gap: 10px">
+    <button class="btn sec" style="width: 120px">Back</button>
+    <a class="btn grow" href="S09-Issues.dc.html">Review</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.dark ? 'dark' : '' }; }
+}
+</script>
+</body>
+</html>

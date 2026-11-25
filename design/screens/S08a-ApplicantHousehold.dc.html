@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rental application — household</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <div class="row" style="padding: 54px 12px 10px 20px; background: var(--acs)">
+    <i class="i s i-hand" aria-hidden="true" style="color: var(--ac)"></i>
+    <p class="sm grow" style="font-weight: 650; color: var(--ac)">Applicant mode</p>
+    <button class="btn txt" style="height: 36px; gap: 6px"><i class="i s i-lock" aria-hidden="true"></i>Landlord</button>
+  </div>
+  <div style="padding: 14px 20px 6px" class="col">
+    <p class="cap">Step 2 of 7</p>
+    <h1 class="h2">Your household</h1>
+    <div class="prog" style="margin-top: 8px" role="progressbar" aria-valuenow="2" aria-valuemin="1" aria-valuemax="7" aria-label="Step 2 of 7"><i style="width: 29%"></i></div>
+  </div>
+  <main class="body" style="gap: 14px; padding-top: 10px">
+    <div class="fld">
+      <label for="occ">How many people will live here, including you?</label>
+      <div class="row" style="gap: 8px">
+        <button class="ib" aria-label="Fewer" style="background: var(--sf2)"><span aria-hidden="true" style="font-weight: 700; font-size: 20px">−</span></button>
+        <span class="num" id="occ" style="font-size: 22px; font-weight: 700; min-width: 48px; text-align: center">2</span>
+        <button class="ib" aria-label="More" style="background: var(--sf2)"><i class="i i-plus" aria-hidden="true"></i></button>
+      </div>
+    </div>
+    <div class="fld"><label for="ad">Other adults (18+) — full names</label><input class="in" id="ad" value="Sam Ortiz"></div>
+    <div class="col" style="gap: 6px">
+      <span class="lbl">Pets</span>
+      <div class="opts"><span class="opt on">None</span><span class="opt">Cat</span><span class="opt">Dog</span><span class="opt">Other</span></div>
+      <p class="hint">Don't list assistance animals — they are not pets.</p>
+    </div>
+    <div class="fld"><label for="mv">Desired move-in date</label><input class="in" id="mv" value="Jan 1, 2027"></div>
+    <div class="col" style="gap: 8px">
+      <span class="lbl">Will a housing voucher or rental assistance pay part of the rent?</span>
+      <div class="seg" role="radiogroup" aria-label="Housing voucher"><button role="radio" aria-checked="false">No</button><button class="on" role="radio" aria-checked="true">Yes</button></div>
+      <div class="row" style="gap: 10px">
+        <div class="fld grow"><label for="va">Monthly amount it pays</label><input class="in num" id="va" value="$900"></div>
+        <div class="fld grow"><label for="vp">Program</label><input class="in" id="vp" value="CMHA HCV"></div>
+      </div>
+    </div>
+  </main>
+  <div class="row" style="padding: 12px 20px 34px; border-top: 1px solid var(--bd); background: var(--bg); gap: 10px">
+    <a class="btn sec" href="S08a-ApplicantStart.dc.html" style="width: 120px">Back</a>
+    <a class="btn grow" href="S08b-ApplicantDone.dc.html">Next</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.dark ? 'dark' : '' }; }
+}
+</script>
+</body>
+</html>

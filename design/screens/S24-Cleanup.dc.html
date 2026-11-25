@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Data cleanup</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <header class="top back">
+    <a class="ib" href="S21-Settings.dc.html" aria-label="Back"><i class="i i-left" aria-hidden="true"></i></a>
+    <div class="t"><h1 class="h2">Data cleanup</h1></div>
+  </header>
+  <main class="body">
+    <div class="ban ac"><i class="i i-shield" aria-hidden="true"></i><p class="sm">Federal rules require you to securely dispose of screening information once you no longer need it.</p></div>
+    <div class="card" style="gap: 10px">
+      <div class="row"><div class="grow"><p class="h3">22 Elm Ct, Apt 3</p><p class="sub sm">Closed Oct 12 · 45 days ago</p></div><span class="chip wn">3 not selected</span></div>
+      <p class="sm sub">Applications, documents, call notes and reports for 3 people. The decision file keeps an anonymous line for each.</p>
+      <button class="btn dn block" style="height: 48px"><i class="i i-trash" aria-hidden="true"></i>Delete their data</button>
+    </div>
+    <div class="card" style="gap: 6px">
+      <div class="kv"><span>Remind me after closing a rental</span><span style="font-weight: 600">60 days</span></div>
+      <p class="hint">30 · 60 · 90 · 180 days · Off</p>
+    </div>
+  </main>
+  <div class="scrim" aria-hidden="true"></div>
+  <div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="dt" aria-describedby="dd">
+    <h2 class="h3" id="dt">Permanently delete data for 3 applicants?</h2>
+    <p class="sub sm" id="dd">Their applications, photos, documents and reports will be erased from this phone. This can't be undone.</p>
+    <div class="row" style="gap: 10px; margin-top: 6px">
+      <button class="btn sec grow" style="height: 48px">Cancel</button>
+      <button class="btn dn grow" style="height: 48px">Delete</button>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.dark ? 'dark' : '' }; }
+}
+</script>
+</body>
+</html>

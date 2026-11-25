@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decision — Priya Raman</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="/_blob/8b7954830edb5315f9432043d2522dd7">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div class="ev {{theme}}" style="width: 390px; height: 844px">
+  <header class="top back">
+    <span class="ib" aria-hidden="true"><i class="i i-left"></i></span>
+    <div class="t"><h1 class="h2">Priya Raman</h1><p class="sub">Received Dec 2, 2:40 PM</p></div>
+  </header>
+  <main class="body"><div class="card" style="height: 90px"></div></main>
+  <div class="scrim" aria-hidden="true"></div>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="t" style="top: 120px; gap: 12px">
+    <span class="grab" aria-hidden="true"></span>
+    <h2 class="h2" id="t">Decision</h2>
+    <div class="opts" role="radiogroup" aria-label="Decision">
+      <span class="opt">Conditional offer</span><span class="opt">Approve</span><span class="opt">Approve with conditions</span><span class="opt on" style="border-color: var(--dn); background: var(--dns); color: var(--dn)">Deny</span>
+    </div>
+    <p class="lbl">Reasons (required)</p>
+    <div class="card" style="padding: 4px 14px; gap: 0">
+      <div class="li" style="gap: 10px"><span class="cb on" aria-hidden="true"><i class="i s i-check"></i></span><div class="grow col" style="gap: 2px"><p class="sm" style="font-weight: 600">No unpaid balance owed to a past landlord</p><p class="hint">$2,310 · source: screening report</p></div><span class="b not"><i class="i s i-x" aria-hidden="true"></i>Not met</span></div>
+      <div class="li" style="gap: 10px"><span class="cb on" aria-hidden="true"><i class="i s i-check"></i></span><div class="grow col" style="gap: 2px"><p class="sm" style="font-weight: 600">Income: at least 3.0× the rent</p><p class="hint">2.85× · short by $250/mo · claimed</p></div><span class="b not"><i class="i s i-x" aria-hidden="true"></i>Not met</span></div>
+    </div>
+    <div class="fld"><label for="ex">Explain in your words (optional)</label><div class="in" id="ex" style="font-size: 14px; color: var(--tx2)">e.g. what the applicant could do differently</div></div>
+    <div class="row" style="gap: 10px; align-items: flex-start"><span class="cb on" aria-hidden="true"><i class="i s i-check"></i></span><p class="sm">Information from a screening report played a part in this decision</p></div>
+    <div class="ban wn"><i class="i i-alert" aria-hidden="true"></i><div class="col" style="gap: 2px"><p class="sm" style="font-weight: 650">An adverse action notice is required</p><p class="sm">Federal law (FCRA) requires a written notice when a screening report plays any part in a denial. We'll fill it in for you.</p></div></div>
+    <a class="btn dn block" href="S16-Letter.dc.html">Deny and create notice</a>
+    <p class="legal">Evenlease is a checklist, not legal advice.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { theme: this.props.dark ? 'dark' : '' }; }
+}
+</script>
+</body>
+</html>
