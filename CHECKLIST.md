@@ -22,7 +22,7 @@
 
 ## Bước 3 — Làm app theo mockup (phiên điều phối chạy `PLAN.md`)
 - [ ] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev`
-- [ ] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
+- [x] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
 - [ ] 1C Theme + UI kit từ token mockup + gallery `/dev/gallery`; schema SQLite, repository, `useLive`, dữ liệu mẫu §8
 - [ ] F-01 Onboarding (S-01)
 - [ ] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
