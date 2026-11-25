@@ -1,0 +1,11 @@
+{
+  "status": {
+    "met": "Met",
+    "notMet": "Not met",
+    "missing": "Missing",
+    "needsReview": "Needs review",
+    "claimed": "Claimed",
+    "verified": "Verified",
+    "mismatch": "Mismatch"
+  }
+}

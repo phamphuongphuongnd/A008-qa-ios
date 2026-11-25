@@ -1,0 +1,31 @@
+{
+  "appName": "Evenlease",
+  "tabs": {
+    "rentals": "Rentals",
+    "guide": "Guide",
+    "settings": "Settings"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "done": "Done",
+    "next": "Next",
+    "back": "Back",
+    "edit": "Edit",
+    "delete": "Delete",
+    "share": "Share",
+    "close": "Close",
+    "undo": "Undo",
+    "discard": "Discard",
+    "keepEditing": "Keep editing"
+  },
+  "discardChanges": "Discard changes?",
+  "notLegalAdvice": "Evenlease is a checklist, not legal advice. Laws vary by state and city.",
+  "notFound": {
+    "title": "This page doesn't exist.",
+    "goHome": "Go to Rentals"
+  },
+  "placeholder": {
+    "note": "Placeholder — this screen is built in Phase 2."
+  }
+}
