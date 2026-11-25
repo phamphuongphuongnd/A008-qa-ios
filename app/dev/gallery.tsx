@@ -1,4 +1,6 @@
+import { NavigationBar } from 'expo-navigation-bar';
 import { Redirect } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -61,6 +63,8 @@ export default function Gallery() {
   if (!__DEV__) return <Redirect href="/" />;
   return (
     <ThemeProvider preference={scheme}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <NavigationBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <Screen
         header={
           <ScreenHeader

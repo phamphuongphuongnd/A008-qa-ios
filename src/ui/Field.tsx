@@ -169,7 +169,7 @@ export interface MoneyFieldProps extends FieldChrome {
  * USD field: decimal pad, at most 2 decimals, commas added when it loses focus and removed while editing, pasted
  * "$1,234.50" → 123450 cents, a filled field is selected on focus. The value is exactly what was typed — never rounded.
  */
-export function MoneyField({ value, onChange, onBlur, unit, placeholder = '0', autoFocus, inputRef, ...chrome }: MoneyFieldProps) {
+export function MoneyField({ value, onChange, onBlur, unit, placeholder, autoFocus, inputRef, ...chrome }: MoneyFieldProps) {
   const { colors } = useTheme();
   const inner = useRef<InputRef | null>(null);
   const [editing, setEditing] = useState<string | null>(null);

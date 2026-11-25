@@ -9,8 +9,10 @@ import {
 } from '@expo-google-fonts/inter';
 import { Stack } from 'expo-router';
 import { ThemeProvider as NavigationThemeProvider } from 'expo-router/react-navigation';
+import { NavigationBar } from 'expo-navigation-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import * as SystemUI from 'expo-system-ui';
 import { useEffect, useState } from 'react';
 import { Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -78,9 +80,15 @@ function AppTheme({ children }: { children: React.ReactNode }) {
 function RootStack() {
   const theme = useTheme();
   const bg = theme.colors.bg;
+  // Root view behind every screen (keyboard / rotation flashes) follows the theme too.
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(bg).catch(() => {});
+  }, [bg]);
   return (
     <NavigationThemeProvider value={navigationTheme(theme)}>
       <StatusBar style={theme.dark ? 'light' : 'dark'} />
+      {/* Android 3-button bar: light buttons on a dark scrim in dark theme (otherwise it stays white — A006 fact). */}
+      <NavigationBar style={theme.dark ? 'light' : 'dark'} />
       {/* A006 B-23: keeps `router` from @/services/router bound to the live tree after a config change. */}
       <RouterBridge />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: bg } }}>
