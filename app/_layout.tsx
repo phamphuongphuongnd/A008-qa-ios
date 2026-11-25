@@ -11,11 +11,12 @@ import { Stack } from 'expo-router';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-navigation';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Platform, Text, useColorScheme, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ensureMigrated } from '@/db';
 import { RouterBridge } from '@/services/router';
 
 SplashScreen.preventAutoHideAsync();
@@ -33,7 +34,7 @@ export const unstable_settings = { initialRouteName: '(tabs)' };
 /**
  * Root stack: the 3 tabs at the bottom, every other screen pushed above them (no tab bar), see docs/ROUTES.md.
  * Plug-in points for later sessions (merged by the coordinator, keep this file small):
- * - 1C: database migration gate + theme provider (replace BG / navigation theme below) + snackbar host.
+ * - 1C: database migrations run before the first screen (below). Theme provider + snackbar host wait for the new mockup.
  * - 2E: onboarding guard (Stack.Protected on `onboarded`), App lock gate, theme setting, notification tap → route.
  * - 2B: Applicant mode guard (while active, only `applicants/mode/*` is reachable; see the group below).
  */
@@ -41,12 +42,22 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(RUNTIME_FONTS);
   const fontsReady = Platform.OS === 'android' || fontsLoaded || !!fontError;
   const dark = useColorScheme() === 'dark';
+  // 1C: every screen reads SQLite synchronously, so the bundled migrations finish before the first one renders.
+  const [dbState, setDbState] = useState<'opening' | 'ready' | 'failed'>('opening');
 
   useEffect(() => {
-    if (fontsReady) SplashScreen.hideAsync();
-  }, [fontsReady]);
+    ensureMigrated().then(
+      () => setDbState('ready'),
+      () => setDbState('failed'),
+    );
+  }, []);
 
-  if (!fontsReady) return null;
+  useEffect(() => {
+    if (fontsReady && dbState !== 'opening') SplashScreen.hideAsync();
+  }, [fontsReady, dbState]);
+
+  if (!fontsReady || dbState === 'opening') return null;
+  if (dbState === 'failed') return <DatabaseError dark={dark} />;
 
   const bg = dark ? BG.dark : BG.light;
   const navTheme = dark
@@ -79,5 +90,20 @@ export default function RootLayout() {
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  );
+}
+
+/** The database could not be opened / migrated (disk full, corrupt file): nothing else can work. */
+function DatabaseError({ dark }: { dark: boolean }) {
+  const c = dark ? { bg: BG.dark, text: '#ECEDEE', text2: '#A9B0B5' } : { bg: BG.light, text: '#1A1C1E', text2: '#585D62' };
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 32, backgroundColor: c.bg }}>
+      <Text style={{ fontFamily: 'Inter_600SemiBold', fontSize: 17, color: c.text, textAlign: 'center' }}>
+        Evenlease couldn&apos;t open its data on this phone.
+      </Text>
+      <Text style={{ fontFamily: 'Inter_400Regular', fontSize: 14, color: c.text2, textAlign: 'center', marginTop: 8 }}>
+        Close the app and open it again. If it keeps happening, check that the phone has free storage.
+      </Text>
+    </View>
   );
 }
