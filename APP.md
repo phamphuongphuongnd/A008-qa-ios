@@ -3,7 +3,7 @@
 > Brief tĩnh của app. **≤ 60 dòng, không ghi lịch sử** (lịch sử ở git + `memory/sessions/`).
 > Tiến độ: `CHECKLIST.md` · Tính năng: `product.md` · Kế hoạch phase: `PLAN.md` · Khảo sát: `research.md` · Ý tưởng gốc: `y-tuong.md`.
 
-**Đang ở:** Bước 2 — mockup Hi-Fi (product.md duyệt 2026-11-25)
+**Đang ở:** Bước 3 — phiên điều phối chạy PLAN.md Phase 1 (2026-11-25). Mockup: https://claude.ai/artifact/E1YZve51VMfZ5dahLRTwtY
 
 ## Brief
 - **Mã app / thư mục:** `A008-evenlease` → `apps/A008-evenlease/`

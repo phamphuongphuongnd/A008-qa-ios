@@ -8,9 +8,9 @@
 
 ## Phase 0 — Chuẩn bị (phiên grill, trước khi mở điều phối)
 - [x] Khảo sát + grill + kế hoạch (Phương duyệt 2026-11-25).
-- [ ] product.md → Phương duyệt.
-- [ ] Mockup Hi-Fi bằng Artifact Design (design system mới) → Phương duyệt → `design/`.
-- [ ] Commit + push `main`/`dev` lên MA-Global-VN/P_evenlease → mở phiên điều phối.
+- [x] product.md → Phương duyệt (2026-11-25).
+- [x] Mockup Hi-Fi bằng Artifact Design (design system mới) → Phương duyệt → `design/` (2026-11-25).
+- [x] Commit + push `main`/`dev` lên MA-Global-VN/P_evenlease → mở phiên điều phối (2026-11-25).
 
 ## Phase 1 — Nền móng (3 phiên; 1B/1C chờ 1A push)
 | Phiên | Việc | Sửa được | Xong khi |

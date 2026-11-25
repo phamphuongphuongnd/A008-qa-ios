@@ -17,8 +17,8 @@
 - [x] Phương duyệt product.md + PLAN.md (2026-11-25)
 
 ## Bước 2 — Mockup Hi-Fi (Artifact Design, design system mới, Phương duyệt)
-- [ ] Mockup đủ mọi màn S-xx (+ tối, trạng thái chính) → link + `design/` (`.dc.html` + `tokens.json`)
-- [ ] Phương duyệt mockup
+- [x] Mockup đủ mọi màn S-01…S-27 (34 artboard, tweak tối) → https://claude.ai/artifact/E1YZve51VMfZ5dahLRTwtY + `design/`
+- [x] Phương duyệt mockup (2026-11-25)
 
 ## Bước 3 — Làm app theo mockup (phiên điều phối chạy `PLAN.md`)
 - [ ] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev`
