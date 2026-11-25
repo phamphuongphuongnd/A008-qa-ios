@@ -127,7 +127,7 @@ export function evaluatePets(c: CriterionOf<'C8'>, applicant: ApplicantInput, ti
 /**
  * Custom yes/no criterion: yes → Met, no → Not met, unanswered → Missing.
  * "Applicant answers" = Claimed (application); "Landlord checks" = Verified (landlord note).
- * TODO(question): §3.2 only says "Tiêu chí tự thêm có / không" — this mapping is the engine's assumption.
+ * (product.md §3.2, Phương chốt 2026-11-25.)
  */
 export function evaluateCustom(c: CriterionOf<'CX'>, applicant: ApplicantInput, title: string): RuleResult {
   const byApplicant = c.params.answeredBy === 'applicant';

@@ -303,7 +303,8 @@ export type EvidenceSource =
   | 'screening_report'
   | 'landlord_note';
 
-export type IssueKind = 'mismatch' | 'needs_review' | 'missing' | 'unconfirmed';
+/** Issues hold only Mismatch / Needs review / Missing; Not met is never an issue (Phương chốt 2026-11-25). */
+export type IssueKind = 'mismatch' | 'needs_review' | 'missing';
 
 /** Where the UI sends the landlord to fix an issue (S-09 buttons). */
 export type IssueAction =
@@ -372,7 +373,7 @@ export interface ApplicantSummary {
 export interface ApplicantEvaluation {
   applicantId: string;
   results: CriterionResult[];
-  /** Sorted: Mismatch → (Not met) → Needs review → Missing. */
+  /** Sorted: Mismatch → Needs review → Missing (Not met results are not issues). */
   issues: Issue[];
   summary: ApplicantSummary;
 }

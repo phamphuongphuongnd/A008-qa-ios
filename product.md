@@ -56,7 +56,8 @@
   - `source`: Application · Document · Landlord reference · Employer reference · Screening report · Landlord note.
   - `reason`: một câu tiếng Anh giải thích (vd "Household income $5,400/mo is 3.27× rent; required 3.0×").
 - **Không có điểm tổng, không có thứ hạng.** Applicant status tóm tắt: "Ready to decide" (không còn Missing) hoặc "N items missing".
-- **Issues** của Applicant = mọi kết quả Missing / Needs review / Mismatch, xếp: Mismatch → Not met → Needs review → Missing.
+- **Issues** của Applicant = chỉ các mục Missing / Needs review / Mismatch, xếp: Mismatch → Needs review → Missing. Kết quả
+  Not met **không** vào Issues; "N items missing" chỉ đếm Missing. (Phương chốt 2026-11-25).
 
 ### 3.2 Bộ tiêu chí mẫu (mỗi Rental bật / tắt, sửa tham số)
 | Mã | Tiêu chí (chữ trên app) | Tham số mặc định | Bật sẵn |
@@ -68,14 +69,18 @@
 | C5 | "No unpaid balance owed to a past landlord" | — | ✓ |
 | C6 | "Required documents provided" | Photo ID + Proof of income (2 recent pay stubs, offer letter, or benefits / voucher letter) | ✓ |
 | C7 | "Occupancy: up to {p} people per bedroom" | p = 2 (theo hướng dẫn HUD; ghi chú "Check your local occupancy code") | ✓ |
-| C8 | "Pet policy: {policy}" | No pets / Cats only / Cats and dogs (max {n}) / Pets considered case by case; assistance animals không phải pet | ✓ |
+| C8 | "Pet policy: {policy}" | No pets / Cats only / Cats and dogs (max {n}) / Pets considered case by case (**mặc định**); assistance animals không phải pet | ✓ |
 | C9 | "Credit score of at least {s}" | s = 600 | ✗ (tắt) |
 | C10 | "Criminal history review (after a conditional offer)" | lookback 7 năm, chỉ án đã kết | ✗ (tắt) |
 | Cx | Tiêu chí tự thêm có / không (≤ 5) | — | — |
+- C8 mặc định bộ mẫu = "Pets considered case by case"; Rental mẫu §8 vẫn "Cats and dogs, max 2" (Phương chốt 2026-11-25).
+- Tiêu chí tự thêm (Cx): Yes → Met · No → Not met · chưa trả lời → Missing; "Applicant answers" = Claimed (nguồn Application),
+  "Landlord checks" = Verified (nguồn Landlord note) (Phương chốt 2026-11-25).
 - Chính sách không chấm (chỉ in trên trang công bố): "Non-smoking property", phí nộp đơn ("We do not charge an application fee" mặc định), tiền cọc.
 
 ### 3.3 C1 Income
 - `rentForTest = rent − voucherMonthly` (khi bật tuỳ chọn voucher, Applicant có voucher; tối thiểu 0). Nếu `rentForTest = 0` → Met.
+  Applicant trả lời có voucher nhưng bỏ trống "Monthly amount it pays" → C1 **Missing** (reason nhắc nhập số tiền) (Phương chốt 2026-11-25).
 - `householdIncome = applicant gross monthly + other income + other adults' gross monthly` (các mục trong Application §5.S-08 phần 4).
 - `ratio = householdIncome / rentForTest`. Met nếu `ratio ≥ x`, ngược lại Not met. Không có số thu nhập → Missing.
 - **Evidence:** Verified khi mọi nguồn thu nhập có ít nhất một Document đã kiểm mà `docMonthly ≥ stated × 0.9`; Mismatch khi có
@@ -102,6 +107,8 @@
 ### 3.6 C4 Landlord reference
 - Lấy từ Landlord reference của Residence gần nhất **không phải** nơi đang ở; nếu chỉ có nơi đang ở thì dùng nơi đó.
   - "Would rent again": Yes → Met · No → Not met · "Wouldn't say" → Needs review.
+  - Applicant không có Residence loại Rent (nhà riêng / ở với gia đình) → **Needs review** (Claimed), reason "No previous
+    landlord to call (no rented residence) — your call" (Phương chốt 2026-11-25).
   - Chưa gọi → Missing. Ghi "Unreachable" (≥ 3 lần thử, ≥ 2 cách) → Missing với reason "Unreachable after 3 attempts".
 - Evidence: Verified chỉ khi đã tick "I confirmed this person owns or manages the property" (ghi nguồn); không tick → Claimed
   + issue "Landlord identity not confirmed".
@@ -163,6 +170,8 @@
 - Ngược lại (vd chỉ dựa vào Landlord reference chủ nhà tự gọi) → "Denial letter" thường; vẫn khuyên gửi bằng văn bản.
 - Nếu lý do dùng C9 → thư có thêm khối điểm (score, range, date, model, key factors).
 - Thiếu tên / địa chỉ / điện thoại công ty báo cáo → không xuất được thư; nút dẫn về S-13.
+- App **không** chứa sẵn địa chỉ / điện thoại công ty báo cáo chưa kiểm: thư thật lấy đúng chữ chủ nhà nhập ở S-13; dữ liệu
+  mẫu + thư mẫu dùng chỗ trống "[Mailing address from the report]" / "[Phone from the report]" như mockup (Phương chốt 2026-11-25).
 
 ### 3.16 Kiểm số (unit test bắt buộc, dùng dữ liệu mẫu §8)
 - Mỗi luật §3.3–3.15 ≥ 1 test; kết quả mẫu §8 phải khớp từng ô; khoảng chồng Residence; quy đổi 4 loại kỳ lương; voucher làm
@@ -485,8 +494,7 @@
   → C1 Met · Verified ("$5,351.67/mo is 3.24× rent") · C2 Met · Verified · C3 Met · Verified · C4 Met · Verified · C5 Met · Verified ·
   C6 Met · Verified · C7 Met · C8 Met · C10 "Not reviewed yet (after offer)" → **Ready to decide**.
 - **#2 Priya Raman** — Dec 2, 2:40 PM · 1 người · income $4,700 claimed, chưa có giấy · landlord: 2 attempts no answer (Call, Call) ·
-  report: no evictions, **collections owed to a landlord $2,310**, company "TransUnion Rental Screening Solutions" (địa chỉ / điện
-  thoại nhập từ report mẫu).
+  report: no evictions, **collections owed to a landlord $2,310**, company "TransUnion Rental Screening Solutions", địa chỉ "[Mailing address from the report]", điện thoại "[Phone from the report]" (Phương chốt 2026-11-25).
   residence 30 tháng (claimed).
   → C1 **Not met** · Claimed ("$4,700/mo is 2.85× rent; required 3.0× · Short by $250/mo") · C2 Met · Claimed · C3 Met · Verified ·
   C4 Missing · C5 **Not met** · Verified (report) · C6 Missing ("Proof of income") · C7 Met · C8 Met → "2 items missing".
