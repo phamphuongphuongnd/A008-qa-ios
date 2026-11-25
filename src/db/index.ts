@@ -2,12 +2,11 @@
  * Data layer (product.md §7): SQLite via expo-sqlite + Drizzle. Money in integer cents, dates 'YYYY-MM-DD', months
  * 'YYYY-MM', timestamps ISO. Repositories are synchronous and take the database first:
  * `const list = useLive(() => listApplicants(db, rentalId), [rentalId], ['applicants'])` re-renders on writes.
- * Deleting anything with files takes `fileStore`: `purgeApplicant(db, fileStore, id)`.
+ * Deleting anything with files takes `fileStore` from `@/files`: `purgeApplicant(db, fileStore, id)`.
  * Jest: import the repo files directly with `makeTestDb()` / `makeTestFiles()` (this index opens the real database).
  */
 export { db, DB_NAME } from './client';
 export { ensureMigrated } from './migrate';
-export { fileStore, fileUri } from './fileStore';
 export { applicantDir, rentalDir, type FileStore } from './files';
 export { useLive, useTablesVersion, markTablesChanged, type LiveTable } from './useLive';
 export * from './types';

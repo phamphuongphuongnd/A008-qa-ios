@@ -133,7 +133,7 @@ export interface ApplicantBundle {
 
 /**
  * One applicant with every related row (S-09, S-15, S-17 columns, Decision file).
- * TODO(merge 1B): `toEngineApplicant(bundle, rental, criteria)` maps this to the engine input — written at the merge.
+ * Engine input: `toEngineApplicant(bundle)` (../toEngine.ts).
  */
 export function getApplicantBundle(db: AppDb, id: number): ApplicantBundle | null {
   const applicant = getApplicant(db, id);
