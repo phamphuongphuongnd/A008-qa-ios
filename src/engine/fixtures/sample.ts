@@ -3,6 +3,7 @@
  * Used by the engine tests (expected results = product.md §8) and by 1C to seed the sample rental (`is_sample`).
  * Times are Columbus, OH local (EST, −05:00).
  */
+import { REPORT_ADDRESS_PLACEHOLDER, REPORT_PHONE_PLACEHOLDER } from '../decision';
 import type { ApplicantInput, Criterion, LandlordReference, RentalInput, ScreeningReport } from '../types';
 
 export interface SampleRental extends RentalInput {
@@ -59,12 +60,12 @@ export const SAMPLE_CRITERIA: Criterion[] = [
   { id: 'sample-c10', code: 'C10', enabled: true, order: 10, params: { lookbackYears: 7 } },
 ];
 
-// TODO(question): company address / phone "entered from the sample report" — confirm before release (printed on the
-// sample FCRA notice).
+// Unverified company details are never shipped: the sample uses the mockup placeholders (Phương chốt 2026-11-25).
+// Real letters use what the landlord copies from the report on S-13.
 const TURSS = {
   companyName: 'TransUnion Rental Screening Solutions',
-  companyAddress: '6430 S. Fiddlers Green Circle, Suite 500, Greenwood Village, CO 80111',
-  companyPhone: '1-866-775-0961',
+  companyAddress: REPORT_ADDRESS_PLACEHOLDER,
+  companyPhone: REPORT_PHONE_PLACEHOLDER,
 };
 
 function report(id: string, over: Partial<ScreeningReport>): ScreeningReport {

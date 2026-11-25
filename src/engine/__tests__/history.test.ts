@@ -122,6 +122,7 @@ describe('C4 landlord reference (§3.6)', () => {
     const r = run([ref('cur', { ownerConfirmed: false })]);
     expect(r.evidence).toBe('claimed');
     expect(r.issues.map((i) => i.message)).toContain('Landlord identity not confirmed');
+    expect(r.issues.every((i) => ['mismatch', 'needs_review', 'missing'].includes(i.kind))).toBe(true);
   });
   it('rent more than 5% off → Mismatch, outcome unchanged; exactly 5% is fine', () => {
     const over = run([ref('cur', { rentCents: 126001 })]);

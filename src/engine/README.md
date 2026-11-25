@@ -27,8 +27,8 @@ background, answers, customAnswers, landlordChecks, conditionalOfferAt }. Schema
 - `evaluateApplicant(rental, criteria, applicant)` → `{ results[], issues[], summary }` (S-09). Result: `outcome`
   (met / not_met / missing / needs_review / not_reviewed for C10 before an offer), `evidence` (claimed / verified /
   mismatch / null), `source`, `verifiedOn`, `reason`, `issues`, `warning`, `income` (C1 numbers), `historyMonths` (C2).
-  `summary.text` = "Ready to decide" | "N items missing". Issues sorted Mismatch → (Not met) → Needs review → Missing;
-  each has an `action` (`add_documents`, `call_landlord`, `add_report`, …) for the S-09 button.
+  `summary.text` = "Ready to decide" | "N items missing" (counts Missing only). Issues = Mismatch / Needs review / Missing
+  only (Not met is never an issue), sorted in that order; each has an `action` (`add_documents`, `call_landlord`, `add_report`, …) for the S-09 button.
 - `compareApplicants(rental, criteria, applicants, { hideClosed })` (S-17).
 - Criteria (S-04): `defaultCriteria`, `criterionTitle`, `validateCriteria`, `customTitleError`, `criteriaWarnings`,
   `findProhibitedTerms`, `reviewModeHint`; lock/history: `isCriteriaLocked`, `editCriteria`, `describeCriteriaChanges`.
@@ -40,14 +40,19 @@ background, answers, customAnswers, landlordChecks, conditionalOfferAt }. Schema
   `letterData`, `FCRA_REQUIRED_LINES`.
 - `SAMPLE` (`fixtures/sample.ts`): §8 sample rental with stable ids (`sample-rental`, `sample-c1…`, `sample-a1…a4`).
 
-## Engine assumptions (product.md silent — see TODO(question))
+## Decided by Phương 2026-11-25 (written into product.md §3 / §8)
+- C1: voucher "Yes" with a blank amount → Missing.
+- C4: no rented residence (owned / lived with family) → Needs review "your call".
+- Custom yes/no: yes → Met, no → Not met, blank → Missing; applicant answers = Claimed, landlord checks = Verified.
+- Report company in the sample: `REPORT_ADDRESS_PLACEHOLDER` / `REPORT_PHONE_PLACEHOLDER`; never unverified real details.
+- Issues = Missing / Needs review / Mismatch only ("Landlord identity not confirmed" is a Needs review issue).
+- C8 template default "Pets considered case by case"; the §8 sample rental stays "Cats and dogs, max 2".
+
+## Engine assumptions (product.md silent)
 - C1: several checked documents for one income source → the lowest monthly amount counts; an unlinked document counts
-  only when there is one source. Voucher "Yes" with a blank amount → Missing.
+  only when there is one source.
 - C2 Verified needs the landlord's from + to for the longest Rent/Own residence (owner confirmation is C4's job).
 - C3: lookback applies to all cases; a year-only date in the cutoff year is "maybe inside" (judgment → Needs review).
-- C4: only `rent` residences have a landlord; none → Needs review "your call".
 - C5: sources disagree → Not met + Mismatch.
 - C10: lookback counted from the Conditional offer date by conviction date; source = screening report.
-- Custom yes/no: yes → Met, no → Not met, blank → Missing; applicant answers = Claimed, landlord checks = Verified.
 - §3.12 list also blocks singular "child" / "kid" and irregular plurals (families, pregnancies…).
-- C8 default policy in the template: "Pets considered case by case".

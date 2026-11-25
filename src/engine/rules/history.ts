@@ -148,7 +148,7 @@ export function evaluateLandlordReference(c: CriterionOf<'C4'>, applicant: Appli
   const receivedOn = dateOf(applicant.receivedAt);
   const residence = c4Residence(applicant);
   if (!residence) {
-    // TODO(question): §3.6 does not cover applicants with no rented residence (owned / lived with family).
+    // No rented residence (owned / lived with family) → Needs review, your call (Phương chốt 2026-11-25).
     return makeResult(c, title, {
       outcome: 'needs_review',
       evidence: 'claimed',
@@ -189,7 +189,7 @@ export function evaluateLandlordReference(c: CriterionOf<'C4'>, applicant: Appli
   });
   if (!ref.ownerConfirmed) {
     result.issues.push({
-      kind: 'unconfirmed',
+      kind: 'needs_review',
       criterionId: c.id,
       code: 'C4',
       outcome,
