@@ -1,0 +1,1 @@
+# src/backup — encrypted backup file (fflate zip + @noble/ciphers AES-256-GCM, key from the backup password via @noble/hashes), SAF folder auto-backup (expo-background-task, register in index.ts), restore. Owner: 2E.

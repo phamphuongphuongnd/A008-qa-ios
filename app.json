@@ -1,0 +1,97 @@
+{
+  "expo": {
+    "name": "Evenlease",
+    "slug": "evenlease",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "evenlease",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.maglobal.evenlease",
+      "supportsTablet": true,
+      "requireFullScreen": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.maglobal.evenlease",
+      "predictiveBackGestureEnabled": false,
+      "allowBackup": false,
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.GET_ACCOUNTS",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.MANAGE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.READ_MEDIA_AUDIO",
+        "android.permission.READ_MEDIA_VISUAL_USER_SELECTED",
+        "android.permission.READ_PHONE_STATE",
+        "com.android.vending.BILLING"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-localization",
+      "expo-sharing",
+      "expo-image",
+      "expo-background-task",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F7F6F2",
+          "dark": {
+            "backgroundColor": "#111315"
+          }
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Evenlease uses the camera to photograph application documents. Photos stay on your phone.",
+          "photosPermission": "Pick a document photo from your library. Photos stay on your phone.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Unlock Evenlease and exit applicant mode with Face ID."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#1F5C63"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              "./node_modules/@expo-google-fonts/inter/400Regular/Inter_400Regular.ttf",
+              "./node_modules/@expo-google-fonts/inter/500Medium/Inter_500Medium.ttf",
+              "./node_modules/@expo-google-fonts/inter/600SemiBold/Inter_600SemiBold.ttf",
+              "./node_modules/@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf"
+            ]
+          }
+        }
+      ],
+      "@react-native-community/datetimepicker",
+      "./plugins/withReleasePermissions",
+      "./plugins/withTabletRotation"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

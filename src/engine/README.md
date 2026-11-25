@@ -1,0 +1,1 @@
+# src/engine — pure TypeScript rules (no React, no SQLite): criteria scoring, verification status, mismatch, guardrails, first-come queue + 72 h / 48 h timers, FCRA notice trigger (product.md §3). Owner: 1B.

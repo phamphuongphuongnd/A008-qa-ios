@@ -1,0 +1,31 @@
+name: CI
+
+# Studio rule (WORKFLOW §7): no automatic CI on dev (Actions minutes are limited) — push to main runs lint + typecheck +
+# tests; run it by hand on dev from the Actions tab (workflow_dispatch). Build workflows come in Phase 6.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - 'design/**'
+      - 'docs/**'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx expo lint
+      - run: npx tsc --noEmit
+      - run: npx jest --ci --maxWorkers=2

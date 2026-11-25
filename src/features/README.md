@@ -1,0 +1,1 @@
+# src/features — one folder per Phase 2 area: units + criteria (2A) · intake (2B) · verify (2C) · decision (2D) · onboarding, settings, guide, movein (2E). Screens in <area>/screens/, routed by thin shells in app/ (docs/ROUTES.md).
