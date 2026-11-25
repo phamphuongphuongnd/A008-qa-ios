@@ -9,6 +9,7 @@ import { sql } from 'drizzle-orm';
 import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import type {
+  ApplicantStatus,
   AttemptMethod,
   AttemptResult,
   ConfirmSource,
@@ -16,10 +17,10 @@ import type {
   DecisionKind,
   DocType,
   PayFrequency,
+  ResidenceType,
   TimerKind,
 } from '@/engine';
 
-import type { ApplicantStatus, ResidenceType } from '@/engine';
 import type {
   ApplicationAnswers,
   BackgroundAssessment,

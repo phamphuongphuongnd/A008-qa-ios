@@ -109,7 +109,8 @@ export interface TextFieldProps extends FieldChrome {
   maxLength?: number;
   /** keyboardType, autoComplete, textContentType, returnKeyType… */
   inputProps?: Omit<TextInputProps, 'value' | 'onChangeText' | 'multiline' | 'maxLength'>;
-  inputRef?: Ref<InputRef>;
+  /** Receives the TextInput (focus the next field, scroll to an error): `inputRef={(n) => (ref.current = n)}`. */
+  inputRef?: (node: InputRef | null) => void;
 }
 
 /** Text field (name, phone, email, notes). `multiline` grows from 3 lines. */
@@ -123,8 +124,7 @@ export function TextField({ value, onChangeText, onBlur, placeholder, autoFocus,
       <TextInput
         ref={(node) => {
           inner.current = node;
-          if (typeof inputRef === 'function') inputRef(node);
-          else if (inputRef) (inputRef as React.RefObject<InputRef | null>).current = node;
+          inputRef?.(node);
         }}
         value={value}
         onChangeText={onChangeText}
@@ -161,7 +161,8 @@ export interface MoneyFieldProps extends FieldChrome {
   unit?: string;
   placeholder?: string;
   autoFocus?: boolean;
-  inputRef?: Ref<InputRef>;
+  /** Receives the TextInput (focus the next field, scroll to an error): `inputRef={(n) => (ref.current = n)}`. */
+  inputRef?: (node: InputRef | null) => void;
 }
 
 /**
@@ -195,8 +196,7 @@ export function MoneyField({ value, onChange, onBlur, unit, placeholder = '0', a
       <TextInput
         ref={(node) => {
           inner.current = node;
-          if (typeof inputRef === 'function') inputRef(node);
-          else if (inputRef) (inputRef as React.RefObject<InputRef | null>).current = node;
+          inputRef?.(node);
         }}
         value={text}
         onChangeText={(raw) => {
