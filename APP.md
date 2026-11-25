@@ -7,7 +7,7 @@
 
 ## Brief
 - **Mã app / thư mục:** `A008-evenlease` → `apps/A008-evenlease/`
-- **Repo:** https://github.com/MA-Global-VN/P_evenlease · **Bundle ID:** chưa chốt — Phương nhắn trước khi lên store
+- **Repo:** https://github.com/MA-Global-VN/P_evenlease · **Bundle ID:** chưa chốt — Phương nhắn trước khi lên Play
   (code tạm `com.maglobal.evenlease`, đổi được tới trước lần build store đầu).
 - **Một câu mô tả:** chủ nhà lần đầu ở Mỹ chọn người thuê bằng một phương pháp nhất quán: đặt tiêu chí một lần → nhận hồ sơ
   → xác minh theo phiếu gọi + giấy tờ + báo cáo ngoài → chấm mọi người trên cùng một bảng → quyết định, lưu lý do, thư từ chối đúng luật.
