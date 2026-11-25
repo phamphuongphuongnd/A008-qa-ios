@@ -1,19 +1,15 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 
+import type { Evidence, Outcome } from '@/engine';
 import { t } from '@/i18n';
 import { fonts, radius, useTheme, type Palette } from '@/theme';
 
 import { Check, EqualNot, Lock, MessageCircle, ShieldCheck, TriangleAlert, X, type LucideIcon } from './icons';
 import { Txt } from './Txt';
 
-/**
- * Criterion result outcome (product.md §3.1) + the S-09 "After offer" state of C10.
- * TODO(merge 1B): same string values as the engine's outcome type — map in one place if 1B names them differently.
- */
-export type Outcome = 'met' | 'not_met' | 'missing' | 'needs_review' | 'after_offer';
-/** Evidence of a Criterion result. TODO(merge 1B): align with the engine's evidence type. */
-export type Evidence = 'claimed' | 'verified' | 'mismatch';
+/** The engine's Criterion result outcome / evidence ('not_reviewed' = C10 before an offer, drawn "After offer"). */
+export type { Evidence, Outcome };
 
 export function outcomeLabel(o: Outcome): string {
   return t(`ui:status.${OUTCOME_KEY[o]}`);
@@ -21,7 +17,7 @@ export function outcomeLabel(o: Outcome): string {
 export function evidenceLabel(e: Evidence): string {
   return t(`ui:status.${e}`);
 }
-const OUTCOME_KEY = { met: 'met', not_met: 'notMet', missing: 'missing', needs_review: 'needsReview', after_offer: 'afterOffer' } as const;
+const OUTCOME_KEY = { met: 'met', not_met: 'notMet', missing: 'missing', needs_review: 'needsReview', not_reviewed: 'afterOffer' } as const;
 
 /** Missing icon: the mockup's dashed circle (lucide CircleDashed has gaps of another rhythm). */
 function DashedCircle({ size = 16, color }: { size?: number; color: string }) {
@@ -42,7 +38,7 @@ function outcomeLook(o: Outcome, c: Palette): { fg: string; bg: string; outline?
       return { fg: c.missing, bg: 'transparent', outline: c.missing, Icon: null };
     case 'needs_review':
       return { fg: c.warning, bg: c.warningSoft, Icon: TriangleAlert };
-    case 'after_offer':
+    case 'not_reviewed':
       return { fg: c.text2, bg: c.surface2, Icon: Lock };
   }
 }

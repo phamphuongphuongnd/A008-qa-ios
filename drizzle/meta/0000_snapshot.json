@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "ec38276d-c78d-40e6-a684-2e7f00860803",
+  "id": "a182f190-94c7-419d-9c5b-a61a07e01510",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "applicants": {
@@ -120,9 +120,8 @@
           "name": "has_voucher",
           "type": "integer",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
+          "notNull": false,
+          "autoincrement": false
         },
         "voucher_cents": {
           "name": "voucher_cents",
@@ -140,6 +139,20 @@
         },
         "answers": {
           "name": "answers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "custom_answers": {
+          "name": "custom_answers",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "landlord_checks": {
+          "name": "landlord_checks",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -332,6 +345,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "reviewed_on": {
+          "name": "reviewed_on",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "outcome": {
           "name": "outcome",
           "type": "text",
@@ -416,20 +436,6 @@
           "autoincrement": false,
           "default": "'{}'"
         },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "checked_by": {
-          "name": "checked_by",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "order": {
           "name": "order",
           "type": "integer",
@@ -440,13 +446,13 @@
         }
       },
       "indexes": {
-        "criteria_rental_code": {
-          "name": "criteria_rental_code",
+        "criteria_rental": {
+          "name": "criteria_rental",
           "columns": [
             "rental_id",
-            "code"
+            "order"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {
@@ -707,6 +713,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "income_id": {
+          "name": "income_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "pay_gross_cents": {
           "name": "pay_gross_cents",
           "type": "integer",
@@ -717,6 +730,13 @@
         "pay_frequency": {
           "name": "pay_frequency",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "monthly_cents": {
+          "name": "monthly_cents",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -743,6 +763,19 @@
             "id"
           ],
           "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "documents_income_id_incomes_id_fk": {
+          "name": "documents_income_id_incomes_id_fk",
+          "tableFrom": "documents",
+          "tableTo": "incomes",
+          "columnsFrom": [
+            "income_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },

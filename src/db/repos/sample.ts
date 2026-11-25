@@ -1,83 +1,160 @@
+import { SAMPLE, type Criterion as EngineCriterion, type SampleApplicant, type SampleRental } from '@/engine';
+
 import type { FileStore } from '../files';
-import { applicants, attempts, documents, incomes, references, rentals, reports, residences } from '../schema';
-import type { AppDb, NewApplicant, NewAttempt, NewDocument, NewIncome, NewReference, NewRental, NewReport, NewResidence } from '../types';
+import { applicants, attempts, background, decisions, documents, incomes, references, rentals, reports, residences } from '../schema';
+import type { AppDb } from '../types';
 import { listApplicants, purgeApplicant } from './applicants';
-import { saveCriteria, type CriterionInput } from './criteria';
+import { saveCriteria } from './criteria';
 import { deleteRental, getSampleRental } from './rentals';
 
-/** One applicant of the sample, as database rows (§8). */
-export interface SampleApplicantData {
-  applicant: Omit<NewApplicant, 'rentalId'>;
-  residences?: Omit<NewResidence, 'applicantId'>[];
-  incomes?: Omit<NewIncome, 'applicantId'>[];
-  /** Sample documents have no real file: `filePath` under 'sample/' (screens show a placeholder thumbnail). */
-  documents?: Omit<NewDocument, 'applicantId'>[];
-  references?: {
-    reference: Omit<NewReference, 'applicantId' | 'residenceId'>;
-    /** Index into `residences` for a landlord reference. */
-    residenceIndex?: number;
-    attempts?: Omit<NewAttempt, 'referenceId'>[];
-  }[];
-  report?: Omit<NewReport, 'applicantId'>;
-}
-
-/** "Explore with a sample rental" (§8): rental + criteria + 4 applicants, as database rows. */
+/** "Explore with a sample rental" (§8) in the engine's shape — `SAMPLE` from src/engine/fixtures/sample.ts. */
 export interface SampleRentalData {
-  rental: Omit<NewRental, 'isSample'>;
-  criteria: CriterionInput[];
-  applicants: SampleApplicantData[];
+  rental: SampleRental;
+  criteria: readonly EngineCriterion[];
+  applicants: readonly SampleApplicant[];
 }
 
 /**
- * The §8 sample as database rows.
- * TODO(merge 1B): build it from 1B's pure fixture `src/engine/fixtures/sample.ts` (same people, numbers and expected
- * results — the engine tests use that fixture). Until the branches are merged there is no sample: returns null.
+ * Loads the sample rental (S-01 "Explore with a sample rental", S-21 "Load sample rental") — the same data the engine
+ * tests use, so its results are §8's. One transaction; the rental is flagged `isSample`; the fixture's string ids are
+ * replaced by row ids (references, documents and custom answers re-linked). Already loaded → returns the existing id.
+ * Sample documents have no real file: `filePath` is under 'sample/' (screens show a placeholder thumbnail).
  */
-export function sampleRentalData(): SampleRentalData | null {
-  return null;
-}
-
-/**
- * Loads the sample rental (S-01 "Explore with a sample rental", S-21 "Load sample rental"). One transaction; the
- * rental is flagged `isSample`. Already loaded → returns the existing id. No data (before the 1B merge) → null.
- */
-export function loadSampleRental(db: AppDb, data: SampleRentalData | null = sampleRentalData()): number | null {
+export function loadSampleRental(db: AppDb, data: SampleRentalData = SAMPLE): number {
   const existing = getSampleRental(db);
   if (existing) return existing.id;
-  if (!data) return null;
   return db.transaction((tx) => {
+    const r = data.rental;
     const rentalId = tx
       .insert(rentals)
-      .values({ ...data.rental, isSample: true })
+      .values({
+        street: r.street,
+        unit: r.unit,
+        city: r.city,
+        state: r.state,
+        zip: r.zip,
+        rentCents: r.rentCents,
+        bedrooms: r.bedrooms,
+        bathrooms: r.bathrooms,
+        availableOn: r.availableOn,
+        depositCents: r.depositCents,
+        feeCents: r.feeCents,
+        reviewMode: r.reviewMode,
+        isSample: true,
+      })
       .returning({ id: rentals.id })
       .get().id;
-    saveCriteria(tx as unknown as AppDb, rentalId, data.criteria);
+
+    const critIds = saveCriteria(
+      tx as unknown as AppDb,
+      rentalId,
+      data.criteria.map((c) => ({ code: c.code, enabled: c.enabled, order: c.order, params: c.params })),
+    );
+    const critMap = new Map(data.criteria.map((c, i) => [c.id, String(critIds[i])]));
+    const remap = (m: Record<string, boolean | null>) => Object.fromEntries(Object.entries(m).map(([k, v]) => [critMap.get(k) ?? k, v]));
+
     for (const a of data.applicants) {
       const applicantId = tx
         .insert(applicants)
-        .values({ ...a.applicant, rentalId })
+        .values({
+          rentalId,
+          receivedAt: a.receivedAt,
+          status: a.status,
+          source: 'landlord',
+          fullName: a.fullName,
+          phone: a.phone,
+          email: a.email,
+          occupants: a.occupants,
+          pets: a.pets,
+          hasVoucher: a.hasVoucher,
+          voucherCents: a.voucherMonthlyCents,
+          answers: { ...a.answers },
+          customAnswers: remap(a.customAnswers),
+          landlordChecks: remap(a.landlordChecks),
+          formStep: 7,
+        })
         .returning({ id: applicants.id })
         .get().id;
-      const resIds = (a.residences ?? []).map(
-        (r, i) =>
-          tx
-            .insert(residences)
-            .values({ order: i, ...r, applicantId })
-            .returning({ id: residences.id })
-            .get().id,
-      );
-      (a.incomes ?? []).forEach((inc, i) => tx.insert(incomes).values({ order: i, ...inc, applicantId }).run());
-      for (const d of a.documents ?? []) tx.insert(documents).values({ ...d, applicantId }).run();
-      for (const r of a.references ?? []) {
-        const residenceId = r.residenceIndex !== undefined ? (resIds[r.residenceIndex] ?? null) : null;
+
+      const resMap = new Map<string, number>();
+      a.residences.forEach((x, i) => {
+        const id = tx
+          .insert(residences)
+          .values({ applicantId, order: i, address: x.address, fromMonth: x.from, toMonth: x.to, current: x.current, type: x.type, rentCents: x.rentCents })
+          .returning({ id: residences.id })
+          .get().id;
+        resMap.set(x.id, id);
+      });
+      const incMap = new Map<string, number>();
+      a.incomes.forEach((x, i) => {
+        const id = tx
+          .insert(incomes)
+          .values({ applicantId, order: i, kind: x.kind, monthlyCents: x.monthlyCents, employer: x.kind === 'other_adult' ? null : (x.label ?? null), person: x.kind === 'other_adult' ? (x.label ?? null) : null })
+          .returning({ id: incomes.id })
+          .get().id;
+        incMap.set(x.id, id);
+      });
+      a.documents.forEach((d, i) => {
+        tx.insert(documents)
+          .values({
+            applicantId,
+            type: d.type,
+            label: d.label ?? null,
+            filePath: `sample/${d.type}-${i + 1}.jpg`,
+            mime: 'image/jpeg',
+            addedAt: a.receivedAt,
+            checkedAt: d.checkedOn,
+            incomeId: d.incomeId ? (incMap.get(d.incomeId) ?? null) : null,
+            payGrossCents: d.payGrossCents ?? null,
+            payFrequency: d.payFrequency ?? null,
+            monthlyCents: d.monthlyCents ?? null,
+          })
+          .run();
+      });
+      for (const ref of a.landlordReferences) {
         const refId = tx
           .insert(references)
-          .values({ ...r.reference, applicantId, residenceId })
+          .values({
+            applicantId,
+            kind: 'landlord',
+            residenceId: resMap.get(ref.residenceId) ?? null,
+            ownerConfirmed: ref.ownerConfirmed,
+            confirmSource: ref.confirmSource,
+            unreachable: ref.unreachable,
+            answers: {
+              answeredOn: ref.answeredOn,
+              rentedFromYou: ref.rentedFromYou,
+              from: ref.from,
+              to: ref.to,
+              rentCents: ref.rentCents,
+              owes: ref.owes,
+              owesCents: ref.owesCents,
+              rentAgain: ref.rentAgain,
+            },
+          })
           .returning({ id: references.id })
           .get().id;
-        for (const at of r.attempts ?? []) tx.insert(attempts).values({ ...at, referenceId: refId }).run();
+        for (const t of ref.attempts) tx.insert(attempts).values({ referenceId: refId, at: t.at, method: t.method, result: t.result }).run();
       }
-      if (a.report) tx.insert(reports).values({ ...a.report, applicantId }).run();
+      for (const ref of a.employerReferences) {
+        const refId = tx
+          .insert(references)
+          .values({ applicantId, kind: 'employer', incomeId: ref.incomeId ? (incMap.get(ref.incomeId) ?? null) : null, answers: { employed: ref.employed, since: ref.since, title: ref.title } })
+          .returning({ id: references.id })
+          .get().id;
+        for (const t of ref.attempts) tx.insert(attempts).values({ referenceId: refId, at: t.at, method: t.method, result: t.result }).run();
+      }
+      if (a.report) {
+        const { id: _id, ...rep } = a.report;
+        tx.insert(reports).values({ ...rep, applicantId, service: 'mysmartmove' }).run();
+      }
+      if (a.background) {
+        const bg = a.background;
+        tx.insert(background).values({ applicantId, noConvictions: bg.noConvictions, convictions: bg.convictions, reviewedOn: bg.reviewedOn, assessment: bg.assessment }).run();
+      }
+      if (a.conditionalOfferAt) {
+        tx.insert(decisions).values({ applicantId, kind: 'conditional_offer', at: a.conditionalOfferAt, reasons: [], conditions: [] }).run();
+      }
     }
     return rentalId;
   });

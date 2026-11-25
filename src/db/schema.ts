@@ -9,14 +9,27 @@ import { sql } from 'drizzle-orm';
 import { index, integer, real, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 import type {
-  AnswerMap,
+  AttemptMethod,
+  AttemptResult,
+  ConfirmSource,
+  CriterionCode,
+  DecisionKind,
+  DocType,
+  PayFrequency,
+  TimerKind,
+} from '@/engine';
+
+import type { ApplicantStatus, ResidenceType } from '@/engine';
+import type {
+  ApplicationAnswers,
   BackgroundAssessment,
   Consent,
   Conviction,
   CriterionParams,
-  DecisionConditions,
+  DecisionCondition,
+  DecisionReason,
   EmergencyContact,
-  EvictionRecord,
+  EvictionCase,
   MeterReadings,
   MoveInRoom,
   MoveInSignatures,
@@ -24,6 +37,8 @@ import type {
   Pet,
   ReferenceAnswers,
 } from './model';
+
+export type { ApplicantStatus, AttemptMethod, AttemptResult, ConfirmSource, CriterionCode, DecisionKind, PayFrequency, ResidenceType, TimerKind };
 
 const now = sql`(strftime('%Y-%m-%dT%H:%M:%SZ','now'))`;
 const id = () => integer('id').primaryKey({ autoIncrement: true });
@@ -62,7 +77,7 @@ export const rentals = sqliteTable('rentals', {
   isSample: bool('is_sample').notNull().default(false),
 });
 
-/** One row per criterion of a rental: C1…C10 (§3.2) and custom yes/no ones X1…X5. */
+/** One row per criterion of a rental: C1…C10 (§3.2) and custom yes/no ones ('CX', up to 5; title in params). */
 export const criteria = sqliteTable(
   'criteria',
   {
@@ -70,17 +85,14 @@ export const criteria = sqliteTable(
     rentalId: integer('rental_id')
       .notNull()
       .references(() => rentals.id, { onDelete: 'cascade' }),
-    /** 'C1'…'C10' or 'X1'…'X5'. */
-    code: text('code').notNull(),
+    /** Engine `CriterionCode`: 'C1'…'C10', or 'CX' for a custom yes/no criterion (several per rental). */
+    code: text('code').$type<CriterionCode>().notNull(),
     enabled: bool('enabled').notNull().default(true),
-    /** Parameters of the criterion (x = 3.0, months = 12…) — shape owned by the engine. */
+    /** The engine's params of that code (C1 `{ multipleTenths: 30, applyToTenantShare: true }`, CX `{ title, answeredBy }`). */
     params: json<CriterionParams>('params').notNull().default(sql`'{}'`),
-    /** Custom criteria only: the yes/no question (≤ 80) and who answers it. */
-    title: text('title'),
-    checkedBy: text('checked_by').$type<'applicant' | 'landlord'>(),
     order: integer('order').notNull().default(0),
   },
-  (t) => [uniqueIndex('criteria_rental_code').on(t.rentalId, t.code)],
+  (t) => [index('criteria_rental').on(t.rentalId, t.order)],
 );
 
 /** §3.13: every change after the criteria locked (≥ 1 applicant): when, before → after, why. */
@@ -101,7 +113,6 @@ export const criteriaHistory = sqliteTable(
 
 // ---------------- Applicants + application ----------------
 
-export type ApplicantStatus = 'new' | 'in_review' | 'conditional_offer' | 'approved' | 'denied' | 'withdrawn' | 'incomplete';
 export type ApplicantSource = 'landlord' | 'applicant_mode' | 'paper';
 
 export const applicants = sqliteTable(
@@ -129,11 +140,16 @@ export const applicants = sqliteTable(
     otherAdults: json<OtherAdult[]>('other_adults'),
     pets: json<Pet[]>('pets'),
     moveInOn: text('move_in_on'),
-    hasVoucher: bool('has_voucher').notNull().default(false),
+    /** null = not answered. */
+    hasVoucher: bool('has_voucher'),
     voucherCents: integer('voucher_cents'),
     voucherProgram: text('voucher_program'),
-    // 5. A few questions (+ answers to custom "applicant answers" criteria, keyed by code)
-    answers: json<AnswerMap>('answers'),
+    // 5. A few questions
+    answers: json<ApplicationAnswers>('answers'),
+    /** Custom "Applicant answers" criteria: criterion row id (as string) → yes / no / null. */
+    customAnswers: json<Record<string, boolean | null>>('custom_answers'),
+    /** Custom "Landlord checks" criteria: criterion row id (as string) → yes / no / null. */
+    landlordChecks: json<Record<string, boolean | null>>('landlord_checks'),
     // 6. Consent & signature
     consent: json<Consent>('consent'),
     signaturePath: text('signature_path'),
@@ -147,7 +163,6 @@ export const applicants = sqliteTable(
   (t) => [index('applicants_rental').on(t.rentalId, t.receivedAt)],
 );
 
-export type ResidenceType = 'rent' | 'own' | 'family' | 'other';
 
 /** 3. Where you've lived (past 3 years). */
 export const residences = sqliteTable(
@@ -198,8 +213,8 @@ export const incomes = sqliteTable(
   (t) => [index('incomes_applicant').on(t.applicantId)],
 );
 
-export type DocumentType = 'photo_id' | 'proof_of_income' | 'bank_statement' | 'reference_letter' | 'voucher_letter' | 'other' | 'paper_form';
-export type PayFrequency = 'weekly' | 'biweekly' | 'semimonthly' | 'monthly';
+/** Engine DocType + 'paper_form' (photos of a paper application, S-08 landlord only — not a C6 document). */
+export type DocumentType = DocType | 'paper_form';
 
 /** S-10. One row per file. */
 export const documents = sqliteTable(
@@ -218,9 +233,13 @@ export const documents = sqliteTable(
     addedAt: text('added_at').notNull().default(now),
     /** "Mark as checked" (by you). */
     checkedAt: text('checked_at'),
+    /** Proof of income: the income line it proves (null = the only one, if there is one). */
+    incomeId: integer('income_id').references(() => incomes.id, { onDelete: 'set null' }),
     /** Income check on a pay stub. */
     payGrossCents: integer('pay_gross_cents'),
     payFrequency: text('pay_frequency').$type<PayFrequency>(),
+    /** Offer / benefits letter: "Monthly amount on this document". */
+    monthlyCents: integer('monthly_cents'),
   },
   (t) => [index('documents_applicant').on(t.applicantId)],
 );
@@ -228,7 +247,6 @@ export const documents = sqliteTable(
 // ---------------- Verification ----------------
 
 export type ReferenceKind = 'landlord' | 'employer';
-export type ConfirmSource = 'county_records' | 'management_website' | 'lease_shown' | 'other';
 
 /** S-11 / S-12 reference sheet (one per residence for landlords). */
 export const references = sqliteTable(
@@ -254,8 +272,6 @@ export const references = sqliteTable(
   (t) => [index('references_applicant').on(t.applicantId)],
 );
 
-export type AttemptMethod = 'call' | 'email' | 'text';
-export type AttemptResult = 'reached' | 'no_answer' | 'left_message' | 'wrong_number';
 
 export const attempts = sqliteTable(
   'attempts',
@@ -286,7 +302,7 @@ export const reports = sqliteTable(
     companyPhone: text('company_phone'),
     reportDate: text('report_date'),
     /** [] = "None found"; null = not entered yet. */
-    evictions: json<EvictionRecord[]>('evictions'),
+    evictions: json<EvictionCase[]>('evictions'),
     /** 0 = None; null = not entered yet. */
     landlordCollectionsCents: integer('landlord_collections_cents'),
     score: integer('score'),
@@ -312,6 +328,7 @@ export const background = sqliteTable(
     noConvictions: bool('no_convictions').notNull().default(false),
     convictions: json<Conviction[]>('convictions'),
     assessment: json<BackgroundAssessment>('assessment'),
+    reviewedOn: text('reviewed_on'),
     outcome: text('outcome').$type<'continue' | 'withdraw'>(),
     updatedAt: text('updated_at').notNull().default(now),
   },
@@ -320,7 +337,6 @@ export const background = sqliteTable(
 
 // ---------------- Decisions, letters, timers, move-in ----------------
 
-export type DecisionKind = 'conditional_offer' | 'approve' | 'approve_with_conditions' | 'deny' | 'withdraw_offer';
 export type NoticeStatus = 'not_required' | 'pending' | 'created' | 'sent';
 
 export const decisions = sqliteTable(
@@ -331,9 +347,9 @@ export const decisions = sqliteTable(
       .notNull()
       .references(() => applicants.id, { onDelete: 'cascade' }),
     kind: text('kind').$type<DecisionKind>().notNull(),
-    conditions: json<DecisionConditions>('conditions'),
-    /** Criterion codes ticked as reasons ('C1', 'C5'…). */
-    reasons: json<string[]>('reasons'),
+    conditions: json<DecisionCondition[]>('conditions'),
+    /** Criteria ticked as reasons, with the source of their result (engine `DecisionReason`). */
+    reasons: json<DecisionReason[]>('reasons'),
     note: text('note'),
     /** "Information from a screening report played a part in this decision". */
     reportInfluenced: bool('report_influenced').notNull().default(false),
@@ -366,7 +382,6 @@ export const letters = sqliteTable(
   (t) => [index('letters_decision').on(t.decisionId)],
 );
 
-export type TimerKind = 'missing_info' | 'offer';
 
 /** First-come clocks (§3.14): 72 h missing info, 48 h offer. */
 export const timers = sqliteTable(

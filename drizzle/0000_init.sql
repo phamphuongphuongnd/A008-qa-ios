@@ -14,10 +14,12 @@ CREATE TABLE `applicants` (
 	`other_adults` text,
 	`pets` text,
 	`move_in_on` text,
-	`has_voucher` integer DEFAULT false NOT NULL,
+	`has_voucher` integer,
 	`voucher_cents` integer,
 	`voucher_program` text,
 	`answers` text,
+	`custom_answers` text,
+	`landlord_checks` text,
 	`consent` text,
 	`signature_path` text,
 	`signed_name` text,
@@ -45,6 +47,7 @@ CREATE TABLE `background` (
 	`no_convictions` integer DEFAULT false NOT NULL,
 	`convictions` text,
 	`assessment` text,
+	`reviewed_on` text,
 	`outcome` text,
 	`updated_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')) NOT NULL,
 	FOREIGN KEY (`applicant_id`) REFERENCES `applicants`(`id`) ON UPDATE no action ON DELETE cascade
@@ -57,13 +60,11 @@ CREATE TABLE `criteria` (
 	`code` text NOT NULL,
 	`enabled` integer DEFAULT true NOT NULL,
 	`params` text DEFAULT '{}' NOT NULL,
-	`title` text,
-	`checked_by` text,
 	`order` integer DEFAULT 0 NOT NULL,
 	FOREIGN KEY (`rental_id`) REFERENCES `rentals`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX `criteria_rental_code` ON `criteria` (`rental_id`,`code`);--> statement-breakpoint
+CREATE INDEX `criteria_rental` ON `criteria` (`rental_id`,`order`);--> statement-breakpoint
 CREATE TABLE `criteria_history` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`rental_id` integer NOT NULL,
@@ -99,9 +100,12 @@ CREATE TABLE `documents` (
 	`mime` text,
 	`added_at` text DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now')) NOT NULL,
 	`checked_at` text,
+	`income_id` integer,
 	`pay_gross_cents` integer,
 	`pay_frequency` text,
-	FOREIGN KEY (`applicant_id`) REFERENCES `applicants`(`id`) ON UPDATE no action ON DELETE cascade
+	`monthly_cents` integer,
+	FOREIGN KEY (`applicant_id`) REFERENCES `applicants`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`income_id`) REFERENCES `incomes`(`id`) ON UPDATE no action ON DELETE set null
 );
 --> statement-breakpoint
 CREATE INDEX `documents_applicant` ON `documents` (`applicant_id`);--> statement-breakpoint

@@ -8,23 +8,32 @@ export function listCriteria(db: AppDb, rentalId: number): Criterion[] {
   return db.select().from(criteria).where(eq(criteria.rentalId, rentalId)).orderBy(asc(criteria.order), asc(criteria.id)).all();
 }
 
-export type CriterionInput = Omit<NewCriterion, 'id' | 'rentalId'>;
+/** A criterion to save: `id` = existing row (needed for 'CX', which can repeat); without it C1…C10 match by code. */
+export type CriterionInput = Omit<NewCriterion, 'id' | 'rentalId'> & { id?: number };
 
 /**
- * Writes the whole set for a rental (new rental: the template from the engine; editor Save): rows are matched by
- * `code` — updated, added, and codes no longer in `items` removed. One transaction.
- * TODO(merge 1B): the default set (§3.2) comes from the engine — S-04 passes it here for a new rental.
+ * Writes the whole set of a rental (new rental: `defaultCriteria()` from the engine; S-04 Save). Rows are matched by
+ * `id`, else (C1…C10) by `code`: updated, added, and rows not in `items` removed. One transaction.
  */
-export function saveCriteria(db: AppDb, rentalId: number, items: CriterionInput[]): void {
-  db.transaction((tx) => {
+export function saveCriteria(db: AppDb, rentalId: number, items: CriterionInput[]): number[] {
+  return db.transaction((tx) => {
     const existing = tx.select().from(criteria).where(eq(criteria.rentalId, rentalId)).all();
-    const keep = new Set(items.map((i) => i.code));
-    for (const row of existing) if (!keep.has(row.code)) tx.delete(criteria).where(eq(criteria.id, row.id)).run();
-    items.forEach((item, i) => {
-      const values = { ...item, rentalId, order: item.order ?? i };
-      const found = existing.find((r) => r.code === item.code);
-      if (found) tx.update(criteria).set(values).where(eq(criteria.id, found.id)).run();
-      else tx.insert(criteria).values(values).run();
+    const used = new Set<number>();
+    const match = items.map((item) => {
+      const found = existing.find((r) => !used.has(r.id) && (item.id !== undefined ? r.id === item.id : item.code !== 'CX' && r.code === item.code));
+      if (found) used.add(found.id);
+      return found;
+    });
+    for (const row of existing) if (!used.has(row.id)) tx.delete(criteria).where(eq(criteria.id, row.id)).run();
+    return items.map((item, i) => {
+      const { id: _id, ...rest } = item;
+      const values = { ...rest, rentalId, order: item.order ?? i };
+      const found = match[i];
+      if (found) {
+        tx.update(criteria).set(values).where(eq(criteria.id, found.id)).run();
+        return found.id;
+      }
+      return tx.insert(criteria).values(values).returning({ id: criteria.id }).get().id;
     });
   });
 }

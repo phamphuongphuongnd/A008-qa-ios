@@ -1,13 +1,23 @@
 /**
  * Shapes of the JSON columns in schema.ts. Plain data (no Date objects): dates 'YYYY-MM-DD', months 'YYYY-MM',
- * timestamps ISO, money integer cents.
+ * timestamps ISO, money integer cents. Where the engine (src/engine) has the type, the column stores exactly it.
  */
+import type {
+  Answer3,
+  Conviction,
+  Criterion,
+  DecisionCondition,
+  DecisionReason,
+  EvictionCase,
+  LandlordReference,
+  PetEntry,
+  YesNo,
+} from '@/engine';
 
-/**
- * Criterion parameters (C1 `{ multiple: 3.0, voucherShare: true }`, C2 `{ months: 12 }`…).
- * TODO(merge 1B): replace with the engine's params type (src/engine) — kept open here so both branches compile.
- */
-export type CriterionParams = Record<string, unknown>;
+export type { Conviction, DecisionCondition, DecisionReason, EvictionCase };
+
+/** `criteria.params`: the engine's params of the row's code. */
+export type CriterionParams = Criterion['params'];
 
 export interface EmergencyContact {
   name?: string;
@@ -18,71 +28,46 @@ export interface OtherAdult {
   name: string;
 }
 
-export type PetKind = 'cat' | 'dog' | 'other';
-export interface Pet {
-  kind: PetKind;
-  count: number;
+/** Engine PetEntry + an optional note ("Small dog"). */
+export interface Pet extends PetEntry {
   note?: string;
 }
 
-/** Yes / No questions of form part 5 (+ explanation when Yes) and answers to custom "Applicant answers" criteria. */
-export interface YesNoAnswer {
-  yes: boolean | null;
-  explain?: string;
+/** Form part 5: Yes / No (null = not answered) + the explanation asked when Yes. */
+export interface ApplicationAnswers {
+  evicted: YesNo | null;
+  bankruptcy: YesNo | null;
+  smokes: YesNo | null;
+  explain?: Partial<Record<'evicted' | 'bankruptcy' | 'smokes', string>>;
 }
-export type AnswerMap = Partial<Record<'evicted' | 'bankruptcy' | 'smokes', YesNoAnswer>> & Record<string, YesNoAnswer | undefined>;
 
 export interface Consent {
   authorize: boolean;
   certify: boolean;
 }
 
-/** S-11 call script answers (keys q1…q9) / S-12 employer answers. Every field optional: filled as the call goes. */
-export interface ReferenceAnswers {
-  rented?: 'yes' | 'no' | 'wouldnt_say';
-  fromMonth?: string;
-  toMonth?: string;
-  stillThere?: boolean;
-  rentCents?: number;
-  paidOnTime?: 'always' | 'mostly' | 'often_late' | 'wouldnt_say';
-  violations?: 'no' | 'yes';
-  violationsNote?: string;
-  leftUnit?: 'good' | 'normal_wear' | 'damage' | 'still_living' | 'wouldnt_say';
-  properNotice?: 'yes' | 'no' | 'still_living' | 'wouldnt_say';
-  owes?: 'no' | 'yes' | 'wouldnt_say';
-  owesCents?: number;
-  rentAgain?: 'yes' | 'no' | 'wouldnt_say';
-  rentAgainWhy?: string;
+/**
+ * `references.answers`. Landlord sheet (S-11): the engine's LandlordReference field names (`answeredOn` = date of the
+ * call) + the questions the rules don't read. Employer sheet (S-12): `employed`, `since`, `title`.
+ */
+export type ReferenceAnswers = Partial<Pick<LandlordReference, 'answeredOn' | 'rentedFromYou' | 'from' | 'to' | 'rentCents' | 'owes' | 'owesCents' | 'rentAgain'>> & {
+  paidOnTime?: 'always' | 'mostly' | 'often_late' | 'wouldnt_say' | null;
+  violations?: YesNo | null;
+  violationsNote?: string | null;
+  leftUnit?: 'good' | 'normal_wear' | 'damage' | 'still_living' | 'wouldnt_say' | null;
+  properNotice?: 'yes' | 'no' | 'still_living' | 'wouldnt_say' | null;
+  rentAgainWhy?: string | null;
   // Employer (S-12)
-  employed?: 'yes' | 'no' | 'wont_confirm';
-  since?: string;
-  jobTitle?: string;
-}
+  employed?: 'yes' | 'no' | 'wont_confirm' | null;
+  since?: string | null;
+  title?: string | null;
+};
+export type { Answer3 };
 
-export type EvictionOutcome = 'judgment' | 'settled' | 'dismissed' | 'applicant_won' | 'not_shown';
-export interface EvictionRecord {
-  /** 'YYYY' or 'YYYY-MM-DD'. */
-  date: string;
-  outcome: EvictionOutcome;
-}
-
-export type ConvictionType = 'violent' | 'property' | 'drug' | 'fraud' | 'other';
-export interface Conviction {
-  type: ConvictionType;
-  convictedOn?: string;
-  sentenceEndedOn?: string;
-}
 export interface BackgroundAssessment {
-  seriousness?: string;
-  rehabilitation?: string;
-  other?: string;
-}
-
-/** Approve with conditions (S-15): each set one is a condition. */
-export interface DecisionConditions {
-  higherDepositCents?: number;
-  cosigner?: boolean;
-  higherRentCents?: number;
+  seriousness?: string | null;
+  rehabilitation?: string | null;
+  other?: string | null;
 }
 
 export type ItemCondition = 'good' | 'fair' | 'damaged';

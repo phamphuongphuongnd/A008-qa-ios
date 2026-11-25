@@ -1,5 +1,7 @@
 import { sql } from 'drizzle-orm';
 
+import { evaluateApplicant, SAMPLE } from '@/engine';
+
 import * as A from '../repos/applicants';
 import * as C from '../repos/criteria';
 import * as D from '../repos/data';
@@ -10,6 +12,7 @@ import * as S from '../repos/sample';
 import * as Set from '../repos/settings';
 import * as V from '../repos/verify';
 import { makeTestDb, makeTestFiles } from '../testing/testDb';
+import { loadRentalForEngine, toEngineApplicant, toEngineCriteria } from '../toEngine';
 import type { AppDb } from '../types';
 
 const RECEIVED = '2026-12-02T09:14:00-05:00';
@@ -92,9 +95,9 @@ describe('rentals', () => {
 
 describe('criteria', () => {
   const set: C.CriterionInput[] = [
-    { code: 'C1', params: { multiple: 3, voucherShare: true } },
+    { code: 'C1', params: { multipleTenths: 30, applyToTenantShare: true } },
     { code: 'C2', params: { months: 12 } },
-    { code: 'C9', enabled: false, params: { score: 600 } },
+    { code: 'C9', enabled: false, params: { minScore: 600 } },
   ];
 
   it('saves the set, updates by code, removes missing codes', () => {
@@ -102,15 +105,28 @@ describe('criteria', () => {
     const id = rental(db);
     C.saveCriteria(db, id, set);
     expect(C.listCriteria(db, id).map((c) => [c.code, c.enabled, c.params])).toEqual([
-      ['C1', true, { multiple: 3, voucherShare: true }],
+      ['C1', true, { multipleTenths: 30, applyToTenantShare: true }],
       ['C2', true, { months: 12 }],
-      ['C9', false, { score: 600 }],
+      ['C9', false, { minScore: 600 }],
     ]);
     const c1 = C.listCriteria(db, id)[0];
-    C.saveCriteria(db, id, [{ code: 'C1', params: { multiple: 2.5, voucherShare: true } }, { code: 'X1', title: 'Has renter insurance', checkedBy: 'landlord', params: {} }]);
+    const ids = C.saveCriteria(db, id, [
+      { code: 'C1', params: { multipleTenths: 25, applyToTenantShare: true } },
+      { code: 'CX', params: { title: 'Has renter insurance', answeredBy: 'landlord' } },
+      { code: 'CX', params: { title: 'Can move in by Jan 15', answeredBy: 'applicant' } },
+    ]);
     const after = C.listCriteria(db, id);
-    expect(after.map((c) => c.code)).toEqual(['C1', 'X1']);
+    expect(after.map((c) => c.code)).toEqual(['C1', 'CX', 'CX']);
     expect(after[0].id).toBe(c1.id);
+    // Two custom criteria are told apart by id.
+    C.saveCriteria(db, id, [
+      { id: ids[0], code: 'C1', params: { multipleTenths: 25, applyToTenantShare: true } },
+      { id: ids[2], code: 'CX', params: { title: 'Can move in by Jan 20', answeredBy: 'applicant' } },
+    ]);
+    expect(C.listCriteria(db, id).map((c) => [c.id, c.params])).toEqual([
+      [ids[0], { multipleTenths: 25, applyToTenantShare: true }],
+      [ids[2], { title: 'Can move in by Jan 20', answeredBy: 'applicant' }],
+    ]);
     C.updateCriterion(db, c1.id, { enabled: false });
     expect(C.listCriteria(db, id)[0].enabled).toBe(false);
   });
@@ -124,12 +140,12 @@ describe('criteria', () => {
     expect(C.isCriteriaLocked(db, id)).toBe(false);
     applicant(db, id);
     expect(C.isCriteriaLocked(db, id)).toBe(true);
-    C.saveCriteriaWithReason(db, id, [{ code: 'C1', params: { multiple: 2.5 } }], 'Market rents fell', '2026-12-05T10:00:00Z');
+    C.saveCriteriaWithReason(db, id, [{ code: 'C1', params: { multipleTenths: 25, applyToTenantShare: true } }], 'Market rents fell', '2026-12-05T10:00:00Z');
     const h = C.listCriteriaHistory(db, id);
     expect(h).toHaveLength(1);
     expect(h[0].reason).toBe('Market rents fell');
     expect((h[0].before as { code: string }[]).map((c) => c.code)).toEqual(['C1', 'C2', 'C9']);
-    expect(h[0].after).toEqual([expect.objectContaining({ code: 'C1', params: { multiple: 2.5 } })]);
+    expect(h[0].after).toEqual([expect.objectContaining({ code: 'C1', params: { multipleTenths: 25, applyToTenantShare: true } })]);
   });
 });
 
@@ -208,7 +224,7 @@ describe('decisions, letters, timers', () => {
     const db = makeTestDb();
     const r = rental(db);
     const a = applicant(db, r);
-    const d = Dec.saveDecision(db, { applicantId: a, kind: 'deny', reasons: ['C5'], reportInfluenced: true, at: '2026-12-06T10:00:00Z', noticeRequired: true }, 'denied');
+    const d = Dec.saveDecision(db, { applicantId: a, kind: 'deny', reasons: [{ criterionId: '5', code: 'C5', source: 'screening_report' }], reportInfluenced: true, at: '2026-12-06T10:00:00Z', noticeRequired: true }, 'denied');
     expect(A.getApplicant(db, a)?.status).toBe('denied');
     expect(Dec.latestDecision(db, a)?.noticeStatus).toBe('pending');
     expect(Dec.listPendingNotices(db, r).map((x) => x.id)).toEqual([d]);
@@ -223,7 +239,7 @@ describe('decisions, letters, timers', () => {
   it('a decision without a notice is not pending', () => {
     const db = makeTestDb();
     const a = applicant(db, rental(db));
-    Dec.saveDecision(db, { applicantId: a, kind: 'deny', reasons: ['C4'], at: '2026-12-06T10:00:00Z', noticeRequired: false });
+    Dec.saveDecision(db, { applicantId: a, kind: 'deny', reasons: [{ criterionId: '4', code: 'C4', source: 'landlord_reference' }], at: '2026-12-06T10:00:00Z', noticeRequired: false });
     expect(Dec.latestDecision(db, a)?.noticeStatus).toBe('not_required');
   });
 
@@ -275,7 +291,7 @@ describe('Disposal Rule delete', () => {
     const d = Dec.saveDecision(db, { applicantId: a, kind: 'deny', at: RECEIVED, noticeRequired: true }, 'denied');
     Dec.createLetter(db, { decisionId: d, kind: 'adverse_action' });
     Dec.startTimer(db, { applicantId: a, kind: 'offer', startedAt: RECEIVED, endsAt: RECEIVED });
-    A.updateApplicant(db, a, { signaturePath: `applicants/${a}/sig.svg`, signedName: name, answers: { evicted: { yes: false } } });
+    A.updateApplicant(db, a, { signaturePath: `applicants/${a}/sig.svg`, signedName: name, answers: { evicted: 'no', bankruptcy: null, smokes: null }, customAnswers: { '9': true } });
     return a;
   }
   const count = (db: AppDb, table: string, a: number) =>
@@ -294,7 +310,7 @@ describe('Disposal Rule delete', () => {
     expect(Number(db.get<{ n: number }>(sql`select count(*) as n from attempts`)?.n)).toBe(1); // b's
     expect(Number(db.get<{ n: number }>(sql`select count(*) as n from letters`)?.n)).toBe(1); // b's
     const tomb = A.getApplicant(db, a)!;
-    expect(tomb).toMatchObject({ fullName: '', phone: null, email: null, signaturePath: null, signedName: null, answers: null, deletedAt: '2027-01-10T09:00:00Z', status: 'denied', receivedAt: RECEIVED });
+    expect(tomb).toMatchObject({ fullName: '', phone: null, email: null, signaturePath: null, signedName: null, answers: null, customAnswers: null, deletedAt: '2027-01-10T09:00:00Z', status: 'denied', receivedAt: RECEIVED });
     expect(A.listApplicants(db, r).map((x) => x.id)).toEqual([b]);
     expect(A.listApplicants(db, r, { deleted: true }).map((x) => x.id)).toEqual([a, b]);
     expect([...files.files]).toEqual([`applicants/${b}/id.jpg`]);
@@ -352,9 +368,9 @@ describe('delete all, backup dump', () => {
     const db = makeTestDb();
     const r = rental(db, { rentCents: 535167 });
     const a = applicant(db, r);
-    C.saveCriteria(db, r, [{ code: 'C1', params: { multiple: 3 } }]);
+    C.saveCriteria(db, r, [{ code: 'C1', params: { multipleTenths: 30, applyToTenantShare: true } }]);
     A.saveResidences(db, a, [{ address: 'x' }]);
-    Dec.saveDecision(db, { applicantId: a, kind: 'approve', at: RECEIVED, conditions: { higherDepositCents: 200050 } });
+    Dec.saveDecision(db, { applicantId: a, kind: 'approve', at: RECEIVED, conditions: [{ kind: 'higher_deposit', amountCents: 200050 }] });
     Set.updateSettings(db, { theme: 'dark' });
     const dump = JSON.parse(JSON.stringify(D.dumpAll(db))) as D.DataDump;
 
@@ -366,42 +382,89 @@ describe('delete all, backup dump', () => {
   });
 });
 
-describe('sample rental', () => {
-  const data: S.SampleRentalData = {
-    rental: { street: '1428 Maple St', unit: 'Unit B', city: 'Columbus', state: 'OH', zip: '43215', rentCents: 165000, bedrooms: 2, bathrooms: 1, availableOn: '2027-01-01', depositCents: 165000, feeCents: 0, reviewMode: 'compare' },
-    criteria: [{ code: 'C1', params: { multiple: 3, voucherShare: true } }],
-    applicants: [
-      {
-        applicant: { receivedAt: '2026-12-02T09:14:00-05:00', fullName: 'Jordan Ellis', occupants: 2, pets: [{ kind: 'dog', count: 1 }] },
-        residences: [{ address: '9 Oak Rd', fromMonth: '2024-10', current: true }],
-        incomes: [{ kind: 'employment', monthlyCents: 540000 }],
-        documents: [{ type: 'proof_of_income', filePath: 'sample/stub.jpg', payGrossCents: 247000, payFrequency: 'biweekly', checkedAt: '2026-12-02T10:00:00Z' }],
-        references: [{ reference: { kind: 'landlord', ownerConfirmed: true, confirmSource: 'county_records', answers: { rentAgain: 'yes' } }, residenceIndex: 0, attempts: [{ at: '2026-12-02T11:00:00Z', method: 'call', result: 'reached' }] }],
-        report: { companyName: 'MySmartMove (TransUnion)', evictions: [], landlordCollectionsCents: 0 },
-      },
-    ],
-  };
-
-  it('is absent until the 1B fixture is merged', () => {
-    expect(S.sampleRentalData()).toBeNull();
-    expect(S.loadSampleRental(makeTestDb())).toBeNull();
+describe('sample rental (engine SAMPLE)', () => {
+  const view = (e: ReturnType<typeof evaluateApplicant>) => ({
+    summary: e.summary,
+    results: e.results.map((r) => ({
+      code: r.code,
+      outcome: r.outcome,
+      evidence: r.evidence,
+      source: r.source,
+      verifiedOn: r.verifiedOn,
+      reason: r.reason,
+      issues: r.issues.map((x) => [x.kind, x.message, x.action]),
+    })),
   });
 
-  it('loads once (flagged sample) with all rows linked, and removes completely', () => {
+  it('loads once, flagged sample, and gives the same engine results as the fixture (round trip)', () => {
     const db = makeTestDb();
-    const id = S.loadSampleRental(db, data)!;
-    expect(S.loadSampleRental(db, data)).toBe(id);
-    expect(R.getRental(db, id)?.isSample).toBe(true);
+    const id = S.loadSampleRental(db);
+    expect(S.loadSampleRental(db)).toBe(id);
+    expect(R.getRental(db, id)).toMatchObject({ isSample: true, street: '1428 Maple St', rentCents: 165000 });
+    const loaded = loadRentalForEngine(db, id)!;
+    expect(loaded.applicants.map((a) => a.fullName)).toEqual(SAMPLE.applicants.map((a) => a.fullName));
+    SAMPLE.applicants.forEach((orig, i) => {
+      const fromDb = evaluateApplicant(loaded.rental, loaded.criteria, loaded.applicants[i]);
+      expect(view(fromDb)).toEqual(view(evaluateApplicant(SAMPLE.rental, SAMPLE.criteria, orig)));
+    });
+    // §8 headline results.
+    expect(loaded.applicants.map((a) => evaluateApplicant(loaded.rental, loaded.criteria, a).summary.text)).toEqual([
+      'Ready to decide',
+      '2 items missing',
+      '1 item missing',
+      'Ready to decide',
+    ]);
+  });
+
+  it('is removed completely', () => {
+    const db = makeTestDb();
+    const id = S.loadSampleRental(db);
     const [a] = A.listApplicants(db, id);
-    const b = A.getApplicantBundle(db, a.id)!;
-    expect(b.references[0].residenceId).toBe(b.residences[0].id);
-    expect(b.references[0].attempts).toHaveLength(1);
-    expect(b.documents[0].payGrossCents).toBe(247000);
-    expect(b.report?.landlordCollectionsCents).toBe(0);
     const files = makeTestFiles([`applicants/${a.id}/letter.pdf`]);
     S.removeSampleRental(db, files);
     expect(R.listRentals(db)).toEqual([]);
     expect(A.getApplicant(db, a.id)).toBeNull();
     expect(files.files.size).toBe(0);
+    expect(R.listCleanupCandidates(db)).toEqual([]);
+  });
+});
+
+describe('toEngine', () => {
+  it('maps a hand-entered applicant (custom answers keyed by criterion row id, unfinished residence left out)', () => {
+    const db = makeTestDb();
+    const r = rental(db);
+    const [, cx] = C.saveCriteria(db, r, [
+      { code: 'C1', params: { multipleTenths: 30, applyToTenantShare: true } },
+      { code: 'CX', params: { title: 'Has renter insurance', answeredBy: 'applicant' } },
+    ]);
+    const a = applicant(db, r);
+    A.updateApplicant(db, a, { customAnswers: { [String(cx)]: true }, hasVoucher: null });
+    const [res] = A.saveResidences(db, a, [{ address: 'x', fromMonth: '2024-01', current: true, type: 'rent' }, { address: 'unfinished' }]);
+    const [inc] = A.saveIncomes(db, a, [{ kind: 'employment', employer: 'Acme', monthlyCents: 540000 }]);
+    V.addDocument(db, {
+      applicantId: a,
+      type: 'proof_of_income',
+      filePath: 'p',
+      incomeId: inc,
+      payGrossCents: 247000,
+      payFrequency: 'biweekly',
+      checkedAt: '2026-12-03T10:00:00-05:00',
+    });
+    V.addDocument(db, { applicantId: a, type: 'paper_form', filePath: 'q' });
+    const ref = V.ensureLandlordReference(db, a, res);
+    V.updateReference(db, ref, { ownerConfirmed: true, answers: { rentAgain: 'yes', answeredOn: '2026-12-03', paidOnTime: 'always' } });
+    Dec.saveDecision(db, { applicantId: a, kind: 'conditional_offer', at: '2026-12-05T10:00:00-05:00' }, 'conditional_offer');
+    const e = toEngineApplicant(A.getApplicantBundle(db, a)!);
+    expect(e.customAnswers).toEqual({ [String(cx)]: true });
+    expect(e.hasVoucher).toBeNull();
+    expect(e.residences.map((x) => x.address)).toEqual(['x']);
+    expect(e.documents).toEqual([
+      expect.objectContaining({ type: 'proof_of_income', checkedOn: '2026-12-03', incomeId: String(inc), payGrossCents: 247000 }),
+    ]);
+    expect(e.landlordReferences[0]).toMatchObject({ residenceId: String(res), ownerConfirmed: true, rentAgain: 'yes', answeredOn: '2026-12-03', owes: null });
+    expect(e.conditionalOfferAt).toBe('2026-12-05T10:00:00-05:00');
+    expect(e.status).toBe('conditional_offer');
+    const crit = toEngineCriteria(C.listCriteria(db, r));
+    expect(crit[1]).toMatchObject({ id: String(cx), code: 'CX', params: { title: 'Has renter insurance', answeredBy: 'applicant' } });
   });
 });
