@@ -27,7 +27,8 @@
 | **2B Hồ sơ** | F-04, F-05, F-06, F-07 | `app/applicants/**` (trừ chấm / quyết định), `src/features/intake/**`, `src/pdf/blankApplication*` |
 | **2C Xác minh** | F-08, F-09, F-10 | `app/verify/**`, `src/features/verify/**` |
 | **2D Chấm + quyết định** | F-11 – F-15 | `app/review/**`, `src/features/decision/**`, `src/pdf/letters*`, `src/pdf/decisionFile*` |
-| **2E Hệ thống** | F-01, F-16 – F-19, icon, splash | `app/onboarding/**`, `app/settings/**`, `app/move-in/**`, `src/backup/**`, `src/features/movein/**`, `assets/**` |
+| **2E Hệ thống** | F-01, F-16 – F-19, icon, splash | `app/onboarding/**`, `app/settings/**`, `app/move-in/**`, `app/guide/**`, `src/backup/**`, `src/features/onboarding\|settings\|guide\|movein/**`, `assets/**` |
+- 1A/điều phối giữ: `app/_layout.tsx`, `app/(tabs)/**`, `src/routes.ts`, `src/navigation/**`, `common.json`, `index.ts` — phiên cần cắm vào thì để điểm nối `TODO(merge 2x)`, điều phối nối khi ghép (bảng route: `docs/ROUTES.md`).
 - Màn nối nhau chỉ qua route đã khai ở 1A. Thử máy: 2B + 2D dùng A13 trước, các phiên khác giả lập / chờ lượt.
 
 ## Phase 3 — Ghép + thử máy (1 phiên)
