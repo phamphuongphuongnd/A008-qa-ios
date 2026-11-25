@@ -510,19 +510,15 @@
   Verified · C5 Met · Verified · C6 Met · Verified · C7 Met · C8 Met → **Ready to decide** (Needs review không chặn).
 - Sample rental gắn cờ `is_sample`, xoá được một chạm; không đếm vào nhắc dọn dữ liệu.
 
-## 9. Định hướng thiết kế
-- **Cảm giác:** sổ tay pháp lý gọn gàng — bình tĩnh, đáng tin, công bằng. Không giống app bất động sản bán hàng, không giống
-  app chấm điểm tín dụng: **không đồng hồ điểm, không thang 0–100, không "winner"**.
-- **Màu:** nền trung tính ấm (sáng ~#F7F6F2 / tối ~#111315); màu nhấn **xanh mực / teal sâu** (~#1F5C63); cam cho Needs review /
-  Mismatch / cảnh báo; đỏ gạch (~#B3412E) chỉ cho Not met và hành động xoá; Met dùng màu nhấn (không xanh lá "tiền").
-  Mọi trạng thái có icon + chữ, đạt WCAG AA ở cả 2 theme.
-- **Chữ:** Inter (hoặc chữ hệ thống); số tabular; tiêu đề rõ, câu ngắn; giọng văn trung lập ("Not met", không "Rejected").
-- **Thành phần chính:** thẻ Rental, dòng tiêu chí + 2 huy hiệu, thẻ Issues, bảng Compare ghim cột, hàng đợi có đồng hồ, form
-  nhiều bước, ô ký tay, xem PDF, banner luật, hộp xác nhận phá huỷ.
-- **Trạng thái cần vẽ:** sáng + tối; rỗng (Rentals, Applicants, Documents); lỗi nhập; Applicant mode (bắt đầu, đang điền, xong);
-  S-09 Ready / thiếu / mismatch; S-15 có bắt FCRA; S-16 thư FCRA; S-17 2 và 4 người; S-18 đồng hồ; màn 320dp; chữ 200%.
-- **Truy cập:** TalkBack / VoiceOver đọc "Income, met, verified: 3.24 times rent"; vùng chạm ≥ 48dp; Applicant mode đọc được
-  cho người dùng trình đọc màn hình.
+## 9. Định hướng thiết kế — **v2 Indigo (Phương, 2026-11-25)**
+- **Nguồn giao diện duy nhất:** `design/v2-indigo/`:
+  - mockup Hi-Fi https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (bản export `Evenlease-HiFi-mockups.html`);
+  - design system https://claude.ai/artifact/MKbbmJpjerYdFyEw2UngXU;
+  - `design-tokens.json` (màu sáng/tối, chữ, khoảng cách, bo góc, đổ bóng);
+  - `logo/` (icon iOS 1024, Play 512, adaptive Android, logo nền sáng/tối, wordmark).
+- **Quy tắc khi lệch:** về giao diện (màu, chữ, bố cục, câu chữ trên màn) thì **mockup v2 thắng**; về luật chấm, dữ liệu, hành vi thì **product.md thắng**. S-12, S-23, S-26 không có màn riêng trong mockup → dựng theo cùng design system, nội dung theo §5.
+- Màu nhấn **indigo** (#4f46e5 / tối #a5b4fc); amber cho Needs review / Mismatch / cảnh báo; crimson chỉ cho Not met và hành động xoá. Trạng thái luôn có icon + chữ. Không có điểm tổng, không có "winner".
+- Chữ Inter, số tabular; vùng chạm ≥ 48; nội dung tablet tối đa 600; sáng + tối; chữ tới 200%.
 
 ## 10. Store (ghi sẵn)
 - **Tên Play (≤ 30):** "Evenlease: Tenant Screening" · App Store subtitle: "Same criteria for every applicant".

@@ -1,0 +1,387 @@
+{
+  "name": "Evenlease",
+  "version": 1,
+  "color": {
+    "themes": [
+      {
+        "id": "light",
+        "name": "Light"
+      },
+      {
+        "id": "dark",
+        "name": "Dark"
+      }
+    ],
+    "tokens": [
+      {
+        "name": "surface-0",
+        "value": {
+          "light": "#f6f7fb",
+          "dark": "#0f1117"
+        },
+        "usage": "App background behind every screen. Cool, airy off-white; never pure white."
+      },
+      {
+        "name": "surface-1",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#181b24"
+        },
+        "usage": "Cards, sheets, list groups, the tab bar."
+      },
+      {
+        "name": "surface-2",
+        "value": {
+          "light": "#eef0f6",
+          "dark": "#232735"
+        },
+        "usage": "Inputs, segmented-control track, Missing badge fill, table header cells."
+      },
+      {
+        "name": "line",
+        "value": {
+          "light": "#e3e6ef",
+          "dark": "#2d3242"
+        },
+        "usage": "Hairline dividers between rows and around cards. Decorative only, never the only edge of a control."
+      },
+      {
+        "name": "line-strong",
+        "value": {
+          "light": "#838aa3",
+          "dark": "#6e7590"
+        },
+        "usage": "Input, toggle-off and secondary-button borders (≥3:1 on surface-1 and surface-0 in both themes)."
+      },
+      {
+        "name": "ink",
+        "value": {
+          "light": "#161a2b",
+          "dark": "#eceef6"
+        },
+        "usage": "Primary text and icons on surface-0, surface-1, surface-2."
+      },
+      {
+        "name": "ink-muted",
+        "value": {
+          "light": "#5a6076",
+          "dark": "#a4a9bd"
+        },
+        "usage": "Secondary text: timestamps, reasons, help text, captions, on surface-0/1/2 (≥4.5:1)."
+      },
+      {
+        "name": "accent",
+        "value": {
+          "light": "#4f46e5",
+          "dark": "#a5b4fc"
+        },
+        "usage": "Indigo. Primary buttons, links, active tab, toggles on, Met and Verified badges, 'Ready to decide'."
+      },
+      {
+        "name": "accent-pressed",
+        "value": {
+          "light": "#4338ca",
+          "dark": "#c7d2fe"
+        },
+        "usage": "Primary button pressed state."
+      },
+      {
+        "name": "on-accent",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#1e1b4b"
+        },
+        "usage": "Text and icons on an accent fill."
+      },
+      {
+        "name": "accent-soft",
+        "value": {
+          "light": "#eef0ff",
+          "dark": "#262a55"
+        },
+        "usage": "Met badge fill, selected option fill, Ready summary card. Text on it is accent."
+      },
+      {
+        "name": "warn",
+        "value": {
+          "light": "#a8510a",
+          "dark": "#fbbf6a"
+        },
+        "usage": "Amber for Needs review, Mismatch, legal warnings and timers. Text/icons on surface-1, warn-soft."
+      },
+      {
+        "name": "warn-soft",
+        "value": {
+          "light": "#fff3e3",
+          "dark": "#382a14"
+        },
+        "usage": "Fill of Issues card, warning banners, Needs review and Mismatch badges."
+      },
+      {
+        "name": "danger",
+        "value": {
+          "light": "#c8323c",
+          "dark": "#fb8a92"
+        },
+        "usage": "Crimson. ONLY for Not met and destructive actions (Delete, Deny button outline)."
+      },
+      {
+        "name": "on-danger",
+        "value": {
+          "light": "#ffffff",
+          "dark": "#2b0a0f"
+        },
+        "usage": "Text on a danger fill (destructive confirm button)."
+      },
+      {
+        "name": "danger-soft",
+        "value": {
+          "light": "#fdecee",
+          "dark": "#3e1a20"
+        },
+        "usage": "Not met badge fill. Text on it is danger."
+      },
+      {
+        "name": "focus",
+        "value": {
+          "light": "#4f46e5",
+          "dark": "#c7d2fe"
+        },
+        "usage": "2px focus ring with 2px offset on every focusable control (≥3:1 on all surfaces)."
+      },
+      {
+        "name": "scrim",
+        "value": {
+          "light": "rgba(15, 17, 28, 0.44)",
+          "dark": "rgba(0, 0, 0, 0.62)"
+        },
+        "usage": "Behind sheets and dialogs."
+      }
+    ]
+  },
+  "type": {
+    "families": {
+      "sans": "Inter, -apple-system, \"SF Pro Text\", Roboto, system-ui, sans-serif"
+    },
+    "groups": [
+      {
+        "name": "Display",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "display",
+            "fontSize": "28px",
+            "lineHeight": "34px",
+            "fontWeight": 700,
+            "letterSpacing": "-0.02em",
+            "sample": "Pick tenants the same way, every time.",
+            "usage": "Onboarding headlines and large screen titles (Rentals, Guide, Settings)."
+          },
+          {
+            "name": "title-1",
+            "fontSize": "22px",
+            "lineHeight": "28px",
+            "fontWeight": 650,
+            "letterSpacing": "-0.01em",
+            "sample": "1428 Maple St, Unit B",
+            "usage": "Screen header of a Rental or Applicant."
+          },
+          {
+            "name": "title-2",
+            "fontSize": "18px",
+            "lineHeight": "24px",
+            "fontWeight": 600,
+            "sample": "Ready to decide",
+            "usage": "Card and sheet titles, section headings."
+          }
+        ]
+      },
+      {
+        "name": "Text",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "body",
+            "fontSize": "16px",
+            "lineHeight": "24px",
+            "fontWeight": 400,
+            "sample": "Set your criteria once. Check every applicant against them.",
+            "usage": "Default reading text, form values."
+          },
+          {
+            "name": "body-strong",
+            "fontSize": "16px",
+            "lineHeight": "24px",
+            "fontWeight": 600,
+            "sample": "Jordan Ellis",
+            "usage": "Names in lists, criterion names, button labels."
+          },
+          {
+            "name": "callout",
+            "fontSize": "15px",
+            "lineHeight": "22px",
+            "fontWeight": 400,
+            "sample": "Household income $5,400/mo is 3.27× rent",
+            "usage": "Criterion reasons, card bodies."
+          },
+          {
+            "name": "label",
+            "fontSize": "14px",
+            "lineHeight": "20px",
+            "fontWeight": 500,
+            "sample": "Monthly rent",
+            "usage": "Field labels, segmented options, chips."
+          },
+          {
+            "name": "caption",
+            "fontSize": "13px",
+            "lineHeight": "18px",
+            "fontWeight": 400,
+            "sample": "Received Dec 2, 9:14 AM",
+            "usage": "Timestamps, help text, legal footnotes."
+          },
+          {
+            "name": "badge",
+            "fontSize": "12px",
+            "lineHeight": "16px",
+            "fontWeight": 600,
+            "letterSpacing": "0.01em",
+            "sample": "Needs review",
+            "usage": "Status badges only. Always paired with an icon."
+          }
+        ]
+      },
+      {
+        "name": "Numbers",
+        "family": "sans",
+        "styles": [
+          {
+            "name": "figure",
+            "fontSize": "24px",
+            "lineHeight": "30px",
+            "fontWeight": 650,
+            "sample": "3.24×",
+            "usage": "Ratios and money in summaries. Use with tabular numerals (font-variant-numeric: tabular-nums)."
+          }
+        ]
+      }
+    ]
+  },
+  "spacing": {
+    "tokens": [
+      {
+        "name": "space-1",
+        "value": "4px",
+        "usage": "Icon-to-text gap inside badges."
+      },
+      {
+        "name": "space-2",
+        "value": "8px",
+        "usage": "Gap between badges, chip groups, small stacks."
+      },
+      {
+        "name": "space-3",
+        "value": "12px",
+        "usage": "Row padding (vertical), gap inside cards."
+      },
+      {
+        "name": "space-4",
+        "value": "16px",
+        "usage": "Screen side margin, card padding."
+      },
+      {
+        "name": "space-5",
+        "value": "20px",
+        "usage": "Sheet padding."
+      },
+      {
+        "name": "space-6",
+        "value": "24px",
+        "usage": "Gap between screen sections."
+      },
+      {
+        "name": "space-8",
+        "value": "32px",
+        "usage": "Empty-state and onboarding vertical rhythm."
+      }
+    ]
+  },
+  "radius": {
+    "tokens": [
+      {
+        "name": "radius-sm",
+        "value": "8px",
+        "usage": "Inputs, badges' inner icon box, table cells."
+      },
+      {
+        "name": "radius-md",
+        "value": "12px",
+        "usage": "Buttons, segmented control, small cards."
+      },
+      {
+        "name": "radius-lg",
+        "value": "16px",
+        "usage": "Cards, list groups, banners."
+      },
+      {
+        "name": "radius-xl",
+        "value": "24px",
+        "usage": "Top corners of bottom sheets, dialogs."
+      },
+      {
+        "name": "radius-pill",
+        "value": "999px",
+        "usage": "Badges, chips, timers, toggles."
+      }
+    ]
+  },
+  "size": {
+    "tokens": [
+      {
+        "name": "touch-min",
+        "value": "48px",
+        "usage": "Minimum touch target in both axes."
+      },
+      {
+        "name": "button-primary-h",
+        "value": "52px",
+        "usage": "Height of primary buttons."
+      },
+      {
+        "name": "button-secondary-h",
+        "value": "48px",
+        "usage": "Height of secondary and destructive buttons."
+      },
+      {
+        "name": "tabbar-h",
+        "value": "64px",
+        "usage": "Bottom tab bar height (plus safe area)."
+      },
+      {
+        "name": "content-max",
+        "value": "600px",
+        "usage": "Maximum content width on tablets."
+      }
+    ]
+  },
+  "shadow": {
+    "tokens": [
+      {
+        "name": "shadow-card",
+        "value": {
+          "light": "0 1px 2px rgba(22, 26, 43, 0.05), 0 4px 14px rgba(22, 26, 43, 0.04)",
+          "dark": "none"
+        },
+        "usage": "Cards on surface-0. Dark theme relies on surface-1 vs surface-0 instead."
+      },
+      {
+        "name": "shadow-sheet",
+        "value": {
+          "light": "0 -8px 32px rgba(22, 26, 43, 0.14)",
+          "dark": "0 -8px 32px rgba(0, 0, 0, 0.55)"
+        },
+        "usage": "Bottom sheets and dialogs."
+      }
+    ]
+  }
+}

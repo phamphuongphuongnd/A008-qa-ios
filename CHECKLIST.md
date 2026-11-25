@@ -17,7 +17,8 @@
 - [x] Phương duyệt product.md + PLAN.md (2026-11-25)
 
 ## Bước 2 — Mockup Hi-Fi (Artifact Design, design system mới, Phương duyệt)
-- [x] Mockup đủ mọi màn S-01…S-27 (34 artboard, tweak tối) → https://claude.ai/artifact/E1YZve51VMfZ5dahLRTwtY + `design/`
+- [x] Mockup v1 (teal) — thay bằng v2, đã gỡ khỏi repo 2026-11-25
+- [x] Mockup v2 Indigo + logo do Phương làm → https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV + `design/v2-indigo/` (2026-11-25)
 - [x] Phương duyệt mockup (2026-11-25)
 
 ## Bước 3 — Làm app theo mockup (phiên điều phối chạy `PLAN.md`)
