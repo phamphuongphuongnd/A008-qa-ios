@@ -4,5 +4,140 @@
   "s16": { "title": "Letter" },
   "s17": { "title": "Compare" },
   "s18": { "title": "Order queue" },
-  "s19": { "title": "Decision file" }
+  "s19": { "title": "Decision file" },
+  "issueAction": {
+    "editApplication": "Edit application",
+    "addDocuments": "Add file",
+    "reviewDocuments": "Open documents",
+    "callLandlord": "Call landlord",
+    "confirmLandlord": "Confirm owner",
+    "addReport": "Add report",
+    "viewReport": "View report",
+    "backgroundReview": "Background review",
+    "landlordCheck": "Check now"
+  },
+  "decisionKind": {
+    "conditional_offer": "Conditional offer",
+    "approve": "Approve",
+    "approve_with_conditions": "Approve with conditions",
+    "deny": "Deny",
+    "withdraw_offer": "Withdraw offer"
+  },
+  "conditions": {
+    "higher_deposit": "Higher deposit",
+    "cosigner": "Co-signer or guarantor",
+    "higher_rent": "Higher rent",
+    "higherDepositAmount": "Higher deposit: {{amount}}",
+    "higherRentAmount": "Higher rent: {{amount}}/mo"
+  },
+  "sentMethod": {
+    "email": "Email",
+    "text": "Text",
+    "mail": "Mail",
+    "in_person": "In person"
+  },
+  "letters": {
+    "title": {
+      "adverse_action": "Adverse action notice",
+      "denial": "Denial letter",
+      "conditional_offer": "Conditional offer",
+      "approval": "Approval letter"
+    },
+    "opening": {
+      "adverseDeny": "Thank you for applying. We are unable to approve your application. This decision was based in whole or in part on information in a consumer report.",
+      "adverseConditions": "Thank you for applying. We can approve your application only with the conditions below. This decision was based in whole or in part on information in a consumer report.",
+      "adverseWithdraw": "We are withdrawing our conditional offer for {{address}}. This decision was based in whole or in part on information in a consumer report.",
+      "denial": "Thank you for applying for {{address}}. We are unable to approve your application.",
+      "withdraw": "We are withdrawing our conditional offer for {{address}}.",
+      "conditionalOffer": "We're glad to offer you {{address}}, subject to the final step described in our published criteria.",
+      "approval": "We're glad to approve your application for {{address}}.",
+      "approvalConditions": "We're glad to approve your application for {{address}} with the conditions below."
+    },
+    "closing": {
+      "offer": "Please let us know if you accept.",
+      "decline": "Thank you for your interest."
+    },
+    "re": "Re: {{address}}",
+    "dear": "Dear {{name}},",
+    "reasonLabel": "Reason:",
+    "reasonsLabel": "Reasons:",
+    "conditionsLabel": "Conditions:",
+    "replyBy": "Please reply by {{when}} (48 hours).",
+    "signOff": "Sincerely,",
+    "reasons": {
+      "C1": "income below the amount required for this rental",
+      "C2": "not enough rental or home-ownership history",
+      "C3": "eviction record",
+      "C4": "previous landlord reference",
+      "C5": "unpaid balance owed to a past landlord",
+      "C6": "required documents not provided",
+      "C7": "number of people who would live in the unit",
+      "C8": "pet policy",
+      "C9": "credit history",
+      "C10": "criminal history, after an individual assessment"
+    },
+    "fcraHeading": "About the consumer report",
+    "fcraIntro": "The consumer report was supplied by:",
+    "score": {
+      "heading": "Your credit score",
+      "none": "No credit score was available.",
+      "value": "Credit score: {{score}}",
+      "range": "(possible range {{range}})",
+      "date": "Date of score: {{date}}",
+      "model": "Scoring model: {{model}}",
+      "factors": "Key factors that hurt the score:"
+    }
+  },
+  "decisionFile": {
+    "title": "Decision file",
+    "exported": "{{address}} · Exported {{date}}",
+    "criteria": "Published criteria",
+    "reviewMode": {
+      "compare": "Review mode: Compare (review everyone, then choose).",
+      "first_come": "Review mode: First-come (review in the order received)."
+    },
+    "history": "Criteria history",
+    "noHistory": "No changes after the criteria were published.",
+    "applicants": "Applicants (order received)",
+    "noApplicants": "No applicants.",
+    "received": "Received {{when}}",
+    "dataDeleted": "Applicant {{n}} — data deleted {{date}}",
+    "colCriterion": "Criterion",
+    "colResult": "Result",
+    "colEvidence": "Evidence",
+    "colSource": "Source / date",
+    "colReason": "Reason",
+    "decision": "Decision",
+    "noDecision": "No decision recorded.",
+    "decidedAt": "{{kind}} · {{when}}",
+    "reasons": "Reasons: {{list}}",
+    "note": "Note: {{note}}",
+    "conditions": "Conditions: {{list}}",
+    "reportInfluenced": "Information from a screening report played a part in this decision.",
+    "noticePending": "Adverse action notice: not created yet.",
+    "letterSent": "{{letter}} sent {{date}} ({{method}})",
+    "letterNotSent": "{{letter}} created {{date}}, not marked as sent",
+    "documents": "Documents",
+    "notScore": "Not a score. Same criteria for every applicant."
+  },
+  "outcome": {
+    "met": "Met",
+    "not_met": "Not met",
+    "missing": "Missing",
+    "needs_review": "Needs review",
+    "not_reviewed": "Not reviewed yet"
+  },
+  "evidence": {
+    "claimed": "Claimed",
+    "verified": "Verified",
+    "mismatch": "Mismatch"
+  },
+  "source": {
+    "application": "Application",
+    "document": "Document",
+    "landlord_reference": "Landlord reference",
+    "employer_reference": "Employer reference",
+    "screening_report": "Screening report",
+    "landlord_note": "Landlord note"
+  }
 }

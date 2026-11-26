@@ -2,5 +2,105 @@
   "s11": { "title": "Landlord reference" },
   "s12": { "title": "Employer reference" },
   "s13": { "title": "Screening report" },
-  "s14": { "title": "Background review" }
+  "s14": { "title": "Background review" },
+  "errors": {
+    "required": "Required",
+    "money_invalid": "Enter an amount like 1,250.00",
+    "money_zero": "Enter an amount above $0",
+    "month_invalid": "Pick a month",
+    "date_invalid": "Enter a valid date",
+    "date_future": "Can't be in the future",
+    "range_order": "End can't be before start",
+    "sentence_before_conviction": "Can't be before the conviction date",
+    "score_invalid": "Enter the score as a number",
+    "too_many_factors": "Up to 4 key factors",
+    "url_invalid": "This link can't be opened",
+    "notFound": "This record isn't available anymore.",
+    "saveFailed": "Couldn't save. Try again."
+  },
+  "attempts": {
+    "method": { "call": "Call", "email": "Email", "text": "Text" },
+    "result": {
+      "reached": "Reached",
+      "no_answer": "No answer",
+      "no_reply": "No reply yet",
+      "left_message": "Left message",
+      "wrong_number": "Wrong number"
+    },
+    "unreachableHint": "{{count}} tries, {{methods}} ways",
+    "unreachableBody": "You can mark this reference as unreachable. It stays Missing with the reason \"Unreachable after 3 attempts\"."
+  },
+  "redFlags": {
+    "dates_mismatch": "Dates differ by more than 31 days",
+    "rent_mismatch": "Rent differs by more than 5% ({{percent}})",
+    "owner_not_confirmed": "You haven't confirmed who owns or manages the property",
+    "rent_again_wouldnt_say": "Wouldn't say whether they'd rent to them again",
+    "gap_over_two_months": "Gap of more than 2 months between residences"
+  },
+  "landlord": {
+    "q2": { "stillThere": "Still there" },
+    "confirmSource": {
+      "county_records": "County records",
+      "management_website": "Management company website",
+      "lease_shown": "Lease shown by applicant",
+      "other": "Other"
+    }
+  },
+  "email": {
+    "greeting": "Hello,",
+    "greetingName": "Hello {{name}},",
+    "thanks": "Thank you for your time. You can reply to this email or call me back.",
+    "landlord": {
+      "subject": "Rental reference for {{name}} — {{address}}",
+      "intro": "{{name}} has applied to rent a home from me and listed you as the landlord or manager at {{address}}. Could you answer a few questions?",
+      "questions": [
+        "Did {{name}} rent from you at {{address}}?",
+        "From when to when?",
+        "What was the monthly rent?",
+        "Did they pay on time and in full?",
+        "Any lease violations (extra occupants, unauthorized pets, noise)?",
+        "How did they leave the unit?",
+        "Did they give proper notice?",
+        "Do they owe unpaid rent or damages?",
+        "Would you rent to them again?"
+      ]
+    }
+  },
+  "report": {
+    "service": {
+      "mysmartmove": "MySmartMove",
+      "checkr": "Checkr",
+      "other": "Other service",
+      "applicant_copy": "The applicant already has a recent report (30 days or less)"
+    },
+    "company": { "name": "Name", "address": "Mailing address", "phone": "Phone (toll-free if listed)" },
+    "evictionOutcome": {
+      "judgment": "Judgment against applicant",
+      "settled": "Settled",
+      "dismissed": "Dismissed",
+      "tenant_won": "Applicant won",
+      "unknown": "Outcome not shown"
+    },
+    "tooOld": "This report is more than 30 days old. Ask for a new one."
+  },
+  "background": {
+    "years_one": "{{count}} year",
+    "years_other": "{{count}} years",
+    "months_one": "{{count}} month",
+    "months_other": "{{count}} months",
+    "convictionType": {
+      "violent": "Violent",
+      "property": "Property",
+      "drug": "Drug",
+      "fraud": "Fraud",
+      "other": "Other"
+    },
+    "block": {
+      "not_entered": "Enter the convictions, or choose None.",
+      "invalid": "Fix the highlighted fields first.",
+      "no_convictions_in_lookback": "There are no convictions in the lookback period to base a withdrawal on.",
+      "assessment_required": "Answer the individual assessment questions first.",
+      "not_editable": "This review can't be changed now."
+    }
+  }
 }
