@@ -30,3 +30,16 @@ Logic (tested with `makeTestDb()`); screens use the hooks. Repos are imported di
 ## src/pdf/publishedCriteria.ts
 `publishedCriteriaContent(rental, criteria)` → one model for the S-05 preview, `publishedCriteriaHtml` (shell, footer),
 `publishedCriteriaText` (Copy as text), `sharePublishedCriteriaPdf(content, { adapter })`.
+
+## Screens (step b, mockup v2 Indigo, `@/ui` + `@/theme`)
+- S-02 `units/screens/RentalsScreen` — reminders (backup / cleanup, Later), Open / Closed segment, swipe cards
+  (`components/SwipeRentalCard`: Close · Reopen + Delete, also screen-reader actions), 3 empty states, Undo snackbar.
+- S-03 `units/screens/RentalEditorScreen` — create (step 1 of 3 → S-04 setup) / edit (Save → back), errors on blur + Save
+  (first error focused), pickers (`components/SelectField`), Review mode + WA hint, mode-switch confirmation, discard guard.
+- S-04 `criteria/screens/CriteriaBuilderScreen` — cards (`components/CriterionCard`), lock banner + reason sheet,
+  voucher dialog, C7 warning card, custom criterion sheet (guardrail error, Edit / Add), smoking policy, footer
+  (setup: save → S-05; later: Save / Preview).
+- S-05 `criteria/screens/PublishedCriteriaScreen` — paper preview, Copy as text, Export PDF, setup "Go to rental".
+- S-06 `units/screens/RentalHubScreen` — hero + chips, Add applicant, Compare / Order queue, applicant rows (#n in
+  First-come), Move-in card, pending FCRA notices, ⋯ menu sheet, close / delete dialogs, empty state + Share criteria.
+- Pure view logic tested: `units/screenModels.ts`, `criteria/screenModels.ts`.

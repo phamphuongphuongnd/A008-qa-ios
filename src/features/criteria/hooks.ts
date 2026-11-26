@@ -87,3 +87,11 @@ export function usePublishedCriteria(rentalId: number) {
     copy: () => (content ? copyText(publishedCriteriaText(content)) : Promise.resolve(false)),
   };
 }
+
+/** S-06 "Share criteria": print + share the published criteria of a rental (false = no such rental). */
+export async function sharePublishedCriteria(rentalId: number): Promise<boolean> {
+  const data = loadCriteria(db, rentalId);
+  if (!data) return false;
+  await sharePublishedCriteriaPdf(publishedCriteriaContent(data.rental, data.criteria));
+  return true;
+}
