@@ -2,7 +2,7 @@ import { startTimer } from '@/engine';
 
 import { fakeNotifier } from '@/features/decision/testing/helpers';
 
-import { cancelTimerNotifications, ensureTimerPermission, scheduleTimerNotifications, TIMER_NOTIFICATION_BODY } from '../queueTimers';
+import { cancelStoppedTimers, cancelTimerNotifications, ensureTimerPermission, scheduleTimerNotifications, TIMER_NOTIFICATION_BODY } from '../queueTimers';
 
 const applicant = { id: '7', fullName: 'Jordan Ellis' };
 
@@ -45,6 +45,8 @@ describe('queueTimers', () => {
     await cancelTimerNotifications(n.notifier, null);
     await cancelTimerNotifications(n.notifier, ['a', 'b']);
     expect(n.cancelled).toEqual(['a', 'b']);
+    await cancelStoppedTimers(n.notifier, [{ notificationIds: ['c'] }, { notificationIds: null }, {}]);
+    expect(n.cancelled).toEqual(['a', 'b', 'c']);
   });
 
   it('asks the permission only the first time', async () => {

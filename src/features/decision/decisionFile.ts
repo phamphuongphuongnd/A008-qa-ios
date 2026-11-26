@@ -2,10 +2,10 @@
  * S-19 Decision file service (F-15): load + format a Rental's record for `decisionFileHtml`, then export / share.
  * Document thumbnails are read only when the landlord switches them on (off by default, product.md S-19).
  */
-import { activeCriteria, criterionTitle, describeCriteriaChanges, formatDate, type Criterion } from '@/engine';
+import { activeCriteria, criterionTitle, formatDate } from '@/engine';
 import { listApplicants } from '@/db/repos/applicants';
-import { listCriteriaHistory } from '@/db/repos/criteria';
 import type { AppDb } from '@/db/types';
+import { criteriaHistoryLines } from '@/features/criteria/criteriaService';
 import { t } from '@/i18n';
 import { decisionFileHtml, decisionFileName, type DecisionFileApplicant, type DecisionFileInput } from '@/pdf/decisionFile';
 import { conditionText, letterTitle } from '@/pdf/letters';
@@ -20,23 +20,6 @@ export function stampText(ts: string): string {
 }
 
 const dateText = (ts: string) => formatDate(/Z$/i.test(ts) ? localDate(new Date(ts)) : ts.slice(0, 10));
-
-/** History rows store criteria without ids; key them by code (custom ones by title) so changes line up. */
-function historyCriteria(x: unknown): Criterion[] | null {
-  if (!Array.isArray(x)) return null;
-  return x.map((c: { code: string; params: { title?: string } }) => ({ ...c, id: c.code === 'CX' ? `CX:${c.params?.title ?? ''}` : c.code }) as Criterion);
-}
-
-export function historyLines(before: unknown, after: unknown): string[] {
-  const a = historyCriteria(before);
-  const b = historyCriteria(after);
-  if (!a || !b) return [];
-  try {
-    return describeCriteriaChanges(a, b);
-  } catch {
-    return [];
-  }
-}
 
 export interface DecisionFileOptions {
   /** "Include document thumbnails" (off by default). */
@@ -114,10 +97,11 @@ export async function buildDecisionFile(db: AppDb, rentalId: number, now: Date, 
     exportedText: formatDate(localDate(now)),
     reviewMode: review.rental.reviewMode,
     criteria: activeCriteria(review.criteria).map(criterionTitle),
-    history: listCriteriaHistory(db, rentalId)
+    // 2A's history lines (newest first) → oldest first in the file.
+    history: criteriaHistoryLines(db, rentalId)
       .slice()
       .reverse()
-      .map((h) => ({ atText: dateText(h.at), lines: historyLines(h.before, h.after), reason: h.reason })),
+      .map((h) => ({ atText: dateText(h.at), lines: h.changes, reason: h.reason })),
     applicants,
   };
 }

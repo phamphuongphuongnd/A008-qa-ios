@@ -28,6 +28,7 @@ import { getApplicantBundle, listApplicants, type ApplicantBundle } from '@/db/r
 import { getRental } from '@/db/repos/rentals';
 import { loadRentalForEngine, toEngineApplicant, toQueueApplicant } from '@/db/toEngine';
 import type { AppDb, Decision, Letter, Rental } from '@/db/types';
+import { verifyProgress } from '@/features/verify/progress';
 import { routes } from '@/routes';
 
 // ---------------------------------------------------------------------------
@@ -125,22 +126,6 @@ export function decisionLabel(kind: Decision['kind']): string {
   return DECISION_LABELS[kind];
 }
 
-function references(b: ApplicantBundle): { done: number; total: number } {
-  let total = 0;
-  let done = 0;
-  for (const r of b.residences.filter((x) => x.type === 'rent')) {
-    total += 1;
-    const ref = b.references.find((x) => x.kind === 'landlord' && x.residenceId === r.id);
-    if (ref && (ref.unreachable || ref.answers?.answeredOn)) done += 1;
-  }
-  for (const i of b.incomes.filter((x) => x.kind === 'employment')) {
-    total += 1;
-    const ref = b.references.find((x) => x.kind === 'employer' && x.incomeId === i.id);
-    if (ref && ref.answers?.employed != null) done += 1;
-  }
-  return { done, total };
-}
-
 export function reviewSections(
   b: ApplicantBundle,
   applicant: ApplicantInput,
@@ -149,7 +134,8 @@ export function reviewSections(
   const id = b.applicant.id;
   const c6 = activeCriteria(criteria).find((c) => c.code === 'C6');
   const docs = c6 && c6.code === 'C6' ? documentProgress(c6.params.documents, applicant.documents) : null;
-  const refs = references(b);
+  const vp = verifyProgress(b);
+  const refs = vp.references;
   const c10 = activeCriteria(criteria).some((c) => c.code === 'C10');
   const offerOpen = applicant.conditionalOfferAt != null;
   const latest = b.decisions[b.decisions.length - 1] ?? null;
@@ -167,7 +153,7 @@ export function reviewSections(
       incomplete: refs.done < refs.total,
       href: null, // several call sheets: the screen lists them (S-11 / S-12 routes)
     },
-    { key: 'report', status: b.report ? 'Entered' : '—', incomplete: !b.report, href: String(routes.screeningReport(id)) },
+    { key: 'report', status: vp.report === 'entered' ? 'Entered' : '—', incomplete: vp.report !== 'entered', href: String(routes.screeningReport(id)) },
   ];
   if (c10) {
     sections.push({

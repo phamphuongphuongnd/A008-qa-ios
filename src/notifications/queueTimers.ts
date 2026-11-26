@@ -57,6 +57,17 @@ export async function cancelTimerNotifications(notifier: QueueNotifier, ids: rea
 }
 
 /**
+ * Cancel the notifications of timer rows that were stopped elsewhere (e.g. 2A switching a rental to Compare returns
+ * `stoppedTimers`). Takes the DB rows (`notificationIds`); never throws.
+ */
+export async function cancelStoppedTimers(
+  notifier: QueueNotifier,
+  timers: readonly { notificationIds?: readonly string[] | null }[],
+): Promise<void> {
+  for (const t of timers) await cancelTimerNotifications(notifier, t.notificationIds);
+}
+
+/**
  * Ask for notification permission once (§6: "Hỏi quyền thông báo lần đầu khi bật First-come mode"). Call when the
  * landlord turns First-come on (S-03, 2A) and before starting a timer. `asked` / `markAsked` read and write
  * `settings.notificationsAsked`. Never asks again after the first time; returns the current state.

@@ -6,7 +6,8 @@ import { decisionFileHtml } from '@/pdf/decisionFile';
 import { PDF_FOOTER, type PdfAdapter } from '@/pdf/shell';
 
 import { loadDecisionContext, saveDecisionAction } from '../decision';
-import { buildDecisionFile, exportDecisionFile, historyLines, stampText } from '../decisionFile';
+import { buildDecisionFile, exportDecisionFile, stampText } from '../decisionFile';
+import { toEngineCriteria } from '@/db/toEngine';
 import { makeDeps, sampleDb } from '../testing/helpers';
 
 async function decided() {
@@ -66,9 +67,10 @@ describe('S-19 decision file', () => {
     const { deps } = makeDeps(db, '2026-12-06T20:12:00Z');
     const ctx = loadDecisionContext(db, id('Priya'), '2026-12-06T15:12:00-05:00')!;
     await saveDecisionAction(deps, id('Priya'), { kind: 'deny', conditions: [], reasons: [ctx.reasonChoices[1].reason], note: '', reportInfluenced: true });
-    const before = C.listCriteria(db, rentalId);
-    const items = before.map((c) => (c.code === 'C2' ? { ...c, params: { ...c.params, months: 24 } } : c));
-    C.saveCriteriaWithReason(db, rentalId, items as never, 'Typo — as published', '2026-11-28T10:00:00-05:00');
+    // 2A's history shape: { criteria: engine Criterion[] with ids }.
+    const before = toEngineCriteria(C.listCriteria(db, rentalId));
+    const after = before.map((c) => (c.code === 'C2' ? { ...c, params: { ...c.params, months: 24 } } : c));
+    C.addCriteriaHistory(db, rentalId, { before: { criteria: before }, after: { criteria: after }, reason: 'Typo — as published', at: '2026-11-28T10:00:00-05:00' });
     A.purgeApplicant(db, makeTestFiles(), id('Marcus'), { keepRecord: true, at: '2027-01-10T09:00:00-05:00' });
 
     const data = (await buildDecisionFile(db, rentalId, new Date('2027-01-11T15:00:00Z')))!;
@@ -103,9 +105,8 @@ describe('S-19 decision file', () => {
     expect(await exportDecisionFile({ db, now: () => new Date(), pdf }, 999)).toEqual({ ok: false, error: 'not_found' });
   });
 
-  it('helpers: stamps and history lines', () => {
+  it('helpers: stamps', () => {
     expect(stampText('2026-12-02T09:14:00-05:00')).toBe('Dec 2, 2026, 9:14 AM');
     expect(stampText('2026-12-02T14:14:00Z')).toMatch(/^Dec \d, 2026, \d{1,2}:14 [AP]M$/);
-    expect(historyLines({ mode: 'compare' }, { mode: 'first_come' })).toEqual([]);
   });
 });
