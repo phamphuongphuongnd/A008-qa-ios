@@ -6,7 +6,9 @@
 > Phần A (T) đã chạy 2026-11-26 trên nhánh `wt/testcases`. Phần B (M) **để trống cột Kết quả**, sắp đúng thứ tự đi một lượt
 > trên máy (cài mới → onboarding → luồng mẫu → rental tự tạo First-come → nhánh phụ → hệ thống → giao diện / trợ năng → cài đè → xoá hết).
 > Lỗi → `BUGS.md` (dải B-01…B-39 cho phần T; phiên thử máy dùng tiếp B-40…).
-> **Tổng: 200 case** — T 124 (✅ 124 · ❌ 0) · M 76 (72 trên A13 + 4 iOS ⏭). Jest: 67 suite / 702 test xanh (29 test mới trong 5 file, đánh dấu `(mới)`).
+> **Tổng: 200 case** — T 124 (✅ 124 · ❌ 0) · M 76 (72 Android + 4 iOS). Jest: 67 suite / 702 test xanh (29 test mới trong 5 file, đánh dấu `(mới)`).
+> **Phần B Android đã chạy 2026-11-26** trên 3 máy ảo Android 17 song song (dev client x86_64, đóng băng `6b1fea8`, chi tiết `qa/runs/2026-11-26-qa1|qa2|qa3.md`):
+> **✅ 50** (5 ✅* dữ liệu chèn tay vì B-53) · **❌ 19** · **⏭ 3** → 35 lỗi trong `BUGS.md` (🔴 4 · 🟠 12 · 🟡 19). iOS (TC-197…200): chờ làn QA-iOS.
 > Ước tính một lượt máy: B1 15′ · B2 70′ · B3 75′ · B4 30′ · B5 45′ · B6 40′ · B7 15′ ≈ **4,5 – 5 giờ**.
 
 ## A. Tự động (T)
@@ -154,84 +156,84 @@
 | Mã | Tính năng | Trường hợp | Kết quả mong đợi | Cách | Kết quả |
 |---|---|---|---|---|---|
 | **B1** | | **Cài mới, khởi động, onboarding** (bật chế độ máy bay suốt lượt thử, trừ khi ghi khác) | | | |
-| TC-125 | Cài mới | Gỡ bản cũ, cài APK release (armeabi-v7a) bản đóng băng | Cài được; launcher hiện icon Evenlease indigo; icon đơn sắc (themed icon) đúng | M | |
-| TC-126 | Splash | Mở lần đầu, nền sáng rồi nền tối | Splash nền #f6f7fb / #0f1117, logo giữa; xem có dòng "Same criteria for every applicant." theo mockup không (ghi lại) | M | |
-| TC-127 | §7 migration | Lần mở đầu tiên | DB tạo xong < 2 s, không màn trắng / crash | M | |
-| TC-128 | F-01 S-01 | Đi 3 trang bằng Next; Skip ở trang 1 | Đúng chữ + minh hoạ mockup; Skip nhảy trang 3 | M | |
-| TC-129 | F-01 S-01 | Trang 3: chưa tick → "Get started"; tick; back hệ thống | Nút khoá tới khi tick; back về trang trước, không thoát onboarding sai | M | |
-| TC-130 | F-01 | "Explore with a sample rental" | Vào S-02 có Rental mẫu, không hỏi gì thêm | M | |
+| TC-125 | Cài mới | Gỡ bản cũ, cài APK release (armeabi-v7a) bản đóng băng | Cài được; launcher hiện icon Evenlease indigo; icon đơn sắc (themed icon) đúng | M | ✅ |
+| TC-126 | Splash | Mở lần đầu, nền sáng rồi nền tối | Splash nền #f6f7fb / #0f1117, logo giữa; xem có dòng "Same criteria for every applicant." theo mockup không (ghi lại) | M | ✅ |
+| TC-127 | §7 migration | Lần mở đầu tiên | DB tạo xong < 2 s, không màn trắng / crash | M | ❌ B-40 |
+| TC-128 | F-01 S-01 | Đi 3 trang bằng Next; Skip ở trang 1 | Đúng chữ + minh hoạ mockup; Skip nhảy trang 3 | M | ✅ |
+| TC-129 | F-01 S-01 | Trang 3: chưa tick → "Get started"; tick; back hệ thống | Nút khoá tới khi tick; back về trang trước, không thoát onboarding sai | M | ✅ |
+| TC-130 | F-01 | "Explore with a sample rental" | Vào S-02 có Rental mẫu, không hỏi gì thêm | M | ✅ |
 | **B2** | | **Luồng mẫu đầy đủ (Compare)** | | | |
-| TC-131 | F-02 S-02 | Thẻ Rental mẫu | "1428 Maple St…", "$1,650/mo · 2 bd", chip Compare, "4 applicants · 2 ready to decide", chip Open | M | |
-| TC-132 | F-02 S-06 | Mở Hub | Header + "Available Jan 1", nút Compare (4), danh sách theo thứ tự nhận, "Ready to decide" / "2 items missing"; menu ⋯ đủ 6 mục | M | |
-| TC-133 | F-11 S-09 | Jordan | Summary "Ready to decide" + "Not a score…"; 9 dòng tiêu chí đúng §8 + huy hiệu có icon + chữ; không có "N of M Met" | M | |
-| TC-134 | F-11 S-09 | Chạm dòng C1 của Jordan | Sheet chứng cứ: nguồn Document, ngày, "by you", file; nút đi tới nơi bổ sung | M | |
-| TC-135 | F-11 S-09 | Priya: thẻ Issues | Chỉ 2 mục Missing (C4, C6) có nút "Call landlord" / "Add pay stubs"; C1 / C5 Not met không nằm trong Issues | M | |
-| TC-136 | F-07 S-10 | Priya → Documents: thêm Proof of income bằng Camera, rồi Photos, rồi Files PDF | 3 nguồn đều được; ảnh nén, thumbnail hiện; xem toàn màn zoom được | M | |
-| TC-137 | F-07 S-10 | Income check: nhập $2,123.08 Every 2 weeks (stated $4,700) → Mark as checked | Hiện "≈ … vs $4,700 stated (…%)", huy hiệu đúng; C1 ở S-09 đổi theo | M | |
-| TC-138 | F-08 S-11 | Marcus → Landlord reference | Red flags cam (ngày, tiền thuê +29 %); bước 1 "Search county records" mở trình duyệt (tắt máy bay cho case này) | M | |
-| TC-139 | F-08 S-11 | Priya: Log attempt Email no answer → "Mark as unreachable" xuất hiện → bấm | Nút chỉ hiện sau lần 3 (2 cách); C4 "Unreachable after 3 attempts" | M | |
-| TC-140 | F-08 S-11 | "Email a verification request" | Mở app mail với tiêu đề + 9 câu; app không tự gửi | M | |
-| TC-141 | F-08 S-12 | Employer reference của Jordan | Chữ hướng dẫn + ghi chú cố định; Attempts log như S-11 | M | |
-| TC-142 | F-09 S-13 | Marcus: "Open MySmartMove" / "Open Checkr"; nhập report None + đính PDF | Mở trình duyệt; lưu được; C3 Verified, C5 Met | M | |
-| TC-143 | F-12 S-17 | Compare 4 cột | Cột đầu ghim, cuộn ngang mượt; "Not a ranking…"; hàng Issues; chạm ô → sheet chứng cứ (G-01); lọc Hide denied / withdrawn | M | |
-| TC-144 | F-13 S-15 | Priya → Make a decision → Deny, lý do C5 | Tick report sẵn; "Save decision" → hộp "An adverse action notice is required" [Create notice], không bỏ qua được | M | |
-| TC-145 | F-13 S-15 | Gõ lý do "too many kids" | Bị chặn + câu Fair housing | M | |
-| TC-146 | F-14 S-16 | Thư FCRA của Priya → Preview PDF → Share → Mark as sent (Email) | PDF trang Letter đen-trắng + logo, khối FCRA khoá, chỗ trống "[Mailing address from the report]"; share sheet mở; S-06 hết "Notice pending" | M | |
-| TC-147 | F-14 | Marcus → Deny chỉ vì C4 | Ra "Denial letter" thường, không FCRA | M | |
-| TC-148 | F-10 S-14 | Jordan → Conditional offer → Background: có 1 án (Property, 2022) | Banner luật; 4 câu đánh giá bắt buộc; "How long ago" tự tính; không có nút tự loại | M | |
-| TC-149 | F-13 | Jordan → "Continue with the offer" → Approve | Trạng thái Approved; Hub có thẻ "Move-in checklist"; không có nút "Applicant accepted" | M | |
-| TC-150 | F-13 | Dana → Conditional offer → Withdraw offer (sau 4 câu) | Trạng thái hiện **Denied** + lý do; nếu tick report → bắt thư FCRA | M | |
-| TC-151 | F-16 S-20 | Move-in của Jordan: sửa phòng, chụp ảnh hạng mục, đồng hồ (kWh / ccf / gal), chìa, báo khói | Lưu dở → thoát → quay lại còn nguyên; đơn vị đúng | M | |
-| TC-152 | F-16 S-20 | Ký Landlord + Tenant trong ScrollView → Export PDF | Ký không làm cuộn màn; thiếu 1 chữ ký → "Both signatures needed"; PDF đủ trang | M | |
-| TC-153 | F-15 S-19 | Decision file → Export / Share; bật "Include document thumbnails" | PDF có "N of M Met", lịch sử, thứ tự nhận, thư đã gửi; bảng ngắt trang đẹp; thumbnails chỉ khi bật | M | |
-| TC-154 | F-03 S-05 | Rental mẫu → Published criteria → Export PDF / Copy as text | PDF đúng câu mockup; dán ra Notes đúng văn bản | M | |
+| TC-131 | F-02 S-02 | Thẻ Rental mẫu | "1428 Maple St…", "$1,650/mo · 2 bd", chip Compare, "4 applicants · 2 ready to decide", chip Open | M | ✅ |
+| TC-132 | F-02 S-06 | Mở Hub | Header + "Available Jan 1", nút Compare (4), danh sách theo thứ tự nhận, "Ready to decide" / "2 items missing"; menu ⋯ đủ 6 mục | M | ✅ |
+| TC-133 | F-11 S-09 | Jordan | Summary "Ready to decide" + "Not a score…"; 9 dòng tiêu chí đúng §8 + huy hiệu có icon + chữ; không có "N of M Met" | M | ✅ |
+| TC-134 | F-11 S-09 | Chạm dòng C1 của Jordan | Sheet chứng cứ: nguồn Document, ngày, "by you", file; nút đi tới nơi bổ sung | M | ✅ |
+| TC-135 | F-11 S-09 | Priya: thẻ Issues | Chỉ 2 mục Missing (C4, C6) có nút "Call landlord" / "Add pay stubs"; C1 / C5 Not met không nằm trong Issues | M | ✅ |
+| TC-136 | F-07 S-10 | Priya → Documents: thêm Proof of income bằng Camera, rồi Photos, rồi Files PDF | 3 nguồn đều được; ảnh nén, thumbnail hiện; xem toàn màn zoom được | M | ❌ B-43 |
+| TC-137 | F-07 S-10 | Income check: nhập $2,123.08 Every 2 weeks (stated $4,700) → Mark as checked | Hiện "≈ … vs $4,700 stated (…%)", huy hiệu đúng; C1 ở S-09 đổi theo | M | ✅ |
+| TC-138 | F-08 S-11 | Marcus → Landlord reference | Red flags cam (ngày, tiền thuê +29 %); bước 1 "Search county records" mở trình duyệt (tắt máy bay cho case này) | M | ✅ |
+| TC-139 | F-08 S-11 | Priya: Log attempt Email no answer → "Mark as unreachable" xuất hiện → bấm | Nút chỉ hiện sau lần 3 (2 cách); C4 "Unreachable after 3 attempts" | M | ✅ |
+| TC-140 | F-08 S-11 | "Email a verification request" | Mở app mail với tiêu đề + 9 câu; app không tự gửi | M | ⏭ máy ảo không có tài khoản mail → A13 |
+| TC-141 | F-08 S-12 | Employer reference của Jordan | Chữ hướng dẫn + ghi chú cố định; Attempts log như S-11 | M | ✅ |
+| TC-142 | F-09 S-13 | Marcus: "Open MySmartMove" / "Open Checkr"; nhập report None + đính PDF | Mở trình duyệt; lưu được; C3 Verified, C5 Met | M | ✅ |
+| TC-143 | F-12 S-17 | Compare 4 cột | Cột đầu ghim, cuộn ngang mượt; "Not a ranking…"; hàng Issues; chạm ô → sheet chứng cứ (G-01); lọc Hide denied / withdrawn | M | ✅ |
+| TC-144 | F-13 S-15 | Priya → Make a decision → Deny, lý do C5 | Tick report sẵn; "Save decision" → hộp "An adverse action notice is required" [Create notice], không bỏ qua được | M | ❌ B-48 |
+| TC-145 | F-13 S-15 | Gõ lý do "too many kids" | Bị chặn + câu Fair housing | M | ✅ |
+| TC-146 | F-14 S-16 | Thư FCRA của Priya → Preview PDF → Share → Mark as sent (Email) | PDF trang Letter đen-trắng + logo, khối FCRA khoá, chỗ trống "[Mailing address from the report]"; share sheet mở; S-06 hết "Notice pending" | M | ✅ |
+| TC-147 | F-14 | Marcus → Deny chỉ vì C4 | Ra "Denial letter" thường, không FCRA | M | ✅ |
+| TC-148 | F-10 S-14 | Jordan → Conditional offer → Background: có 1 án (Property, 2022) | Banner luật; 4 câu đánh giá bắt buộc; "How long ago" tự tính; không có nút tự loại | M | ✅ |
+| TC-149 | F-13 | Jordan → "Continue with the offer" → Approve | Trạng thái Approved; Hub có thẻ "Move-in checklist"; không có nút "Applicant accepted" | M | ✅ |
+| TC-150 | F-13 | Dana → Conditional offer → Withdraw offer (sau 4 câu) | Trạng thái hiện **Denied** + lý do; nếu tick report → bắt thư FCRA | M | ✅ |
+| TC-151 | F-16 S-20 | Move-in của Jordan: sửa phòng, chụp ảnh hạng mục, đồng hồ (kWh / ccf / gal), chìa, báo khói | Lưu dở → thoát → quay lại còn nguyên; đơn vị đúng | M | ❌ B-51 |
+| TC-152 | F-16 S-20 | Ký Landlord + Tenant trong ScrollView → Export PDF | Ký không làm cuộn màn; thiếu 1 chữ ký → "Both signatures needed"; PDF đủ trang | M | ✅ |
+| TC-153 | F-15 S-19 | Decision file → Export / Share; bật "Include document thumbnails" | PDF có "N of M Met", lịch sử, thứ tự nhận, thư đã gửi; bảng ngắt trang đẹp; thumbnails chỉ khi bật | M | ✅ |
+| TC-154 | F-03 S-05 | Rental mẫu → Published criteria → Export PDF / Copy as text | PDF đúng câu mockup; dán ra Notes đúng văn bản | M | ✅ |
 | **B3** | | **Rental tự tạo R2 (First-come) + 3 cách nhận đơn** | | | |
-| TC-155 | F-02 S-03 | "+" → nhập R2, ZIP 4 số, rent trống → Save | Lỗi đúng chữ, cuộn tới ô lỗi đầu + rung; bang WA → gợi ý cam "Seattle requires first-come order." | M | |
-| TC-156 | F-02 §6 | Chọn First-come lần đầu | Hộp xin quyền thông báo của Android hiện 1 lần → **Từ chối** (thử đường bị từ chối) | M | |
-| TC-157 | F-03 S-04 | Bật C9, C10; tắt voucher C1; C7 = 1; Cx "Has kids?" rồi "Has renter's insurance" | Cảnh báo voucher [Keep on]; cảnh báo C7; Cx chứa từ cấm bị chặn; Cx thứ 2 thêm được | M | |
-| TC-158 | F-06 S-07 | Add applicant → "Print a blank application" | PDF đơn trống có câu Cx + giấy tờ; share sheet | M | |
-| TC-159 | F-04 S-08 | H1 Alex nhập tay đủ 7 phần; Received on để mặc định | Thanh tiến độ 7 phần, "Draft saved"; bàn phím đẩy footer; First-come cảnh báo "Use the time you actually received it" | M | |
-| TC-160 | F-04 | Bắt đầu đơn rồi back ra giữa chừng (huỷ) | Hỏi "Discard changes?" / nháp được giữ; Discard xoá nháp | M | |
-| TC-161 | F-03 §3.13 | Sau khi có H1 → S-04 | Banner khoá; "Edit criteria" bắt lý do; sửa xong lịch sử ghi | M | |
-| TC-162 | F-05 S-08a | H2 Bea: "Hand the phone to the applicant" → Start → điền → ký → Submit | Toàn màn, ẩn tab; chữ "Do not enter your Social Security number."; S-08b "Thank you, Bea." + giờ nhận | M | |
-| TC-163 | F-05 | Trong Applicant mode: back hệ thống, vuốt back, nút Home rồi mở lại | Back bị nuốt; mở lại vẫn ở form khách | M | |
-| TC-164 | F-05 | Kill app (vuốt khỏi Recents) trong Applicant mode rồi mở lại | Vẫn Applicant mode, khoá; không thấy Rental / hồ sơ khác | M | |
-| TC-165 | F-05 S-08b | Chạm 3 lần; rồi để yên 60 s | Hiện vân tay / mã máy; huỷ → ở lại; để yên 60 s → tự hỏi xác thực | M | |
-| TC-166 | F-05 | "Landlord" → vân tay đúng → "Exit applicant mode?" | Về S-06; nháp khách được giữ nếu chưa Submit | M | |
-| TC-167 | F-04 | H3 Chris: nhập + "Attach photos of the paper form" (Camera) | Ảnh ở "Other files"; source paper; C7 Not met + cảnh báo cam; C4 Needs review "No previous landlord…" | M | |
-| TC-168 | F-12 S-18 | Order queue | Banner First-come; #1 Alex In review, #2/#3 chờ; Bea/Chris "Make a decision" khoá + "decide on #1 first" | M | |
-| TC-169 | F-12 §6 | #1 → "Request missing info" (Text) → bật lại quyền thông báo trong Settings Android → chỉnh giờ máy tới còn 1 h 50 | Hàng hiện "Missing info — … h left"; thông báo "Alex Rivera — 2 hours left…" tới; chạm → mở S-18 | M | |
-| TC-170 | F-12 | Chỉnh giờ qua 72 h | Thông báo hết giờ; nút "Move to next (incomplete)" → Bea In review | M | |
-| TC-171 | F-12 | Bea → Conditional offer → chỉnh giờ qua 48 h | "Offer — … h left" rồi "Offer expired — move to next" → Chris In review | M | |
-| TC-172 | F-05 §6 | Đang Applicant mode thì tới giờ thông báo | Không hiện / chạm không mở màn nào ngoài form khách | M | |
+| TC-155 | F-02 S-03 | "+" → nhập R2, ZIP 4 số, rent trống → Save | Lỗi đúng chữ, cuộn tới ô lỗi đầu + rung; bang WA → gợi ý cam "Seattle requires first-come order." | M | ✅ |
+| TC-156 | F-02 §6 | Chọn First-come lần đầu | Hộp xin quyền thông báo của Android hiện 1 lần → **Từ chối** (thử đường bị từ chối) | M | ✅ |
+| TC-157 | F-03 S-04 | Bật C9, C10; tắt voucher C1; C7 = 1; Cx "Has kids?" rồi "Has renter's insurance" | Cảnh báo voucher [Keep on]; cảnh báo C7; Cx chứa từ cấm bị chặn; Cx thứ 2 thêm được | M | ✅ |
+| TC-158 | F-06 S-07 | Add applicant → "Print a blank application" | PDF đơn trống có câu Cx + giấy tờ; share sheet | M | ✅ |
+| TC-159 | F-04 S-08 | H1 Alex nhập tay đủ 7 phần; Received on để mặc định | Thanh tiến độ 7 phần, "Draft saved"; bàn phím đẩy footer; First-come cảnh báo "Use the time you actually received it" | M | ❌ B-53 |
+| TC-160 | F-04 | Bắt đầu đơn rồi back ra giữa chừng (huỷ) | Hỏi "Discard changes?" / nháp được giữ; Discard xoá nháp | M | ❌ B-47 |
+| TC-161 | F-03 §3.13 | Sau khi có H1 → S-04 | Banner khoá; "Edit criteria" bắt lý do; sửa xong lịch sử ghi | M | ✅ |
+| TC-162 | F-05 S-08a | H2 Bea: "Hand the phone to the applicant" → Start → điền → ký → Submit | Toàn màn, ẩn tab; chữ "Do not enter your Social Security number."; S-08b "Thank you, Bea." + giờ nhận | M | ❌ B-53 |
+| TC-163 | F-05 | Trong Applicant mode: back hệ thống, vuốt back, nút Home rồi mở lại | Back bị nuốt; mở lại vẫn ở form khách | M | ✅ |
+| TC-164 | F-05 | Kill app (vuốt khỏi Recents) trong Applicant mode rồi mở lại | Vẫn Applicant mode, khoá; không thấy Rental / hồ sơ khác | M | ✅ |
+| TC-165 | F-05 S-08b | Chạm 3 lần; rồi để yên 60 s | Hiện vân tay / mã máy; huỷ → ở lại; để yên 60 s → tự hỏi xác thực | M | ⏭ cần S-08b, chặn bởi B-53 |
+| TC-166 | F-05 | "Landlord" → vân tay đúng → "Exit applicant mode?" | Về S-06; nháp khách được giữ nếu chưa Submit | M | ✅ |
+| TC-167 | F-04 | H3 Chris: nhập + "Attach photos of the paper form" (Camera) | Ảnh ở "Other files"; source paper; C7 Not met + cảnh báo cam; C4 Needs review "No previous landlord…" | M | ❌ B-53 |
+| TC-168 | F-12 S-18 | Order queue | Banner First-come; #1 Alex In review, #2/#3 chờ; Bea/Chris "Make a decision" khoá + "decide on #1 first" | M | ✅* dữ liệu chèn tay — thử lại sau B-53 |
+| TC-169 | F-12 §6 | #1 → "Request missing info" (Text) → bật lại quyền thông báo trong Settings Android → chỉnh giờ máy tới còn 1 h 50 | Hàng hiện "Missing info — … h left"; thông báo "Alex Rivera — 2 hours left…" tới; chạm → mở S-18 | M | ❌ B-58 |
+| TC-170 | F-12 | Chỉnh giờ qua 72 h | Thông báo hết giờ; nút "Move to next (incomplete)" → Bea In review | M | ❌ B-58 |
+| TC-171 | F-12 | Bea → Conditional offer → chỉnh giờ qua 48 h | "Offer — … h left" rồi "Offer expired — move to next" → Chris In review | M | ✅* dữ liệu chèn tay — thử lại sau B-53 |
+| TC-172 | F-05 §6 | Đang Applicant mode thì tới giờ thông báo | Không hiện / chạm không mở màn nào ngoài form khách | M | ✅* dữ liệu chèn tay — thử lại sau B-53 |
 | **B4** | | **Nhánh phụ: quyền, huỷ, xoá** | | | |
-| TC-173 | F-07 | Thu hồi quyền Camera (Settings Android) → S-10 "+ Add" → Camera | Thông báo "Open settings"; Photos / Files vẫn dùng được | M | |
-| TC-174 | F-17 S-24 | Đóng R2 (vuốt Close) → chỉnh giờ qua 60 ngày → S-24 | Thẻ nhắc trên S-02 + thông báo "… closed rentals still hold applicant data" → chạm mở S-24; Rental mẫu không tính | M | |
-| TC-175 | F-17 S-24 | "Delete their data" → [Cancel] rồi [Delete] | Hộp "Permanently delete data for n applicants?…"; xoá xong file biến mất (`adb shell run-as … ls files/applicants`); Decision file còn dòng "Applicant n — data deleted" | M | |
-| TC-176 | F-02 S-02 | Vuốt Closed → Reopen / Delete Rental | Đúng hành động; Delete hỏi xác nhận, nút đỏ bên phải | M | |
-| TC-177 | F-19 | Settings → "Remove sample rental" rồi "Load sample rental" | Gỡ một chạm, nạp lại đúng §8 | M | |
+| TC-173 | F-07 | Thu hồi quyền Camera (Settings Android) → S-10 "+ Add" → Camera | Thông báo "Open settings"; Photos / Files vẫn dùng được | M | ✅ |
+| TC-174 | F-17 S-24 | Đóng R2 (vuốt Close) → chỉnh giờ qua 60 ngày → S-24 | Thẻ nhắc trên S-02 + thông báo "… closed rentals still hold applicant data" → chạm mở S-24; Rental mẫu không tính | M | ✅* dữ liệu chèn tay — thử lại sau B-53 |
+| TC-175 | F-17 S-24 | "Delete their data" → [Cancel] rồi [Delete] | Hộp "Permanently delete data for n applicants?…"; xoá xong file biến mất (`adb shell run-as … ls files/applicants`); Decision file còn dòng "Applicant n — data deleted" | M | ✅* dữ liệu chèn tay — thử lại sau B-53 |
+| TC-176 | F-02 S-02 | Vuốt Closed → Reopen / Delete Rental | Đúng hành động; Delete hỏi xác nhận, nút đỏ bên phải | M | ✅ |
+| TC-177 | F-19 | Settings → "Remove sample rental" rồi "Load sample rental" | Gỡ một chạm, nạp lại đúng §8 | M | ✅ |
 | **B5** | | **Hệ thống: khoá, sao lưu, Guide, About** | | | |
-| TC-178 | F-19 S-23 | Bật App lock (vân tay), Lock after = 1 min; ra Home 30 s / 70 s | 30 s không khoá; 70 s khoá, vân tay mở; huỷ → vẫn khoá | M | |
-| TC-179 | F-19 S-23 | Đang mở Share sheet / bộ chọn file lâu > Lock after | Không bị khoá khi quay về (withLockSuspended) | M | |
-| TC-180 | F-18 S-22 | "Back up now" lần đầu: mật khẩu 2 lần khác nhau → đúng | Bắt nhập lại; cảnh báo "If you forget it…"; share sheet; "Last backup: … · x MB"; ghi thời gian deriveKey trên A13 | M | |
-| TC-181 | F-18 S-22 | Automatic backup Weekly → chọn thư mục Drive (SAF) → chạy job | File mới trong thư mục; giữ tối đa 3 file | M | |
-| TC-182 | F-18 S-22 | Restore: file ảnh JPG; sai mật khẩu; đúng mật khẩu → [Cancel] → [Replace] | Báo "not a backup" trước khi hỏi mật khẩu; sai mật khẩu → dữ liệu giữ nguyên; Replace → dữ liệu giống lúc sao lưu, đồng hồ lên lịch lại | M | |
-| TC-183 | F-18 | Restore file bị cắt dở (copy nửa file) | Báo file hỏng, không đổi dữ liệu | M | |
-| TC-184 | F-19 S-25 | Guide: tìm "fake"; mở bài; link từ S-13 / S-15 / S-24 | Kết quả đúng; bài có Sources + Not legal advice; link ngữ cảnh mở đúng bài | M | |
-| TC-185 | F-19 About | Settings → About → Licenses; Legal & privacy | "Version 1.0.0 (n) · No account · No servers"; Licenses mở; S-26 có nguồn FTC / HUD / Seattle | M | |
-| TC-186 | Offline | Toàn bộ B1–B5 làm khi bật máy bay | Không màn nào báo lỗi mạng / quay vòng chờ; chỉ link ngoài cần mạng | M | |
+| TC-178 | F-19 S-23 | Bật App lock (vân tay), Lock after = 1 min; ra Home 30 s / 70 s | 30 s không khoá; 70 s khoá, vân tay mở; huỷ → vẫn khoá | M | ✅ |
+| TC-179 | F-19 S-23 | Đang mở Share sheet / bộ chọn file lâu > Lock after | Không bị khoá khi quay về (withLockSuspended) | M | ✅ |
+| TC-180 | F-18 S-22 | "Back up now" lần đầu: mật khẩu 2 lần khác nhau → đúng | Bắt nhập lại; cảnh báo "If you forget it…"; share sheet; "Last backup: … · x MB"; ghi thời gian deriveKey trên A13 | M | ❌ B-70 |
+| TC-181 | F-18 S-22 | Automatic backup Weekly → chọn thư mục Drive (SAF) → chạy job | File mới trong thư mục; giữ tối đa 3 file | M | ✅ |
+| TC-182 | F-18 S-22 | Restore: file ảnh JPG; sai mật khẩu; đúng mật khẩu → [Cancel] → [Replace] | Báo "not a backup" trước khi hỏi mật khẩu; sai mật khẩu → dữ liệu giữ nguyên; Replace → dữ liệu giống lúc sao lưu, đồng hồ lên lịch lại | M | ✅ |
+| TC-183 | F-18 | Restore file bị cắt dở (copy nửa file) | Báo file hỏng, không đổi dữ liệu | M | ✅ |
+| TC-184 | F-19 S-25 | Guide: tìm "fake"; mở bài; link từ S-13 / S-15 / S-24 | Kết quả đúng; bài có Sources + Not legal advice; link ngữ cảnh mở đúng bài | M | ❌ B-48 |
+| TC-185 | F-19 About | Settings → About → Licenses; Legal & privacy | "Version 1.0.0 (n) · No account · No servers"; Licenses mở; S-26 có nguồn FTC / HUD / Seattle | M | ❌ B-76 |
+| TC-186 | Offline | Toàn bộ B1–B5 làm khi bật máy bay | Không màn nào báo lỗi mạng / quay vòng chờ; chỉ link ngoài cần mạng | M | ✅ |
 | **B6** | | **Giao diện & trợ năng** | | | |
-| TC-187 | Sáng / tối | Appearance: System / Light / Dark; tối ở S-02, S-09, S-17, S-20, sheet S-15 | Màu đúng token v2; thanh trạng thái + điều hướng đổi màu (`dumpsys` apr=); không chữ đen trên nền tối | M | |
-| TC-188 | 320 dp | `wm density 540` → S-02, S-08, S-09, S-15, S-17, S-20 | Không tràn chữ / cắt nút; vùng chạm ≥ 48 | M | |
-| TC-189 | Chữ 130 % | font_scale 1.3 → S-17 | Compare thành thẻ dọc mỗi Applicant; chạm thẻ vẫn mở chứng cứ | M | |
-| TC-190 | Chữ 200 % | font_scale 2.0 → S-01, S-03, S-08, S-09, S-16 | Đọc được, cuộn được, nút không chồng | M | |
-| TC-191 | TalkBack | Bật TalkBack: S-09 dòng C1, S-18 dòng đồng hồ, huy hiệu S-17 | Đọc như bảng mockup ("Income, met, verified: 3.24 times rent"; "Missing info, 41 hours left"); Undo snackbar lâu hơn | M | |
-| TC-192 | Tablet / xoay | `wm size 1200x1920` (rộng ≥ 600 dp) | Nội dung tối đa 600, căn giữa | M | |
-| TC-193 | Hiệu năng | Rental có 15+ Applicant (nạp mẫu + thêm) → S-17 / S-06 | Cuộn mượt, mở màn < 1 s | M | |
+| TC-187 | Sáng / tối | Appearance: System / Light / Dark; tối ở S-02, S-09, S-17, S-20, sheet S-15 | Màu đúng token v2; thanh trạng thái + điều hướng đổi màu (`dumpsys` apr=); không chữ đen trên nền tối | M | ✅ |
+| TC-188 | 320 dp | `wm density 540` → S-02, S-08, S-09, S-15, S-17, S-20 | Không tràn chữ / cắt nút; vùng chạm ≥ 48 | M | ❌ B-77 |
+| TC-189 | Chữ 130 % | font_scale 1.3 → S-17 | Compare thành thẻ dọc mỗi Applicant; chạm thẻ vẫn mở chứng cứ | M | ❌ B-72 |
+| TC-190 | Chữ 200 % | font_scale 2.0 → S-01, S-03, S-08, S-09, S-16 | Đọc được, cuộn được, nút không chồng | M | ❌ B-77 |
+| TC-191 | TalkBack | Bật TalkBack: S-09 dòng C1, S-18 dòng đồng hồ, huy hiệu S-17 | Đọc như bảng mockup ("Income, met, verified: 3.24 times rent"; "Missing info, 41 hours left"); Undo snackbar lâu hơn | M | ❌ B-73 |
+| TC-192 | Tablet / xoay | `wm size 1200x1920` (rộng ≥ 600 dp) | Nội dung tối đa 600, căn giữa | M | ❌ B-48 |
+| TC-193 | Hiệu năng | Rental có 15+ Applicant (nạp mẫu + thêm) → S-17 / S-06 | Cuộn mượt, mở màn < 1 s | M | ⏭ máy ảo không đại diện → đo A13 (B-74) |
 | **B7** | | **Cài đè & xoá hết** | | | |
-| TC-194 | Cài đè | `adb install -r` cùng APK (hoặc bản build mới hơn) khi đang có dữ liệu | Dữ liệu + cài đặt + backup còn nguyên; không chạy lại onboarding | M | |
-| TC-195 | §10 | `adb backup` / Auto Backup: kiểm `allowBackup=false` trong manifest đã cài (`dumpsys package`) | Không cho sao lưu hệ thống | M | |
-| TC-196 | F-19 S-27 | Delete all data: gõ "delete" (thường) rồi "DELETE" | Sai chữ → nút khoá; đúng → về S-01, thư mục files trống, không còn thông báo hẹn | M | |
+| TC-194 | Cài đè | `adb install -r` cùng APK (hoặc bản build mới hơn) khi đang có dữ liệu | Dữ liệu + cài đặt + backup còn nguyên; không chạy lại onboarding | M | ✅ |
+| TC-195 | §10 | `adb backup` / Auto Backup: kiểm `allowBackup=false` trong manifest đã cài (`dumpsys package`) | Không cho sao lưu hệ thống | M | ✅ |
+| TC-196 | F-19 S-27 | Delete all data: gõ "delete" (thường) rồi "DELETE" | Sai chữ → nút khoá; đúng → về S-01, thư mục files trống, không còn thông báo hẹn | M | ❌ B-40 |
 | **B8** | | **iOS** | | | |
 | TC-197 | iOS | Face ID thoát Applicant mode; khoá app | Như Android | M | ⏭ iOS — EAS/Appetize sau |
 | TC-198 | iOS (G-05) | File Applicant không vào iCloud backup | `isExcludedFromBackup` trên documentDirectory/applicants | M | ⏭ iOS — EAS/Appetize sau |
