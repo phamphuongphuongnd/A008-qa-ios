@@ -1,0 +1,29 @@
+appId: com.maglobal.evenlease
+name: 03_applicant
+---
+# S-09 Jordan + the evidence sheet (TC-133 / TC-134).
+- runFlow: common/hub.yaml
+- scrollUntilVisible:
+    element:
+      text: ".*Jordan.*"
+    timeout: 10000
+- tapOn: ".*Jordan.*"
+- extendedWaitUntil:
+    visible: "Not a score.*"
+    timeout: 15000
+- takeScreenshot: ${LANE}_03a_s09_jordan
+- tapOn:
+    text: "Income.*"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_03b_evidence_sheet
+- swipe:
+    direction: DOWN
+- waitForAnimationToEnd:
+    timeout: 2000
+- scrollUntilVisible:
+    element:
+      text: "Make a decision"
+    timeout: 15000
+- takeScreenshot: ${LANE}_03c_s09_bottom

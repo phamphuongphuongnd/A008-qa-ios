@@ -1,0 +1,34 @@
+appId: com.maglobal.evenlease
+name: 01_onboarding
+---
+# Fresh install (run-ios.sh reinstalls per lane): first open = SQLite created + migrated, then S-01 (TC-127..130).
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible: "Pick tenants the same way.*"
+    timeout: 90000
+- takeScreenshot: ${LANE}_01a_page1
+- tapOn: "Next"
+- extendedWaitUntil:
+    visible: "Verify, don.t guess.*"
+    timeout: 10000
+- takeScreenshot: ${LANE}_01b_page2
+- tapOn: "Next"
+- extendedWaitUntil:
+    visible: "A checklist, not legal advice.*"
+    timeout: 10000
+# Gate: nothing goes on until the box is ticked.
+- scrollUntilVisible:
+    element:
+      text: "Explore with a sample rental"
+    timeout: 10000
+- tapOn: "Explore with a sample rental"
+- takeScreenshot: ${LANE}_01c_page3_not_ticked
+- assertVisible: "A checklist, not legal advice.*"
+- tapOn: "I understand Evenlease is not legal advice"
+- takeScreenshot: ${LANE}_01d_ticked
+- tapOn: "Explore with a sample rental"
+- extendedWaitUntil:
+    visible: ".*1428 Maple.*"
+    timeout: 20000
+- takeScreenshot: ${LANE}_01e_rentals

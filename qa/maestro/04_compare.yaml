@@ -1,0 +1,20 @@
+appId: com.maglobal.evenlease
+name: 04_compare
+---
+# S-17 (TC-143).
+- runFlow: common/hub.yaml
+- tapOn: "Compare applicants.*"
+- extendedWaitUntil:
+    visible: "Not a ranking.*"
+    timeout: 15000
+- takeScreenshot: ${LANE}_04a_compare
+- swipe:
+    start: 80%, 55%
+    end: 20%, 55%
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: ${LANE}_04b_compare_scrolled
+- tapOn:
+    text: "Hide denied / withdrawn"
+    optional: true
+- takeScreenshot: ${LANE}_04c_compare_filter

@@ -1,0 +1,7 @@
+# Relaunch (a real restart: Maestro stops the app first) and land on Rentals with the sample rental.
+appId: com.maglobal.evenlease
+---
+- launchApp
+- extendedWaitUntil:
+    visible: ".*1428 Maple.*"
+    timeout: 60000

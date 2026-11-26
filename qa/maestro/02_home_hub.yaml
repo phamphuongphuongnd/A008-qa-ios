@@ -1,0 +1,17 @@
+appId: com.maglobal.evenlease
+name: 02_home_hub
+---
+# Restart: onboarding must not come back (the gate is kept in SQLite). TC-131 / TC-132.
+- runFlow: common/home.yaml
+- assertNotVisible: "Pick tenants the same way.*"
+- takeScreenshot: ${LANE}_02a_rentals_after_restart
+- tapOn: ".*1428 Maple.*"
+- extendedWaitUntil:
+    visible: "Compare applicants.*"
+    timeout: 15000
+- takeScreenshot: ${LANE}_02b_hub
+- scrollUntilVisible:
+    element:
+      text: ".*Dana.*"
+    timeout: 15000
+- takeScreenshot: ${LANE}_02c_hub_list

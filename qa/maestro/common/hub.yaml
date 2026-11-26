@@ -1,0 +1,8 @@
+# Relaunch → the sample rental's hub (S-06).
+appId: com.maglobal.evenlease
+---
+- runFlow: home.yaml
+- tapOn: ".*1428 Maple.*"
+- extendedWaitUntil:
+    visible: "Compare applicants.*"
+    timeout: 15000

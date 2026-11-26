@@ -1,0 +1,62 @@
+appId: com.maglobal.evenlease
+name: 07_backup_folder
+---
+# S-22 on iOS + G-06 (TC-199): set the password, back up via the share sheet, pick a folder for Weekly
+# (On My iPhone), RESTART the app, back up again into the folder through the stored bookmark → "Backup saved.".
+# run-ios.sh then checks the files really are in the simulator's "On My iPhone" storage.
+- runFlow: common/settings.yaml
+- tapOn: "Backup & restore"
+- extendedWaitUntil:
+    visible: "Back up now"
+    timeout: 10000
+- takeScreenshot: ${LANE}_07a_s22
+- tapOn: "Back up now"
+- extendedWaitUntil:
+    visible: "Set a backup password"
+    timeout: 10000
+- tapOn: "Backup password"
+- inputText: "qa-backup-pass-1"
+- tapOn: "Type it again"
+- inputText: "qa-backup-pass-1"
+- hideKeyboard
+- takeScreenshot: ${LANE}_07b_password
+- tapOn: "Save and back up"
+- waitForAnimationToEnd:
+    timeout: 15000
+- takeScreenshot: ${LANE}_07c_share_sheet
+- tapOn:
+    text: "Close"
+    optional: true
+- extendedWaitUntil:
+    visible: "Automatic backup"
+    timeout: 15000
+- tapOn: "Weekly"
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: ${LANE}_07d_folder_picker
+- tapOn:
+    text: "Browse"
+    optional: true
+- tapOn:
+    text: "On My iPhone"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_07e_on_my_iphone
+- tapOn: "Open"
+- extendedWaitUntil:
+    visible: "Folder:.*"
+    timeout: 60000
+- takeScreenshot: ${LANE}_07f_weekly_on
+# Restart: the security-scoped URL died with the process; only the bookmark is left.
+- runFlow: common/settings.yaml
+- tapOn: "Backup & restore"
+- extendedWaitUntil:
+    visible: "Folder:.*"
+    timeout: 10000
+- tapOn: "Back up now"
+- extendedWaitUntil:
+    visible: "Backup saved.*"
+    timeout: 60000
+- takeScreenshot: ${LANE}_07g_saved_after_restart
+- assertNotVisible: ".*reach the folder.*"

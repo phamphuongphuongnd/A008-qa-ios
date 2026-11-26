@@ -1,0 +1,213 @@
+name: QA iOS
+
+# Release build for the iOS Simulator (no signing, no secrets, no Apple account) + the Maestro suite qa/maestro on
+# one or more lanes (device x appearance x Dynamic Type). Evidence (screenshots, junit, app log, crash reports,
+# G-05 / G-06 file checks, result.json) is uploaded as artifact qa-ios-<run_number>.
+# Manual only: a private repo bills macOS minutes x10 — every run is approved first. Never runs on dev / main pushes.
+# workflow_dispatch needs this file on the default branch (main); until then a run is started by pushing the tested
+# commit to the branch `qa-ios` on purpose (git push origin <commit>:refs/heads/qa-ios), with the default inputs.
+on:
+  push:
+    branches: [qa-ios]
+  workflow_dispatch:
+    inputs:
+      lanes:
+        description: 'Comma list of lanes: se-light (small iPhone, light, default text), pm-dark-axl (Pro Max, dark, accessibility XL text), ipad-light'
+        default: 'se-light,pm-dark-axl'
+      flows:
+        description: 'Only these numbered flows, comma list (e.g. 05,07; 01 always runs); empty = all'
+        default: ''
+      runner:
+        description: 'macOS runner label'
+        default: 'macos-26'
+      ios_version:
+        description: 'iOS major version of the simulators; empty = newest on the runner'
+        default: ''
+
+concurrency:
+  group: qa-ios
+  cancel-in-progress: true
+
+env:
+  MAESTRO_VERSION: '2.12.1'
+  MAESTRO_CLI_NO_ANALYTICS: '1'
+  MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: 'true'
+  MAESTRO_DRIVER_STARTUP_TIMEOUT: '480000'
+
+jobs:
+  ios:
+    name: iOS Simulator QA
+    runs-on: ${{ inputs.runner || 'macos-26' }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        id: tool
+        run: |
+          xcodebuild -version
+          sw_vers
+          echo "xcode=$(xcodebuild -version | head -1 | tr ' ' '-')" >> "$GITHUB_OUTPUT"
+          echo "t0=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore built app (skips the build when app sources did not change)
+        id: appcache
+        uses: actions/cache/restore@v4
+        with:
+          path: build/app
+          key: qa-ios-app-${{ steps.tool.outputs.xcode }}-${{ hashFiles('package-lock.json', 'app.json', 'index.ts', 'babel.config.js', 'metro.config.js', 'tsconfig.json', 'app/**', 'src/**', 'assets/**', 'modules/**', 'plugins/**', 'drizzle/**') }}
+
+      - uses: actions/setup-node@v4
+        if: steps.appcache.outputs.cache-hit != 'true'
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: npm ci
+        if: steps.appcache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: expo prebuild (clean)
+        if: steps.appcache.outputs.cache-hit != 'true'
+        run: npx expo prebuild -p ios --clean --no-install
+
+      - name: CocoaPods cache
+        if: steps.appcache.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/CocoaPods
+          key: qa-ios-pods-${{ hashFiles('package-lock.json', 'app.json') }}
+          restore-keys: qa-ios-pods-
+
+      - name: pod install
+        if: steps.appcache.outputs.cache-hit != 'true'
+        working-directory: ios
+        env:
+          RCT_USE_PREBUILT_RNCORE: '1'
+          RCT_USE_RN_DEP: '1'
+        # Prebuilt Hermes / RN core tarballs come from repo.reactnative.dev, which sometimes resets the connection.
+        run: |
+          for i in 1 2 3; do
+            pod install && exit 0
+            echo "pod install failed (attempt $i), retrying in 20 s"
+            sleep 20
+          done
+          exit 1
+
+      - name: Local module linked (ios-files)
+        if: steps.appcache.outputs.cache-hit != 'true'
+        run: grep -q "IosFiles" ios/Podfile.lock && echo "IosFiles pod linked" || { echo "::error::modules/ios-files not autolinked"; exit 1; }
+
+      - name: xcodebuild Release (simulator, unsigned)
+        if: steps.appcache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p build
+          WS=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(basename "$WS" .xcworkspace)
+          echo "workspace $WS scheme $SCHEME"
+          set +e
+          xcodebuild -workspace "$WS" -scheme "$SCHEME" -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath build/dd \
+            ARCHS=arm64 ONLY_ACTIVE_ARCH=YES CODE_SIGNING_ALLOWED=NO COMPILER_INDEX_STORE_ENABLE=NO \
+            build > build/xcodebuild.log 2>&1
+          CODE=$?
+          set -e
+          grep -E "error:|\*\* BUILD" build/xcodebuild.log | head -100 || true
+          if [ $CODE -ne 0 ]; then tail -150 build/xcodebuild.log; exit $CODE; fi
+          APP=$(ls -d build/dd/Build/Products/Release-iphonesimulator/*.app | head -1)
+          mkdir -p build/app
+          cp -R "$APP" build/app/
+
+      - name: Upload build log
+        if: failure() && steps.appcache.outputs.cache-hit != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-ios-buildlog-${{ github.run_number }}
+          path: build/xcodebuild.log
+          retention-days: 5
+
+      - name: Save built app
+        if: steps.appcache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: build/app
+          key: ${{ steps.appcache.outputs.cache-primary-key }}
+
+      - name: Zip the simulator app (also usable on Appetize)
+        run: |
+          mkdir -p out
+          (cd build/app && zip -qr "$GITHUB_WORKSPACE/out/Evenlease-simulator.zip" ./*.app)
+          ls -la out
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Maestro ${{ env.MAESTRO_VERSION }}
+        run: |
+          curl -fsSL -o /tmp/maestro.zip "https://github.com/mobile-dev-inc/maestro/releases/download/cli-${MAESTRO_VERSION}/maestro.zip"
+          unzip -q /tmp/maestro.zip -d "$HOME/maestro-cli"
+          BIN=$(dirname "$(find "$HOME/maestro-cli" -path '*/bin/maestro' -type f | head -1)")
+          echo "$BIN" >> "$GITHUB_PATH"
+          "$BIN/maestro" --version
+
+      - name: Pick simulators
+        env:
+          IOS_MAJOR: ${{ inputs.ios_version }}
+        run: |
+          xcrun simctl list runtimes
+          eval "$(python3 qa/ios/pick_devices.py)"
+          echo "runtime $RUNTIME_ID ($RUNTIME_VER) | small: $SE_NAME | max: $PM_NAME | ipad: $IPAD_NAME"
+          defaults write com.apple.iphonesimulator ConnectHardwareKeyboard -bool false || true
+          {
+            echo "RUNTIME_ID=$RUNTIME_ID"; echo "RUNTIME_VER=$RUNTIME_VER"
+            echo "SE_TYPE=$SE_TYPE"; echo "SE_NAME=$SE_NAME"
+            echo "PM_TYPE=$PM_TYPE"; echo "PM_NAME=$PM_NAME"
+            echo "IPAD_TYPE=$IPAD_TYPE"; echo "IPAD_NAME=$IPAD_NAME"
+          } >> "$GITHUB_ENV"
+
+      - name: Run lanes (one simulator at a time)
+        env:
+          LANES: ${{ inputs.lanes || 'se-light,pm-dark-axl' }}
+          FLOWS: ${{ inputs.flows }}
+        run: |
+          chmod +x qa/ios/run-ios.sh
+          APP=$(ls -d "$PWD"/build/app/*.app | head -1)
+          OUT="$PWD/out"
+          : > "$OUT/summary.md"
+          for L in ${LANES//,/ }; do
+            case "$L" in
+              se-light)    TYPE=$SE_TYPE;   NAME=$SE_NAME;   APPEAR=light; SIZE=large ;;
+              pm-dark-axl) TYPE=$PM_TYPE;   NAME=$PM_NAME;   APPEAR=dark;  SIZE=accessibility-extra-large ;;
+              ipad-light)  TYPE=$IPAD_TYPE; NAME=$IPAD_NAME; APPEAR=light; SIZE=large ;;
+              *) echo "unknown lane $L"; continue ;;
+            esac
+            if [ -z "$TYPE" ]; then echo "lane $L: no device type on this runner"; continue; fi
+            UDID=$(xcrun simctl create "qa-$L" "$TYPE" "$RUNTIME_ID")
+            xcrun simctl boot "$UDID"
+            xcrun simctl bootstatus "$UDID" -b >/dev/null
+            # Open Files once so "On My iPhone" (File Provider local storage) exists for the backup-folder flow.
+            xcrun simctl launch "$UDID" com.apple.DocumentsApp >/dev/null 2>&1 || true
+            sleep 10
+            xcrun simctl terminate "$UDID" com.apple.DocumentsApp >/dev/null 2>&1 || true
+            echo "== lane $L on $NAME iOS $RUNTIME_VER"
+            qa/ios/run-ios.sh "$L" "$UDID" "$APPEAR" "$SIZE" "$APP" "$OUT" "$FLOWS" | tee -a "$OUT/summary.md"
+            echo "  device: $NAME, iOS $RUNTIME_VER" >> "$OUT/summary.md"
+            xcrun simctl shutdown "$UDID" || true
+          done
+          cat "$OUT/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Minutes used
+        if: always()
+        run: |
+          echo "mac job minutes so far: $(( ($(date +%s) - ${{ steps.tool.outputs.t0 }}) / 60 ))" | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-ios-${{ github.run_number }}
+          path: out/
+          retention-days: 14
+          if-no-files-found: warn

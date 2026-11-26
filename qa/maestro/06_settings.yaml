@@ -1,0 +1,22 @@
+appId: com.maglobal.evenlease
+name: 06_settings
+---
+# S-21 + About + Licenses.
+- runFlow: common/settings.yaml
+- takeScreenshot: ${LANE}_06a_settings
+- scrollUntilVisible:
+    element:
+      text: "About"
+    timeout: 15000
+- takeScreenshot: ${LANE}_06b_settings_bottom
+- tapOn: "About"
+- extendedWaitUntil:
+    visible: "No account.*"
+    timeout: 10000
+- takeScreenshot: ${LANE}_06c_about
+- tapOn:
+    text: "Licenses"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 2000
+- takeScreenshot: ${LANE}_06d_licenses

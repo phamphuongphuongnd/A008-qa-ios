@@ -1,0 +1,42 @@
+appId: com.maglobal.evenlease
+name: 08_app_lock
+---
+# S-23 on a simulator (no Face ID enrolled, no passcode) → app PIN path. Restart → lock screen → PIN unlocks.
+- runFlow: common/settings.yaml
+- tapOn: "App lock"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_08a_s23
+- tapOn: "Require.*to open"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_08b_after_toggle
+- runFlow:
+    when:
+      visible: "Type the PIN again"
+    commands:
+      - tapOn: "PIN"
+      - inputText: "2580"
+      - tapOn: "Type the PIN again"
+      - inputText: "2580"
+      - hideKeyboard
+      - tapOn: "Save PIN and turn on"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_08c_lock_on
+- launchApp
+- extendedWaitUntil:
+    visible: "Evenlease is locked"
+    timeout: 30000
+- takeScreenshot: ${LANE}_08d_locked
+- tapOn:
+    text: "Unlock"
+    optional: true
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_08e_unlock_prompt
+- inputText: "2580"
+- extendedWaitUntil:
+    visible: ".*1428 Maple.*"
+    timeout: 20000
+- takeScreenshot: ${LANE}_08f_unlocked

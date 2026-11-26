@@ -1,0 +1,15 @@
+# A008 iOS Maestro suite (qa/ios/run-ios.sh runs it once per lane). 01 starts from a fresh install and loads the
+# sample rental; every later flow relaunches the app (Maestro stops it first), so a failed step does not hide the next.
+flows:
+  - "*"
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - 01_onboarding
+    - 02_home_hub
+    - 03_applicant
+    - 04_compare
+    - 05_decision_letter
+    - 06_settings
+    - 07_backup_folder
+    - 08_app_lock

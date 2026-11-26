@@ -1,0 +1,65 @@
+appId: com.maglobal.evenlease
+name: 05_decision_letter
+---
+# TC-144 / TC-146 / TC-200 on iOS: Priya → Deny (C5; report box pre-ticked) → notice required → letter → expo-print
+# preview + share sheet.
+- runFlow: common/hub.yaml
+- scrollUntilVisible:
+    element:
+      text: ".*Priya.*"
+    timeout: 10000
+- tapOn: ".*Priya.*"
+- extendedWaitUntil:
+    visible: "Not a score.*"
+    timeout: 15000
+- scrollUntilVisible:
+    element:
+      text: "Make a decision"
+    timeout: 15000
+- tapOn: "Make a decision"
+- extendedWaitUntil:
+    visible: "Choose a decision"
+    timeout: 15000
+- takeScreenshot: ${LANE}_05a_s15
+- tapOn: "Deny"
+- scrollUntilVisible:
+    element:
+      text: ".*unpaid balance.*"
+    timeout: 10000
+- tapOn: ".*unpaid balance.*"
+- scrollUntilVisible:
+    element:
+      text: "Save decision"
+    timeout: 10000
+- takeScreenshot: ${LANE}_05b_s15_filled
+- tapOn: "Save decision"
+- extendedWaitUntil:
+    visible: "An adverse action notice is required"
+    timeout: 10000
+- takeScreenshot: ${LANE}_05c_notice_required
+- tapOn: "Create notice"
+- extendedWaitUntil:
+    visible: "Preview PDF"
+    timeout: 15000
+- takeScreenshot: ${LANE}_05d_s16_letter
+- tapOn: "Preview PDF"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${LANE}_05e_pdf_preview
+- tapOn:
+    text: "Cancel"
+    optional: true
+- extendedWaitUntil:
+    visible: "Share PDF"
+    timeout: 15000
+- tapOn: "Share PDF"
+- waitForAnimationToEnd:
+    timeout: 8000
+- takeScreenshot: ${LANE}_05f_share_sheet
+- tapOn:
+    text: "Close"
+    optional: true
+- extendedWaitUntil:
+    visible: "Mark as sent.*"
+    timeout: 15000
+- takeScreenshot: ${LANE}_05g_back_on_letter

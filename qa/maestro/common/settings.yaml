@@ -1,0 +1,10 @@
+# Relaunch → Settings tab (S-21).
+appId: com.maglobal.evenlease
+---
+- runFlow: home.yaml
+- tapOn:
+    text: "Settings"
+    index: 0
+- extendedWaitUntil:
+    visible: "Backup & restore"
+    timeout: 15000
