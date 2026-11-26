@@ -112,7 +112,7 @@ export async function pickBackupFile(): Promise<Uint8Array | null> {
 
 /**
  * "Automatic backup" folder picker. Android: SAF tree uri (permission kept across restarts). iOS: the picked URL is
- * security-scoped and lapses when the app restarts — TODO(merge 2E): a bookmark module (as A006 modules/backup-folder)
+ * security-scoped and lapses when the app restarts — TODO(Phase 3, iOS): a bookmark module (as A006 modules/backup-folder)
  * before weekly backups can run headless on iOS.
  */
 export async function pickBackupFolder(): Promise<{ uri: string; label: string } | null> {

@@ -69,7 +69,7 @@ export function useAuthCapability(): AuthCapability | null {
 export const isIos = Platform.OS === 'ios';
 
 /**
- * Root layout App lock gate (TODO(merge 2E): `app/_layout.tsx` renders the lock screen over the stack while `locked`).
+ * Root layout App lock gate (`app/_layout.tsx` renders the lock screen over the stack while `locked`).
  * Locks at start when App lock is on, and on return from the background after "Lock after".
  */
 export function useAppLockGate(): { locked: boolean; pinBlockedUntil: number } {

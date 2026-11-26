@@ -1,6 +1,6 @@
 /**
  * App lock gate (S-23): covers the whole app while `useAppLockGate().locked`. Asks for Face ID / fingerprint /
- * phone passcode at once; phones with neither use the app PIN. TODO(merge 2E): rendered by app/_layout.tsx over the
+ * phone passcode at once; phones with neither use the app PIN. Rendered by app/_layout.tsx over the
  * stack: `{locked ? <LockScreen pinBlockedUntil={...} /> : null}`.
  */
 import { useEffect, useRef, useState } from 'react';

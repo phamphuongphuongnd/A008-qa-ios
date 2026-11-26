@@ -1,6 +1,6 @@
 /**
  * Local notifications. 2E: reminders (backup, data cleanup), permission, channels, tap routing. 2D: queueTimers*.
- * Root layout plug-in (TODO(merge 2E), coordinator): `useNotificationSetup()` once inside the root layout.
+ * Root layout plug-in (app/_layout.tsx): `useNotificationSetup()` once inside the root layout.
  */
 import type { Href } from 'expo-router';
 import { useEffect } from 'react';

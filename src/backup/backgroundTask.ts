@@ -1,6 +1,6 @@
 /**
  * Weekly automatic backup + reminder refresh in the background (expo-background-task / WorkManager / BGTaskScheduler).
- * TaskManager.defineTask must run at bundle load: TODO(merge 2E) — index.ts imports this file above
+ * TaskManager.defineTask must run at bundle load: index.ts imports this file above
  * 'expo-router/entry' (fact expo-native-v2-gotchas). Register with `registerBackupTask()` when automatic backup is
  * turned on, and at start.
  * Android: expo-background-task needs a network (WorkManager CONNECTED) and ACCESS_NETWORK_STATE in the manifest.

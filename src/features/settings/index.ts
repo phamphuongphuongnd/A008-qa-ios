@@ -1,6 +1,6 @@
 /**
  * Settings area (S-21…S-24, S-26, S-27) for screens and the root layout. Jest imports the inner files.
- * Root layout plug-ins (TODO(merge 2E), coordinator): `useOnboarded()` gate → S-01, `useAppLockGate()` → lock screen.
+ * Root layout plug-ins (app/_layout.tsx): `useOnboarded()` gate → S-01, `useAppLockGate()` → lock screen.
  * Theme: `useThemePreference` / `setThemePreference` from `@/theme/preference` (1D).
  */
 import { db } from '@/db';

@@ -2,7 +2,7 @@
  * App entry. Background work must be registered at bundle load, before (or without) any screen rendering:
  * Android may start the JS runtime headless for the WorkManager job (fact expo-native-v2-gotchas — TaskManager.defineTask
  * must not live in a route file). package.json "main" points here instead of "expo-router/entry".
- *
- * TODO(2E): `import './src/backup/backgroundTask';` (automatic weekly backup, expo-background-task) above the router.
+ * 2E: the weekly automatic backup task (expo-background-task) is defined here, above the router.
  */
+import './src/backup/backgroundTask';
 import 'expo-router/entry';
