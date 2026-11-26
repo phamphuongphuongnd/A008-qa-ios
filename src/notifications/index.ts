@@ -6,6 +6,7 @@ import type { Href } from 'expo-router';
 import { useEffect } from 'react';
 
 import { db } from '@/db';
+import { isApplicantModeActive } from '@/features/intake/applicantMode/store';
 import { t } from '@/i18n';
 import { router } from '@/services/router';
 
@@ -19,10 +20,16 @@ export { expoNotifications } from './native';
 /** Channels + foreground display + tap → screen; refreshes the reminders at start. */
 export function useNotificationSetup(): void {
   useEffect(() => {
-    setupNativeNotifications({ reminders: t('system:notifications.channelReminders'), timers: t('system:notifications.channelTimers') })
+    setupNativeNotifications(
+      { reminders: t('system:notifications.channelReminders'), timers: t('system:notifications.channelTimers') },
+      isApplicantModeActive,
+    )
       .then(() => syncReminders(db, expoNotifications))
       .catch(() => {});
-    return onNotificationTap((url) => router.push(url as Href));
+    // Reminders (2E) and First-come timers (2D, route S-18) both carry `data.url`. Never while the applicant holds the phone.
+    return onNotificationTap((url) => {
+      if (!isApplicantModeActive()) router.push(url as Href);
+    });
   }, []);
 }
 

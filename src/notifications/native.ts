@@ -39,9 +39,16 @@ export const expoNotifications: NotificationAdapter = {
 };
 
 /** Foreground display + Android channels. Call once at start (root layout). */
-export async function setupNativeNotifications(channelNames: { reminders: string; timers: string }): Promise<void> {
+export async function setupNativeNotifications(
+  channelNames: { reminders: string; timers: string },
+  /** true → nothing is shown while the app is open (Applicant mode: the applicant holds the phone). */
+  suppress: () => boolean = () => false,
+): Promise<void> {
   Notifications.setNotificationHandler({
-    handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: false, shouldSetBadge: false }),
+    handleNotification: async () => {
+      const show = !suppress();
+      return { shouldShowBanner: show, shouldShowList: show, shouldPlaySound: false, shouldSetBadge: false };
+    },
   });
   if (Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync('reminders', {

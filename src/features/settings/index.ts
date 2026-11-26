@@ -1,15 +1,16 @@
 /**
  * Settings area (S-21…S-24, S-26, S-27) for screens and the root layout. Jest imports the inner files.
- * Root layout plug-ins (TODO(merge 2E), coordinator): `useOnboarded()` gate → S-01, `useAppLockGate()` → lock screen,
- * `useThemePreference()` → 1D theme provider.
+ * Root layout plug-ins (TODO(merge 2E), coordinator): `useOnboarded()` gate → S-01, `useAppLockGate()` → lock screen.
+ * Theme: `useThemePreference` / `setThemePreference` from `@/theme/preference` (1D).
  */
 import { db } from '@/db';
+import { getSettings } from '@/db/repos/settings';
 import { nativeRng } from '@/backup/native';
 import { fileStore } from '@/files';
 import { expoNotifications } from '@/notifications/native';
 
 import * as A from './actions';
-import type { AuthCapability } from './lock';
+import { verifyPin, type AuthCapability } from './lock';
 import { lockStore } from './lockController';
 import { deleteEverything, deleteNotSelected } from './dataCleanup';
 import type { LandlordContact } from './summary';
@@ -21,6 +22,14 @@ export { LOCK_AFTER_OPTIONS, PIN_PATTERN, landlordUnlockMethod, type AuthCapabil
 export { lockStore, unlockLandlord, unlockWithPin, withLockSuspended } from './lockController';
 export { expoAuthAdapter } from './lockNative';
 export { CLEANUP_OPTIONS } from './actions';
+
+/** App PIN check for leaving Applicant mode (2B replaces `verifyAppPinPending` with this). */
+export async function verifyAppPin(pin: string): Promise<boolean> {
+  return verifyPin(pin, getSettings(db).appPinHash);
+}
+
+/** An app PIN is set (2B `checkCanEnter({ appPinSet })`). */
+export const hasAppPin = () => !!getSettings(db).appPinHash;
 
 export const settingsActions = {
   saveContact: (c: LandlordContact) => A.saveContact(db, c),
