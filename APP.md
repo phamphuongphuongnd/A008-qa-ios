@@ -3,7 +3,7 @@
 > Brief tĩnh của app. **≤ 60 dòng, không ghi lịch sử** (lịch sử ở git + `memory/sessions/`).
 > Tiến độ: `CHECKLIST.md` · Tính năng: `product.md` · Kế hoạch phase: `PLAN.md` · Khảo sát: `research.md` · Ý tưởng gốc: `y-tuong.md`.
 
-**Đang ở:** Bước 3 — phiên điều phối chạy PLAN.md Phase 1 (2026-11-25). Mockup v2 Indigo: https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (`design/v2-indigo/`)
+**Đang ở:** Bước 3 — Phase 2 code xong (2026-11-26, `dev`, 648 test); chờ Phương cho thử Galaxy A13 (Phase 3). Mockup v2 Indigo: https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (`design/v2-indigo/`)
 
 ## Brief
 - **Mã app / thư mục:** `A008-evenlease` → `apps/A008-evenlease/`
@@ -43,8 +43,7 @@
 - **Build:** EAS Build (tài khoản Expo đã đăng nhập). Thử Android trên Galaxy A13 qua adb; iOS qua EAS + Appetize.
 
 ## Cách làm app này
-- Phương yêu cầu phiên điều phối + phiên con song song theo `PLAN.md`; phiên điều phối giao hết việc cho phiên con.
-- Cấp trên của phiên điều phối: phiên grill A008 này — nhận câu hỏi, việc bị chặn, báo cáo phase; hỏi Phương bằng popup.
+- Từ 2026-11-26 (Phương, tiết kiệm token): một phiên làm tuần tự, không mở phiên con; hỏi Phương bằng popup.
 
 ## Lệnh hay dùng
 - Test: `npx jest` · Kiểm: `npx expo lint` + `npx tsc --noEmit` · Cài máy: `npx expo run:android --device`
