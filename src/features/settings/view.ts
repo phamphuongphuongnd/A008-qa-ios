@@ -5,6 +5,7 @@ import type { AppSettings } from '@/db/repos/settings';
 import { formatDate } from '@/engine';
 import { t } from '@/i18n';
 
+import { versionLabel, type AppVersion } from './about';
 import { canEnableLock, landlordUnlockMethod, type AuthCapability } from './lock';
 import { appLockRowValue, appearanceRowValue, backupRowValue, biometricLabel, cleanupRowValue } from './summary';
 
@@ -41,7 +42,7 @@ export interface SettingsInput {
   ios: boolean;
   cleanupCount: number;
   hasSample: boolean;
-  appVersion: string | null;
+  appVersion: AppVersion;
 }
 
 /** S-21 (mockup order): Letters · Privacy & data · App · Legal / About / Delete all. */
@@ -75,7 +76,7 @@ export function settingsSections(i: SettingsInput): SettingsSection[] {
     {
       rows: [
         { key: 'legal', title: t('system:s21.legal'), chevron: true },
-        { key: 'about', title: t('system:s21.about'), value: i.appVersion ? t('system:s21.version', { version: i.appVersion }) : undefined, chevron: false },
+        { key: 'about', title: t('system:s21.about'), value: versionLabel(i.appVersion) ?? undefined, chevron: true },
         { key: 'deleteAll', title: t('system:s21.deleteAll'), chevron: false, danger: true },
       ],
     },

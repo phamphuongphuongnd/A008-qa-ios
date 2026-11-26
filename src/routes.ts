@@ -112,6 +112,8 @@ export const routes = {
   appLock: () => '/settings/app-lock' as Href,
   /** S-24 Data cleanup. */
   dataCleanup: () => '/settings/cleanup' as Href,
+  /** S-21 About (version, licenses, feedback). */
+  about: () => '/settings/about' as Href,
   /** S-26 Legal & privacy. */
   legal: () => '/settings/legal' as Href,
   /** S-27 Delete all data. */

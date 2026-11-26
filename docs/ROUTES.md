@@ -33,6 +33,7 @@ ask before changing them (new route, new param, sheet options).
 | S-19 Decision file | `/review/rental/[id]/decision-file` | `app/review/rental/[id]/decision-file.tsx` | `features/decision/screens/DecisionFileScreen` | decision | 2D |
 | S-20 Move-in checklist | `/move-in/[rentalId]?applicantId=` | `app/move-in/[rentalId].tsx` | `features/movein/screens/MoveInScreen` | system | 2E |
 | S-21 Settings (tab 3) | `/settings` | `app/(tabs)/settings.tsx` | `features/settings/screens/SettingsScreen` | system | 2E |
+| S-21a About | `/settings/about` | `app/settings/about.tsx` | `features/settings/screens/AboutScreen` | system | 2E |
 | S-22 Backup & restore | `/settings/backup` | `app/settings/backup.tsx` | `features/settings/screens/BackupScreen` | system | 2E |
 | S-23 App lock | `/settings/app-lock` | `app/settings/app-lock.tsx` | `features/settings/screens/AppLockScreen` | system | 2E |
 | S-24 Data cleanup | `/settings/cleanup` | `app/settings/cleanup.tsx` | `features/settings/screens/DataCleanupScreen` | system | 2E |

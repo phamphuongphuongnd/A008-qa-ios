@@ -181,6 +181,13 @@ export const SCREENS = {
     sample: routes.settings(),
     title: () => t('system:s21.title'),
   },
+  'S-21a': {
+    owner: '2E',
+    routes: ['app/settings/about.tsx'],
+    screen: 'src/features/settings/screens/AboutScreen.tsx',
+    sample: routes.about(),
+    title: () => t('system:about.title'),
+  },
   'S-22': {
     owner: '2E',
     routes: ['app/settings/backup.tsx'],

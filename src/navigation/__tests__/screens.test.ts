@@ -13,11 +13,12 @@ function walk(dir: string): string[] {
   });
 }
 
-/** product.md §5: S-01…S-27 plus S-08a/S-08b, and the Guide article screen. */
+/** product.md §5: S-01…S-27 plus S-08a/S-08b, the Guide article screen and S-21 About (mockup v2). */
 const EXPECTED = [
   ...Array.from({ length: 27 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`),
   'S-08a',
   'S-08b',
+  'S-21a',
   'S-25a',
 ].sort();
 
