@@ -67,7 +67,8 @@
       "kitchen": "Kitchen",
       "bedroom": "Bedroom {{n}}",
       "bathroom": "Bathroom {{n}}",
-      "halfBath": "Half bath"
+      "halfBath": "Half bath",
+      "label": "Rooms"
     },
     "items": {
       "walls": "Walls",
@@ -105,7 +106,30 @@
       "signedOn": "Signed {{date}}",
       "intro": "Condition of the home on the move-in date, agreed by the landlord and the tenant.",
       "fileName": "Move-in checklist - {{address}}"
-    }
+    },
+    "notFound": "This rental doesn't exist.",
+    "renameRoom": "Rename room",
+    "removeRoom": "Remove room",
+    "removeRoomConfirm": "Remove {{room}} and its items?",
+    "itemName": "Item name",
+    "roomName": "Room name",
+    "addGas": "Add gas meter",
+    "includePhotos": "Include photos in the PDF",
+    "exportFailed": "The PDF couldn't be created. Try again.",
+    "editAnyway": "Edit and clear",
+    "addPhotoFor": "Add photo of {{item}}",
+    "removeItem": "Remove {{item}}",
+    "conditionOf": "Condition of {{item}}",
+    "note": "Note",
+    "addNote": "Add note",
+    "removePhoto": "Remove photo",
+    "signedShort": "Signed",
+    "signTitle": "{{who}} signature",
+    "signHelp": "Sign with your finger inside the box.",
+    "addPhoto": "Add photo",
+    "takePhoto": "Take photo",
+    "choosePhoto": "Choose from Photos",
+    "cameraDenied": "Camera access is off. You can still choose a photo, or allow the camera in your phone's settings."
   },
   "s21": {
     "title": "Settings",
@@ -145,7 +169,18 @@
       "nameLong": "Keep your name under {{max}} characters.",
       "addressLong": "Keep the address under {{max}} characters.",
       "phone": "Enter a 10-digit US phone number."
-    }
+    },
+    "version": "Version {{version}}",
+    "sampleLoaded": "Sample rental loaded.",
+    "open": "Open",
+    "sampleRemoved": "Sample rental removed.",
+    "nameHelp": "Printed on your letters.",
+    "contactHelp": "Printed on your letters so applicants can reach you.",
+    "remindBackupHelp": "When your last backup is more than 30 days old.",
+    "remindCleanupHelp": "When a closed rental still holds applicant data.",
+    "remindTimersHelp": "First-come deadlines (2 hours left, time's up).",
+    "notificationsOff": "Notifications are turned off for Evenlease. Allow them in your phone's settings.",
+    "openSystemSettings": "Open phone settings"
   },
   "s22": {
     "title": "Backup & restore",
@@ -196,7 +231,11 @@
       "noSpace": "Not enough space on this phone.",
       "folderGone": "The backup folder can't be opened. Choose it again.",
       "failed": "Something went wrong. Your data was not changed."
-    }
+    },
+    "setPasswordTitle": "Set a backup password",
+    "setPassword": "Save and back up",
+    "openBackup": "Open backup",
+    "restoreHelp": "Nothing on this phone changes until you confirm."
   },
   "s23": {
     "title": "App lock",
@@ -212,7 +251,12 @@
     "pin": "PIN",
     "pinAgain": "Type the PIN again",
     "changePin": "Change PIN",
-    "applicantModeNote": "The same lock is used to leave applicant mode."
+    "applicantModeNote": "The same lock is used to leave applicant mode.",
+    "requireMethod": "Require {{method}} to open",
+    "requireDevice": "Require your phone passcode to open",
+    "requirePin": "Require an app PIN to open",
+    "pinAndLock": "Save PIN and turn on",
+    "pinSaved": "App PIN saved."
   },
   "lock": {
     "title": "Evenlease is locked",
@@ -248,7 +292,7 @@
     "confirmTitle_one": "Permanently delete data for {{count}} applicant?",
     "confirmTitle_other": "Permanently delete data for {{count}} applicants?",
     "confirmBody": "This removes their application, files and letters. The decision file keeps an anonymous line. This can't be undone.",
-    "empty": "Nothing to clean up. Closed rentals have no data from applicants you didn't select.",
+    "empty": "Closed rentals have no data from applicants you didn't select.",
     "remindAfter": "Remind me after a rental closes",
     "remind": {
       "30": "30 days",
@@ -258,7 +302,8 @@
       "off": "Off"
     },
     "deleted_one": "Data deleted for {{count}} applicant.",
-    "deleted_other": "Data deleted for {{count}} applicants."
+    "deleted_other": "Data deleted for {{count}} applicants.",
+    "emptyTitle": "Nothing to clean up"
   },
   "s26": {
     "title": "Legal & privacy",
@@ -268,7 +313,8 @@
     "data": "Your data stays on this phone and in backups you create. We have no servers and collect nothing: no account, no ads, no tracking.",
     "applicantData": "Evenlease never asks for Social Security numbers or dates of birth. Delete applicants' data once you no longer need it (Settings › Data cleanup).",
     "sourcesTitle": "Sources",
-    "licenses": "Licenses"
+    "licenses": "Licenses",
+    "opensBrowser": "Opens in your browser"
   },
   "s27": {
     "title": "Delete all data",
@@ -276,7 +322,8 @@
     "typeToConfirm": "Type DELETE to confirm",
     "word": "DELETE",
     "button": "Delete all data",
-    "done": "All data deleted."
+    "done": "All data deleted.",
+    "warnTitle": "This can't be undone"
   },
   "relative": {
     "today": "Today",

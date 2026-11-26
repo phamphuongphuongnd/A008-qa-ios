@@ -10,6 +10,7 @@ import { isApplicantModeActive } from '@/features/intake/applicantMode/store';
 import { listCleanupCandidates } from '@/db/repos/rentals';
 import { getSettings, updateSettings, type AppSettings } from '@/db/repos/settings';
 
+import { cleanupRows } from './dataCleanup';
 import type { AuthCapability } from './lock';
 import { lockStore } from './lockController';
 import { expoAuthAdapter } from './lockNative';
@@ -38,6 +39,12 @@ export function useCleanupCandidates() {
   return useLive(() => listCleanupCandidates(db), [], ['rentals', 'applicants']);
 }
 
+/** S-24 list with labels ("3 applicants not selected · closed 45 days ago"). */
+export function useCleanupRows(cleanupAfterDays: AppSettings['cleanupAfterDays']) {
+  'use no memo';
+  return useLive(() => cleanupRows(db, cleanupAfterDays), [cleanupAfterDays], ['rentals', 'applicants']);
+}
+
 /** What this phone offers for unlocking; re-read when the app comes back (the landlord may have set a passcode). */
 export function useAuthCapability(): AuthCapability | null {
   const [cap, setCap] = useState<AuthCapability | null>(null);
@@ -62,7 +69,7 @@ export function useAuthCapability(): AuthCapability | null {
 export const isIos = Platform.OS === 'ios';
 
 /**
- * Root layout App lock gate (TODO(merge 2E): `app/_layout.tsx` renders the lock screen over the stack while `locked`).
+ * Root layout App lock gate (`app/_layout.tsx` renders the lock screen over the stack while `locked`).
  * Locks at start when App lock is on, and on return from the background after "Lock after".
  */
 export function useAppLockGate(): { locked: boolean; pinBlockedUntil: number } {

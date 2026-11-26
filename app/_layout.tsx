@@ -15,10 +15,16 @@ import { Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { backupActions } from '@/backup';
+import { registerBackupTask } from '@/backup/backgroundTask';
 import { db, ensureMigrated } from '@/db';
 import { useApplicantModeGuard } from '@/features/intake/applicantMode/hooks';
 import { settingsPersistence } from '@/features/intake/applicantMode/persistence';
-import { hydrateApplicantMode } from '@/features/intake/applicantMode/store';
+import { hydrateApplicantMode, useApplicantMode } from '@/features/intake/applicantMode/store';
+import { isActive as applicantModeOn } from '@/features/intake/applicantMode/machine';
+import { LockScreen } from '@/features/settings/components/LockScreen';
+import { useAppLockGate, useOnboarded } from '@/features/settings/hooks';
+import { useNotificationSetup } from '@/notifications';
 import { RouterBridge } from '@/services/router';
 import { useTheme } from '@/theme';
 import { AppThemeProvider, SystemBars } from '@/theme/preference';
@@ -39,7 +45,8 @@ export const unstable_settings = { initialRouteName: '(tabs)' };
  * - 1C: database migrations run before the first screen (below).
  * - 1D: AppThemeProvider (settings.theme; Settings › Appearance calls setThemePreference from '@/theme/preference'),
  *   system bars, SnackbarHost (showSnackbar from '@/ui').
- * - 2E: onboarding guard (Stack.Protected on `onboarded`), App lock gate, notification tap → route.
+ * - 2E: onboarding guard (Stack.Protected on `onboarded`), App lock gate (LockScreen over the stack), notification
+ *   channels + tap → `data.url`, automatic backup when due + background task registration (index.ts defines it).
  * - 2B: Applicant mode restored from settings after migrations; guard keeps the router inside `applicants/mode/*`.
  */
 export default function RootLayout() {
@@ -82,6 +89,15 @@ export default function RootLayout() {
 /** The stack, themed (v2 Indigo surface-0 behind every screen and transition). */
 function RootStack() {
   const { dark, colors } = useTheme();
+  // 2E: S-01 until finished (onboarded + "Not legal advice" accepted); S-27 "Delete everything" turns it back off.
+  const onboarded = useOnboarded();
+  const lock = useAppLockGate();
+  const [applicantMode] = useApplicantMode();
+  useEffect(() => {
+    if (!onboarded) return;
+    registerBackupTask();
+    backupActions.runAutoIfDue().catch(() => {});
+  }, [onboarded]);
   const base = dark ? DarkTheme : DefaultTheme;
   const navTheme = {
     ...base,
@@ -101,8 +117,12 @@ function RootStack() {
       <RouterBridge />
       <ApplicantModeGuard />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface0 } }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="onboarding/index" options={{ gestureEnabled: false }} />
+        <Stack.Protected guard={onboarded}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!onboarded}>
+          <Stack.Screen name="onboarding/index" options={{ gestureEnabled: false }} />
+        </Stack.Protected>
         {/* Sheets: S-07 Add applicant, S-15 Decision. */}
         <Stack.Screen name="applicants/add" options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents' }} />
         <Stack.Screen
@@ -116,6 +136,9 @@ function RootStack() {
         <Stack.Screen name="dev/gallery" />
         <Stack.Screen name="+not-found" />
       </Stack>
+      <NotificationSetup />
+      {/* 2E App lock; the applicant holding the phone (Applicant mode) never sees it — 2B has its own exit lock. */}
+      {onboarded && lock.locked && !applicantModeOn(applicantMode) ? <LockScreen pinBlockedUntil={lock.pinBlockedUntil} /> : null}
     </ThemeProvider>
   );
 }
@@ -123,6 +146,12 @@ function RootStack() {
 /** 2B: while Applicant mode is on, any other path is sent back to the session's screen; Android Back swallowed. */
 function ApplicantModeGuard() {
   useApplicantModeGuard();
+  return null;
+}
+
+/** 2E: notification channels, reminders sync, tap → route (needs the router, so inside the stack's tree). */
+function NotificationSetup() {
+  useNotificationSetup();
   return null;
 }
 

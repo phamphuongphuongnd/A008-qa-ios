@@ -10,6 +10,7 @@ import { getSampleRental } from '@/db/repos/rentals';
 import { loadSampleRental, removeSampleRental } from '@/db/repos/sample';
 import { getSettings, updateSettings, type AppSettings } from '@/db/repos/settings';
 import type { AppDb } from '@/db/types';
+import { t } from '@/i18n';
 import { routes } from '@/routes';
 
 export const ONBOARDING_PAGES = 3;
@@ -45,6 +46,14 @@ export function onboardingReducer(s: OnboardingState, a: OnboardingAction): Onbo
     case 'toggleAccepted':
       return { ...s, accepted: !s.accepted };
   }
+}
+
+const PAGE_KEYS = ['p1', 'p2', 'p3'] as const;
+
+/** Title + subtitle of a page (product.md S-01 / mockup). */
+export function onboardingPageText(page: OnboardingPage): { title: string; subtitle: string } {
+  const k = PAGE_KEYS[page];
+  return { title: t(`system:s01.pages.${k}.title`), subtitle: t(`system:s01.pages.${k}.subtitle`) };
 }
 
 /** "Skip" shows on pages 1–2 only; "Next" on 1–2; the two finish buttons on page 3. */
