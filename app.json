@@ -4,6 +4,7 @@
     "slug": "evenlease",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "evenlease",
     "userInterfaceStyle": "automatic",
     "ios": {
@@ -16,6 +17,11 @@
     },
     "android": {
       "package": "com.maglobal.evenlease",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "monochromeImage": "./assets/images/adaptive-icon-monochrome.png",
+        "backgroundColor": "#4F46E5"
+      },
       "predictiveBackGestureEnabled": false,
       "allowBackup": false,
       "blockedPermissions": [
@@ -46,10 +52,20 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#F7F6F2",
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 112,
+          "resizeMode": "contain",
+          "backgroundColor": "#f6f7fb",
           "dark": {
-            "backgroundColor": "#111315"
+            "image": "./assets/images/splash-icon.png",
+            "backgroundColor": "#0f1117"
           }
+        }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "enforceContrast": false
         }
       ],
       [
@@ -69,7 +85,7 @@
       [
         "expo-notifications",
         {
-          "color": "#1F5C63"
+          "color": "#4F46E5"
         }
       ],
       [
