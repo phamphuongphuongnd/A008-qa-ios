@@ -13,6 +13,8 @@ import {
   sharePublishedCriteriaPdf,
 } from '@/pdf/publishedCriteria';
 
+import { withLockSuspended } from '@/features/settings/lockController';
+
 import { copyText } from './clipboard';
 import {
   canSave,
@@ -83,7 +85,8 @@ export function usePublishedCriteria(rentalId: number) {
     notFound: data === null,
     rental: data?.rental ?? null,
     content,
-    sharePdf: () => (content ? sharePublishedCriteriaPdf(content) : Promise.reject(new Error('not found'))),
+    // The share sheet must not trip App lock (2E, "Lock after: Immediately").
+    sharePdf: () => (content ? withLockSuspended(() => sharePublishedCriteriaPdf(content)) : Promise.reject(new Error('not found'))),
     copy: () => (content ? copyText(publishedCriteriaText(content)) : Promise.resolve(false)),
   };
 }
@@ -92,6 +95,6 @@ export function usePublishedCriteria(rentalId: number) {
 export async function sharePublishedCriteria(rentalId: number): Promise<boolean> {
   const data = loadCriteria(db, rentalId);
   if (!data) return false;
-  await sharePublishedCriteriaPdf(publishedCriteriaContent(data.rental, data.criteria));
+  await withLockSuspended(() => sharePublishedCriteriaPdf(publishedCriteriaContent(data.rental, data.criteria)));
   return true;
 }

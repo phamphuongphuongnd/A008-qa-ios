@@ -1,5 +1,4 @@
 /** S-02 Rentals (tab 1) — product.md §5 S-02, mockup v2 "Rentals". */
-// Screen id="S-02" (route table: src/navigation/screens.ts)
 import { router } from 'expo-router';
 import { House, KeyRound, Plus } from 'lucide-react-native';
 import { useState } from 'react';
@@ -10,7 +9,9 @@ import { t } from '@/i18n';
 import { Banner, ConfirmDialog, EmptyState, IconButton, LargeTitle, Screen, Segmented, showSnackbar } from '@/ui';
 
 import { SwipeRentalCard } from '../components/SwipeRentalCard';
-import { useRentalActions, useRentals, useRentalsReminders } from '../hooks';
+import { useBackupReminder } from '@/backup';
+
+import { useCleanupReminder, useRentalActions, useRentals } from '../hooks';
 import { backupReminderText, rentalsView, type SwipeAction } from '../screenModels';
 
 type Filter = 'open' | 'closed';
@@ -18,7 +19,8 @@ type Filter = 'open' | 'closed';
 export default function RentalsScreen() {
   const [filter, setFilter] = useState<Filter>('open');
   const { cards, counts } = useRentals(filter);
-  const reminders = useRentalsReminders();
+  const backup = useBackupReminder();
+  const cleanup = useCleanupReminder();
   const actions = useRentalActions();
   const [deleting, setDeleting] = useState<{ id: number; title: string; message: string } | null>(null);
   const view = rentalsView(filter, counts);
@@ -48,26 +50,26 @@ export default function RentalsScreen() {
         />
       }
     >
-      {reminders.backup ? (
+      {backup.show ? (
         <Banner
           tone="warn"
           actions={[
             { label: t('units:s02.reminders.backupAction'), onPress: () => router.push(routes.backup()) },
-            { label: t('units:s02.reminders.later'), onPress: () => reminders.later('backup') },
+            { label: t('units:s02.reminders.later'), onPress: backup.later },
           ]}
         >
-          {backupReminderText(reminders.backup)}
+          {backupReminderText(backup)}
         </Banner>
       ) : null}
-      {reminders.cleanupCount > 0 ? (
+      {cleanup.count > 0 ? (
         <Banner
           tone="info"
           actions={[
             { label: t('units:s02.reminders.cleanupAction'), onPress: () => router.push(routes.dataCleanup()) },
-            { label: t('units:s02.reminders.later'), onPress: () => reminders.later('cleanup') },
+            { label: t('units:s02.reminders.later'), onPress: cleanup.later },
           ]}
         >
-          {t('units:s02.reminders.cleanup', { count: reminders.cleanupCount })}
+          {t('units:s02.reminders.cleanup', { count: cleanup.count })}
         </Banner>
       ) : null}
 

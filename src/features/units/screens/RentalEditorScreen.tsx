@@ -1,5 +1,4 @@
 /** S-03 Rental editor — product.md §5 S-03, mockup v2 "Rental editor" (create: step 1 of 3; edit: Save). */
-// Screen id="S-03" (route table: src/navigation/screens.ts)
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
@@ -98,7 +97,6 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
       const r = actions.create(form);
       if (!r.ok) return setShowAll(true);
       haptics.success();
-      // TODO(merge 2A): r.askNotifications → ask the notification permission with 2E's helper.
       setLeaveTo(() => () => router.replace(routes.criteria(r.id, { setup: true })));
       return;
     }
@@ -108,7 +106,6 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
       else setShowAll(true);
       return;
     }
-    // TODO(merge 2A): cancel r.stoppedTimers' notificationIds (2D queueTimers); r.askNotifications (2E).
     haptics.success();
     showSnackbar({ message: t('units:s03.saved') });
     setLeaveTo(() => () => router.back());

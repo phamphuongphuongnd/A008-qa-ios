@@ -3,12 +3,13 @@
  */
 import { listPendingNotices } from '@/db/repos/decisions';
 import { isCriteriaLocked } from '@/db/repos/criteria';
-import { getRental, listCleanupCandidates, listRentals } from '@/db/repos/rentals';
+import { getRental, listRentals } from '@/db/repos/rentals';
 import { getSettings } from '@/db/repos/settings';
 import { loadRentalForEngine } from '@/db/toEngine';
 import type { ReviewMode } from '@/db/schema';
 import type { AppDb, Rental } from '@/db/types';
 import type { LiveTable } from '@/db/useLive';
+import { cleanupRows } from '@/features/settings/dataCleanup';
 
 import {
   addressLine,
@@ -88,38 +89,14 @@ export function loadRentalCards(db: AppDb, filter: 'open' | 'closed'): RentalCar
   return listRentals(db, filter).map((r) => card(db, r));
 }
 
-export interface RentalsReminders {
-  /** Days since the last backup (null = never backed up); the whole card is null when not due. */
-  backup: { days: number | null } | null;
-  /** Closed rentals (not the sample) still holding data of applicants not approved, past the cleanup delay. */
-  cleanupCount: number;
-}
-
-export const BACKUP_REMINDER_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
 /**
- * S-02 top cards. Backup: on, there is real data (a non-sample rental), and the last backup is older than 30 days
- * (or none). Cleanup: on and N days (Settings) after closing. "Later" is kept by the screen for the session.
- * TODO(merge 2A): 2E owns reminder rules (S-21/S-22/S-24); align if 2E exposes a shared function.
+ * S-02 card "2 closed rentals still hold applicant data": same rows and "due" rule as 2E's S-24 list and reminder
+ * (`cleanupRows`), off when the cleanup reminder is off. The backup card is 2E's `useBackupReminder()`.
  */
-export function loadRentalsReminders(db: AppDb, now: Date = new Date()): RentalsReminders {
+export function loadCleanupReminderCount(db: AppDb, now: Date = new Date()): number {
   const s = getSettings(db);
-  let backup: RentalsReminders['backup'] = null;
-  const hasRealData = listRentals(db, 'all').some((r) => !r.isSample);
-  if (s.reminders.backup && hasRealData) {
-    if (!s.lastBackupAt) backup = { days: null };
-    else {
-      const days = Math.floor((now.getTime() - new Date(s.lastBackupAt).getTime()) / DAY_MS);
-      if (days > BACKUP_REMINDER_DAYS) backup = { days };
-    }
-  }
-  let cleanupCount = 0;
-  if (s.reminders.cleanup && s.cleanupAfterDays !== null) {
-    const before = new Date(now.getTime() - s.cleanupAfterDays * DAY_MS).toISOString();
-    cleanupCount = listCleanupCandidates(db, before).length;
-  }
-  return { backup, cleanupCount };
+  if (!s.reminders.cleanup) return 0;
+  return cleanupRows(db, s.cleanupAfterDays, now).filter((r) => r.due).length;
 }
 
 export interface RentalHub {

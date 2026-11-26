@@ -1,5 +1,4 @@
 /** S-05 Published criteria — product.md §5 S-05, mockup v2 "Published criteria · share to Zillow / Facebook". */
-// Screen id="S-05" (route table: src/navigation/screens.ts)
 import { router, useLocalSearchParams } from 'expo-router';
 import { Copy, FileDown, FileQuestion } from 'lucide-react-native';
 import { useState } from 'react';

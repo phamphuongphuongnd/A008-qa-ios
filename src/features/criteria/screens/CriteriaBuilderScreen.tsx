@@ -1,5 +1,4 @@
 /** S-04 Criteria builder — product.md §5 S-04, §3.2, §3.12, §3.13; mockup v2 "Criteria" + "Guardrails". */
-// Screen id="S-04" (route table: src/navigation/screens.ts)
 import { router, useLocalSearchParams } from 'expo-router';
 import { FileQuestion, Plus } from 'lucide-react-native';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
