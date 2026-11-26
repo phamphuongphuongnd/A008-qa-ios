@@ -6,6 +6,8 @@ import Constants from 'expo-constants';
 
 import { db, useLive } from '@/db';
 import { getSettings } from '@/db/repos/settings';
+import { excludeAppDataFromBackup } from '@/files/cloudBackup';
+import { cloudBackupPort } from '@/files/cloudBackupNative';
 import { t } from '@/i18n';
 import { expoNotifications, firstDataAt, refreshReminders } from '@/notifications';
 import { rescheduleAllNotifications } from '@/notifications/afterRestore';
@@ -30,7 +32,11 @@ export const backupActions = makeBackupActions({
   },
   share: (uri) => shareBackupFile(uri, t('system:s22.backUpNow')),
   refreshReminders,
-  afterRestore: () => rescheduleAllNotifications(db, expoNotifications, expoQueueNotifier),
+  afterRestore: () => {
+    // G-05 (iOS): the restored applicants/ and rentals/ folders are new folders — flag them again.
+    excludeAppDataFromBackup(cloudBackupPort);
+    return rescheduleAllNotifications(db, expoNotifications, expoQueueNotifier);
+  },
 });
 
 export { backupErrorText, autoBackupDue, AUTO_KEEP, REMIND_AFTER_DAYS } from './auto';

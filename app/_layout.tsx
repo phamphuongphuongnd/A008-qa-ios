@@ -18,6 +18,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { backupActions } from '@/backup';
 import { registerBackupTask } from '@/backup/backgroundTask';
 import { db, ensureMigrated } from '@/db';
+import { excludeAppDataFromBackup } from '@/files/cloudBackup';
+import { cloudBackupPort } from '@/files/cloudBackupNative';
 import { useApplicantModeGuard } from '@/features/intake/applicantMode/hooks';
 import { settingsPersistence } from '@/features/intake/applicantMode/persistence';
 import { hydrateApplicantMode, useApplicantMode } from '@/features/intake/applicantMode/store';
@@ -58,6 +60,8 @@ export default function RootLayout() {
   useEffect(() => {
     ensureMigrated().then(
       () => {
+        // G-05 (iOS): applicant files + the database stay out of iCloud / computer backups (no-op on Android).
+        excludeAppDataFromBackup(cloudBackupPort);
         // 2B: a session that was on when the app closed comes back (the applicant never lands in the landlord's data).
         hydrateApplicantMode(settingsPersistence(db));
         setDbState('ready');

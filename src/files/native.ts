@@ -5,6 +5,8 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 
+import { excludeRootOf } from './cloudBackup';
+import { cloudBackupPort } from './cloudBackupNative';
 import type { FileAdapter } from './files';
 
 const fileAt = (path: string) => new File(Paths.document, path);
@@ -13,6 +15,8 @@ function ensureParent(path: string) {
   const parts = path.split('/');
   parts.pop();
   if (parts.length) new Directory(Paths.document, ...parts).create({ idempotent: true, intermediates: true });
+  // G-05 (iOS): the root folder may be new (after "Delete everything" / a restore) — keep it out of iCloud backup.
+  excludeRootOf(cloudBackupPort, path);
 }
 
 export const expoFileAdapter: FileAdapter = {

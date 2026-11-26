@@ -1,0 +1,6 @@
+{
+  "name": "ios-files",
+  "version": "0.1.0",
+  "private": true,
+  "description": "iOS only: keep applicant files and the database out of iCloud / computer backups (G-05) and keep the picked automatic-backup folder across launches with a security-scoped bookmark (G-06)."
+}

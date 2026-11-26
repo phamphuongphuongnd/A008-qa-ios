@@ -9,9 +9,13 @@ import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
 import { withLockSuspended } from '@/features/settings/lockController';
+import { excludeRootOf } from '@/files/cloudBackup';
+import { cloudBackupPort } from '@/files/cloudBackupNative';
 
+import { IosFiles } from '../../modules/ios-files';
 import type { FolderPort } from './auto';
 import { BackupError, type Rng } from './format';
+import { bookmarkFolderPort, folderSetting, isBookmarkUri, type TempFiles } from './iosFolder';
 import { BACKUP_MIME, type AppFileIO } from './service';
 
 /** Hermes has no crypto.getRandomValues; expo-crypto uses the OS generator. */
@@ -24,6 +28,7 @@ function ensureParent(path: string) {
   const parts = path.split('/');
   parts.pop();
   if (parts.length) new Directory(Paths.document, ...parts).create({ idempotent: true, intermediates: true });
+  excludeRootOf(cloudBackupPort, path); // G-05 (iOS)
 }
 
 function walk(dir: Directory, prefix: string, out: string[]) {
@@ -112,18 +117,34 @@ export async function pickBackupFile(): Promise<Uint8Array | null> {
 
 /**
  * "Automatic backup" folder picker. Android: SAF tree uri (permission kept across restarts). iOS: the picked URL is
- * security-scoped and lapses when the app restarts — TODO(Phase 3, iOS): a bookmark module (as A006 modules/backup-folder)
- * before weekly backups can run headless on iOS.
+ * security-scoped and lapses when the app restarts → a bookmark is stored instead (G-06, ./iosFolder.ts).
  */
 export async function pickBackupFolder(): Promise<{ uri: string; label: string } | null> {
+  let dir: Directory | null;
   try {
-    const dir = await withLockSuspended(() => Directory.pickDirectoryAsync());
-    if (!dir) return null;
-    return { uri: dir.uri, label: folderLabel(dir.uri, dir.name) };
+    dir = await withLockSuspended(() => Directory.pickDirectoryAsync());
   } catch {
     return null; // cancelled
   }
+  if (!dir) return null;
+  const label = folderLabel(dir.uri, dir.name);
+  if (Platform.OS !== 'ios') return { uri: dir.uri, label };
+  try {
+    return { uri: folderSetting(IosFiles, dir.uri), label };
+  } catch {
+    // No bookmark for this folder: the plain URL works until the app restarts, then S-22 asks to choose it again.
+    return { uri: dir.uri, label };
+  }
 }
+
+/** The iOS bookmark port writes the backup to the cache first, then the module copies it into the folder. */
+const cacheTemp: TempFiles = {
+  write: (name, bytes) => writeCacheFile(name, bytes),
+  remove: (uri) => {
+    const f = new File(uri);
+    if (f.exists) f.delete();
+  },
+};
 
 /** "Evenlease" from a SAF tree uri like content://…/tree/primary%3ADocuments%2FEvenlease. */
 export function folderLabel(uri: string, name?: string | null): string {
@@ -137,6 +158,7 @@ export function folderLabel(uri: string, name?: string | null): string {
  * (same order as `list()`; fact expo-native-v2-gotchas, A006 B-45).
  */
 export function folderPort(uri: string): FolderPort {
+  if (isBookmarkUri(uri)) return bookmarkFolderPort(IosFiles, uri, cacheTemp);
   const dir = () => {
     const d = new Directory(uri);
     if (!d.exists) throw new BackupError('folder_gone');
