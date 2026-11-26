@@ -26,11 +26,11 @@
 - [x] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
 - [x] 1C DB: schema SQLite, repository, `useLive`, map ↔ engine, dữ liệu mẫu §8, `src/files`
 - [x] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/` (build + xem trên A13 dời sang dòng ghép cuối)
-- [ ] 2A Logic căn + tiêu chí (F-02, F-03) + PDF tiêu chí công bố
-- [ ] 2B Logic hồ sơ, Applicant mode, giấy tờ (F-04 – F-07) + PDF đơn trống
-- [ ] 2C Logic xác minh: tham chiếu, báo cáo ngoài, Background review (F-08 – F-10)
-- [ ] 2D Logic chấm, Compare, hàng đợi + đồng hồ, quyết định, thư + PDF, Decision file (F-11 – F-15)
-- [ ] 2E Logic onboarding, khoá, sao lưu mã hoá, dọn / xoá dữ liệu, thông báo, giao nhà + PDF (F-01, F-16 – F-19)
+- [x] 2A Logic căn + tiêu chí (F-02, F-03) + PDF tiêu chí công bố
+- [x] 2B Logic hồ sơ, Applicant mode, giấy tờ (F-04 – F-07) + PDF đơn trống
+- [x] 2C Logic xác minh: tham chiếu, báo cáo ngoài, Background review (F-08 – F-10)
+- [x] 2D Logic chấm, Compare, hàng đợi + đồng hồ, quyết định, thư + PDF, Decision file (F-11 – F-15)
+- [x] 2E Logic onboarding, khoá, sao lưu mã hoá, dọn / xoá dữ liệu, thông báo, giao nhà + PDF (F-01, F-16 – F-19)
 - Màn theo mockup v2 (sau 1D, cùng phiên 2A–2E):
 - [ ] F-01 Onboarding (S-01)
 - [ ] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)

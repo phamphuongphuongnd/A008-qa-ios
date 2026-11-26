@@ -1,7 +1,287 @@
 {
-  "s02": { "title": "Rentals" },
-  "s03": { "title": "Rental" },
-  "s04": { "title": "Criteria" },
-  "s05": { "title": "Published criteria" },
-  "s06": { "title": "Rental hub" }
+  "s02": {
+    "title": "Rentals",
+    "newRental": "New rental",
+    "filter": { "open": "Open", "closed": "Closed" },
+    "empty": {
+      "title": "No rentals yet",
+      "body": "Add your first rental to set criteria and start reviewing applicants.",
+      "action": "New rental",
+      "sample": "Try a sample rental"
+    },
+    "emptyClosed": {
+      "title": "No closed rentals",
+      "body": "Rentals you close stay here until you delete them."
+    },
+    "count": {
+      "none": "No applicants yet",
+      "applicants_one": "{{count}} applicant",
+      "applicants_other": "{{count}} applicants",
+      "ready": "{{count}} ready to decide",
+      "decisionMade": "decision made"
+    },
+    "swipe": { "close": "Close", "reopen": "Reopen", "delete": "Delete" },
+    "closedSnack": "Rental closed",
+    "reopenedSnack": "Rental reopened",
+    "deletedSnack": "Rental deleted",
+    "reminders": {
+      "backup_one": "Back up your data — last backup {{count}} day ago",
+      "backup_other": "Back up your data — last backup {{count}} days ago",
+      "backupNever": "Back up your data — no backup yet",
+      "backupAction": "Back up",
+      "later": "Later",
+      "cleanup_one": "{{count}} closed rental still holds applicant data",
+      "cleanup_other": "{{count}} closed rentals still hold applicant data",
+      "cleanupAction": "Review"
+    }
+  },
+  "status": {
+    "open": "Open",
+    "offer_out": "Offer out",
+    "leased": "Leased",
+    "closed": "Closed"
+  },
+  "applicantStatus": {
+    "new": "New",
+    "in_review": "In review",
+    "conditional_offer": "Conditional offer",
+    "approved": "Approved",
+    "denied": "Denied",
+    "withdrawn": "Withdrawn",
+    "incomplete": "Incomplete",
+    "offer_expired": "Offer expired"
+  },
+  "mode": {
+    "compare": "Compare",
+    "first_come": "First-come",
+    "compareChip": "Compare mode",
+    "firstComeChip": "First-come mode",
+    "compareOption": "Compare applicants",
+    "firstComeOption": "First-come order",
+    "compareHelp": "Review everyone, then choose. Same criteria for all.",
+    "firstComeHelp": "Review in the order received and offer to the first who qualifies. Required in Seattle; a good habit anywhere."
+  },
+  "rental": {
+    "perMonth": "{{rent}}/mo",
+    "bedrooms": "{{count}} bd",
+    "studio": "Studio",
+    "available": "Available {{date}}"
+  },
+  "s03": {
+    "title": "Rental",
+    "titleNew": "New rental",
+    "titleEdit": "Edit rental",
+    "step": "Step 1 of 3",
+    "fields": {
+      "street": "Street address",
+      "streetRequired": "Street address (required)",
+      "unit": "Unit",
+      "city": "City",
+      "state": "State",
+      "zip": "ZIP",
+      "rent": "Monthly rent",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "availableOn": "Available from",
+      "deposit": "Security deposit",
+      "fee": "Application fee",
+      "feeNote": "Some states cap or ban fees",
+      "notes": "Notes"
+    },
+    "reviewMode": "Review mode",
+    "next": "Next: criteria",
+    "save": "Save",
+    "errors": {
+      "streetRequired": "Enter the street address",
+      "rentRequired": "Enter the monthly rent",
+      "zip": "ZIP must be 5 digits",
+      "state": "Choose a state from the list",
+      "bedrooms": "Bedrooms must be between 0 and 8",
+      "bathrooms": "Bathrooms must be between 0 and 8, in steps of 0.5",
+      "date": "Enter a valid date",
+      "money": "Enter an amount of $0 or more",
+      "tooLong": "Keep it under {{max}} characters"
+    },
+    "modeChange": {
+      "title": "Change review mode?",
+      "toFirstCome_one": "You already have {{count}} applicant. They will be reviewed in the order received. The change is recorded in the decision file.",
+      "toFirstCome_other": "You already have {{count}} applicants. They will be reviewed in the order received. The change is recorded in the decision file.",
+      "toCompare_one": "You already have {{count}} applicant. Running first-come timers stop. The change is recorded in the decision file.",
+      "toCompare_other": "You already have {{count}} applicants. Running first-come timers stop. The change is recorded in the decision file.",
+      "confirm": "Change mode",
+      "historyReason": "Review mode changed: {{from}} → {{to}}"
+    }
+  },
+  "s04": {
+    "title": "Criteria",
+    "intro": "Set once, applied to every applicant.",
+    "writingFair": "Writing fair criteria",
+    "whyThisMatters": "Why this matters",
+    "lockedBanner": "Criteria are locked because you have applicants. Changes apply to everyone and are recorded.",
+    "editCriteria": "Edit criteria",
+    "unlock": {
+      "title": "Why are you changing criteria?",
+      "body": "Every applicant is re-checked with the new version. The change and your reason go into the decision file.",
+      "placeholder": "Reason (required)",
+      "confirm": "Unlock & edit",
+      "required": "Enter a reason"
+    },
+    "help": {
+      "C1": "Gross household income vs monthly rent.",
+      "C2": "Counts rent and own only.",
+      "C3": "Filed-but-dismissed cases go to review.",
+      "C4": "Asked on the reference call.",
+      "C5": "From the screening report or the reference call.",
+      "C6": "Each required document needs at least one file.",
+      "C7": "Check your local occupancy code.",
+      "C8": "Assistance animals are not pets.",
+      "C9": "Off by default. Some states limit this.",
+      "C10": "Only convictions. Reviewed after a conditional offer."
+    },
+    "params": {
+      "multiple": "Multiple",
+      "voucherShare": "Apply to tenant's share when a voucher pays part",
+      "months": "Months",
+      "years": "Years",
+      "perBedroom": "People per bedroom",
+      "policy": "Policy",
+      "maxPets": "Max pets",
+      "minScore": "Minimum score",
+      "lookback": "Lookback",
+      "lookbackValue": "{{count}} yrs",
+      "documents": "Required documents",
+      "otherDocument": "Other document"
+    },
+    "petPolicy": {
+      "no_pets": "No pets",
+      "cats_only": "Cats only",
+      "cats_and_dogs": "Cats and dogs",
+      "case_by_case": "Case by case"
+    },
+    "voucherDialog": {
+      "title": "Keep the voucher option on?",
+      "keep": "Keep on",
+      "turnOff": "Turn off anyway"
+    },
+    "occupancyWarning": {
+      "body": "Below HUD's 2 per bedroom guide. Strict occupancy limits can exclude families with children, who are protected.",
+      "setTo2": "Set to 2",
+      "keep": "Keep {{count}}"
+    },
+    "custom": {
+      "add": "Add your own yes/no criterion",
+      "title": "Add your own criterion",
+      "question": "Yes/no question",
+      "whoAnswers": "Who answers?",
+      "applicant": "Applicant answers",
+      "landlord": "Landlord checks",
+      "addAction": "Add",
+      "remove": "Remove",
+      "limit": "Up to {{max}} of your own criteria"
+    },
+    "policies": {
+      "title": "Policies (printed, not checked)",
+      "smoking": "Smoking",
+      "deposit": "Deposit",
+      "fee": "Application fee"
+    },
+    "smoking": {
+      "non_smoking": "Non-smoking",
+      "outside": "Smoking allowed outside",
+      "allowed": "Allowed"
+    },
+    "preview": "Preview published criteria",
+    "saved": "Criteria saved",
+    "savedRecorded": "Criteria saved. The change is recorded."
+  },
+  "s05": {
+    "title": "Published criteria",
+    "edit": "Edit criteria",
+    "exportPdf": "Export PDF",
+    "share": "Share",
+    "copyText": "Copy as text",
+    "copied": "Copied — paste it into your listing",
+    "done": "Go to rental",
+    "pdfError": "Couldn't create the PDF. Try again."
+  },
+  "s06": {
+    "title": "Rental hub",
+    "menu": {
+      "editRental": "Edit rental",
+      "editCriteria": "Edit criteria",
+      "published": "Published criteria",
+      "decisionFile": "Decision file",
+      "closeRental": "Close rental",
+      "reopenRental": "Reopen rental",
+      "deleteRental": "Delete rental"
+    },
+    "addApplicant": "Add applicant",
+    "compare": "Compare applicants · {{count}}",
+    "orderQueue": "Order queue · {{count}}",
+    "applicants": "Applicants",
+    "sortedByReceived": "Sorted by received",
+    "received": "Received {{when}}",
+    "queueNumber": "#{{n}}",
+    "moveIn": "Move-in checklist",
+    "pendingNotices_one": "{{count}} adverse action notice to send",
+    "pendingNotices_other": "{{count}} adverse action notices to send",
+    "empty": {
+      "title": "No applicants yet",
+      "body": "Share your published criteria, then add applicants as they come in.",
+      "share": "Share criteria",
+      "add": "Add applicant"
+    },
+    "deleteDialog": {
+      "title": "Delete this rental?",
+      "body_one": "This permanently deletes the rental, its criteria and {{count}} applicant with their documents. This can't be undone.",
+      "body_other": "This permanently deletes the rental, its criteria and {{count}} applicants with their documents. This can't be undone.",
+      "bodySample": "This removes the sample rental and its sample applicants.",
+      "confirm": "Delete"
+    },
+    "closeDialog": {
+      "title": "Close this rental?",
+      "body": "It moves to Closed. You can reopen it any time.",
+      "confirm": "Close rental"
+    },
+    "notFound": "This rental no longer exists."
+  },
+  "published": {
+    "title": "Rental criteria",
+    "weWillCheck": "We will check",
+    "bring": "Bring",
+    "howWeReview": "How we review",
+    "goodToKnow": "Good to know",
+    "check": {
+      "C1": "Income of at least {{multiple}}× the rent",
+      "C1share": "Income of at least {{multiple}}× your share of the rent",
+      "C2": "{{count}} months of rental or home-ownership history",
+      "C2none": "Rental or home-ownership history (no minimum)",
+      "C3": "No eviction judgment in the past {{count}} years",
+      "C4": "A previous landlord who would rent to you again",
+      "C5": "No unpaid balance owed to a past landlord",
+      "C7_one": "Up to {{count}} person per bedroom",
+      "C7_other": "Up to {{count}} people per bedroom",
+      "C9": "Credit score of at least {{score}}",
+      "C10": "Criminal history: convictions in the past {{count}} years only, reviewed individually after a conditional offer"
+    },
+    "pets": {
+      "no_pets": "No pets",
+      "cats_only": "Cats only",
+      "cats_and_dogs": "Cats and dogs, max {{max}}",
+      "case_by_case": "Pets considered case by case"
+    },
+    "proofOfIncome": "Proof of income (2 recent pay stubs, offer letter, or benefits / voucher letter)",
+    "noFee": "We do not charge an application fee.",
+    "fee": "Application fee: {{fee}}.",
+    "deposit": "Security deposit: {{deposit}}.",
+    "smoking": {
+      "non_smoking": "Non-smoking property.",
+      "outside": "Smoking allowed outside only.",
+      "allowed": "Smoking allowed."
+    },
+    "accommodation": "You may ask for more time or a reasonable accommodation.",
+    "noSsn": "We do not ask for your Social Security number on this application.",
+    "fairHousing": "We do not discriminate based on race, color, religion, sex, national origin, familial status, disability, or any other characteristic protected by law.",
+    "fileName": "Rental criteria - {{address}}"
+  }
 }
