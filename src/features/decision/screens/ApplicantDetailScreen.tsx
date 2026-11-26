@@ -26,16 +26,12 @@ import {
   IconButton,
   IssueItem,
   IssuesCard,
-  KeyValue,
   ListGroup,
   ListRow,
   Screen,
   SectionHeader,
   Sheet,
-  StatusBadge,
-  EvidenceTag,
   SummaryCard,
-  Txt,
   haptics,
   showSnackbar,
 } from '@/ui';
@@ -46,6 +42,7 @@ import { useApplicantReview } from '../hooks';
 import { evidenceDetail, type ApplicantReview } from '../review';
 import { applicantDetailView, evidenceSheetView, referenceLinks } from '../viewModel';
 import { Hint, idParam, NotFoundScreen } from '../components/DecisionParts';
+import { EvidenceSheet } from '../components/EvidenceSheet';
 
 export default function ApplicantDetailScreen() {
   const p = useLocalSearchParams<{ id: string }>();
@@ -183,34 +180,7 @@ function ApplicantDetail({ review }: { review: ApplicantReview }) {
       </View>
 
       {/* Evidence sheet: source, date, who checked, files, the place to add more. */}
-      <Sheet visible={!!sheet} onClose={() => setEvidenceFor(null)} title={sheet?.title}>
-        {sheet ? (
-          <View style={{ gap: 12 }}>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-              <StatusBadge outcome={sheet.outcome} />
-              {sheet.evidence ? <EvidenceTag evidence={sheet.evidence} /> : null}
-            </View>
-            <Txt>{sheet.reason}</Txt>
-            {sheet.rows.map((r) => (
-              <KeyValue key={r.label} label={r.label} value={r.value} />
-            ))}
-            {sheet.issues.map((m) => (
-              <Hint key={m}>{m}</Hint>
-            ))}
-            {sheet.action ? (
-              <Button
-                label={sheet.action.label}
-                variant="secondary"
-                block
-                onPress={() => {
-                  setEvidenceFor(null);
-                  go(sheet.action!.href);
-                }}
-              />
-            ) : null}
-          </View>
-        ) : null}
-      </Sheet>
+      <EvidenceSheet sheet={sheet} onClose={() => setEvidenceFor(null)} onAction={go} />
 
       {/* References: one call sheet per rented home / employer. */}
       <Sheet visible={refsOpen} onClose={() => setRefsOpen(false)} title={t('decision:s09.referencesTitle')}>

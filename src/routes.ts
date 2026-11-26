@@ -60,8 +60,6 @@ export const routes = {
   // ── 2B: applications ──────────────────────────────────────────────────
   /** S-07 Add applicant (sheet). */
   addApplicant: (rentalId: Id) => withQuery('/applicants/add', { rentalId }),
-  /** S-08 Application form, landlord entering a new application. */
-  applicationNew: (rentalId: Id) => withQuery('/applicants/new', { rentalId }),
   /** S-08 Application form, landlord editing (optionally opening one section). */
   applicationEdit: (applicantId: Id, section?: FormSection) =>
     withQuery(`/applicants/${seg(applicantId)}/form`, { section }),
@@ -112,6 +110,8 @@ export const routes = {
   appLock: () => '/settings/app-lock' as Href,
   /** S-24 Data cleanup. */
   dataCleanup: () => '/settings/cleanup' as Href,
+  /** S-21 About (version, licenses, feedback). */
+  about: () => '/settings/about' as Href,
   /** S-26 Legal & privacy. */
   legal: () => '/settings/legal' as Href,
   /** S-27 Delete all data. */

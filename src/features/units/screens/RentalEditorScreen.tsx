@@ -5,6 +5,8 @@ import { StyleSheet, TextInput, View } from 'react-native';
 
 import { parseId, routes } from '@/routes';
 import { t } from '@/i18n';
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import {
   AppBar,
   Banner,
@@ -255,7 +257,12 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
           onChange={(v) => set('reviewMode', v)}
           accessibilityLabel={t('units:s03.reviewMode')}
         />
-        {hint ? <Banner tone="warn">{hint}</Banner> : null}
+        {hint ? (
+          <>
+            <Banner tone="warn">{hint}</Banner>
+            <GuideLink slug={GUIDE.firstCome} />
+          </>
+        ) : null}
         <Txt variant="caption" color="inkMuted">
           {t(form.reviewMode === 'compare' ? 'units:mode.compareHelp' : 'units:mode.firstComeHelp')}
         </Txt>

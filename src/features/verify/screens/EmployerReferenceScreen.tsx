@@ -5,6 +5,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Info } from 'lucide-react-native';
 
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { AppBar, Banner, Screen, TextField, Txt, useDiscardGuard } from '@/ui';
 
@@ -67,6 +69,7 @@ export function EmployerSheetView({ sheet }: { sheet: EmployerSheet }) {
       <Banner tone="info" icon={Info}>
         {t('verify:employer.note')}
       </Banner>
+      <GuideLink slug={GUIDE.fakeReferences} />
 
       <AttemptsSection
         attempts={sheet.attempts}

@@ -35,6 +35,7 @@ import {
 import { useAuthCapability, useCleanupCandidates, useSettings, isIos } from '../hooks';
 import { settingsActions } from '../index';
 import type { ContactErrors } from '../summary';
+import { appVersion } from '../about';
 import { settingsSections, type SettingsRowKey } from '../view';
 
 const ICONS: Partial<Record<SettingsRowKey, IconComponent>> = {
@@ -64,7 +65,7 @@ export default function SettingsScreen() {
     ios: isIos,
     cleanupCount: cleanup.length,
     hasSample,
-    appVersion: Constants.expoConfig?.version ?? null,
+    appVersion: appVersion(Constants),
   });
 
   const onRow = (key: SettingsRowKey) => {
@@ -94,7 +95,7 @@ export default function SettingsScreen() {
         }
         return;
       case 'about':
-        return;
+        return router.push(routes.about());
     }
   };
 
@@ -112,7 +113,7 @@ export default function SettingsScreen() {
                 icon={ICONS[r.key]}
                 chevron={r.chevron}
                 danger={r.danger}
-                onPress={r.key === 'about' ? undefined : () => onRow(r.key)}
+                onPress={() => onRow(r.key)}
               />
             ))}
           </ListGroup>

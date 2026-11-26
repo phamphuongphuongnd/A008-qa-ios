@@ -31,7 +31,7 @@ import { routes } from '@/routes';
 
 import { STATUS_AFTER, type DecisionContext, type DecisionPreview, type MissingInfoMethod } from './decision';
 import type { LetterContext } from './letters';
-import { ISSUE_ACTION_KEYS, issueHref, shortName, type ApplicantReview, type CompareData, type EvidenceDetail, type QueueRow } from './review';
+import { ISSUE_ACTION_KEYS, evidenceDetail, issueHref, shortName, type ApplicantReview, type CompareData, type EvidenceDetail, type QueueRow } from './review';
 import { localIso, shortStamp } from './time';
 
 // ---------------------------------------------------------------------------
@@ -586,6 +586,24 @@ export function compareView(d: CompareData): CompareView {
     cells: Object.fromEntries(d.table.issueCounts.map((n, i) => [cols[i].key, { text: String(n), tone: n > 0 ? 'warn' : 'muted', bold: n > 0 }])),
   });
   return { state: 'table', columns: cols, rows };
+}
+
+/** What a tap on an S-17 cell opens. */
+export type CompareTap = { kind: 'evidence'; sheet: EvidenceSheetView } | { kind: 'applicant'; href: string } | null;
+
+/**
+ * S-17 tap on a cell (product.md §5 S-17 "Chạm ô → sheet chứng cứ"): a criterion cell opens that applicant's evidence
+ * sheet — the same one as S-09, titled "Jordan E. · Income ≥ 3.0×"; the "Issues" row opens S-09 (where issues are fixed).
+ */
+export function compareCellTap(d: CompareData, rowKey: string, applicantId: string): CompareTap {
+  const i = d.table.columns.findIndex((c) => c.applicantId === applicantId);
+  if (i < 0) return null;
+  const bundle = d.bundles[i];
+  if (rowKey === 'issues') return { kind: 'applicant', href: String(routes.applicant(bundle.applicant.id)) };
+  const result = d.table.evaluations[i]?.results.find((r) => r.criterionId === rowKey);
+  if (!result) return null;
+  const sheet = evidenceSheetView(evidenceDetail(result, bundle, d.applicants[i]));
+  return { kind: 'evidence', sheet: { ...sheet, title: t('decision:s17.sheetTitle', { name: shortName(d.table.columns[i].fullName), criterion: sheet.title }) } };
 }
 
 // ---------------------------------------------------------------------------

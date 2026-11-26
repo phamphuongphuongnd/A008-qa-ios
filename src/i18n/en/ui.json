@@ -9,6 +9,9 @@
     "verified": "Verified",
     "mismatch": "Mismatch"
   },
+  "compare": {
+    "cellHint": "Shows the details"
+  },
   "queue": {
     "position": "Number {{n}} in order received"
   },

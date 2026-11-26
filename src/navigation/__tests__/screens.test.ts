@@ -13,11 +13,12 @@ function walk(dir: string): string[] {
   });
 }
 
-/** product.md §5: S-01…S-27 plus S-08a/S-08b, and the Guide article screen. */
+/** product.md §5: S-01…S-27 plus S-08a/S-08b, the Guide article screen and S-21 About (mockup v2). */
 const EXPECTED = [
   ...Array.from({ length: 27 }, (_, i) => `S-${String(i + 1).padStart(2, '0')}`),
   'S-08a',
   'S-08b',
+  'S-21a',
   'S-25a',
 ].sort();
 
@@ -28,7 +29,7 @@ describe('screen table', () => {
 
   it.each(SCREEN_IDS)('%s: screen file exists and every route file is a thin shell importing it', (id) => {
     const info = SCREENS[id];
-    // Placeholder or real screen: the file only has to default-export the component the route shells re-export.
+    // The screen file default-exports the component the route shells re-export.
     expect(read(info.screen)).toMatch(/export default function|export default /);
     const module = info.screen.replace(/^src\//, '@/').replace(/\.tsx$/, '');
     for (const route of info.routes) expect(read(route)).toContain(`'${module}'`);

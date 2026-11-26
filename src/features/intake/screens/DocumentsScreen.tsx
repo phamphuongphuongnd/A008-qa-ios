@@ -8,6 +8,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { db, type DocumentRow } from '@/db';
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { parseId } from '@/routes';
 import { AppBar, EmptyState, Screen } from '@/ui';
@@ -65,6 +67,7 @@ function DocumentsBody() {
           />
         </>
       )}
+      <GuideLink slug={GUIDE.verifyingIncome} />
       {picker.ui}
       <FileSheet doc={openDoc} title={open?.title ?? ''} onClose={() => setOpen(null)} />
     </Screen>

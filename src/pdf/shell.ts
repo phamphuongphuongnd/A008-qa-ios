@@ -1,7 +1,7 @@
 /**
  * Shared PDF shell for every Evenlease PDF (published criteria, blank application, letters, decision file, move-in).
  *
- * - `pdfDocument({ title, subtitle, body })` → a full HTML page for US Letter: app name + title on top, the
+ * - `pdfDocument({ title, subtitle, body })` → a full HTML page for US Letter: small black logo + app name + title on top, the
  *   "not legal advice" footer at the bottom of every page (outer layout table: thead / tfoot repeat per printed page).
  * - Build `body` with the `html` tagged template: interpolated values are escaped; nest trusted fragments with `raw`
  *   or other `html` results. `table()` repeats its header row on every page.
@@ -9,11 +9,20 @@
  * No logging of HTML or applicant data anywhere.
  */
 import { formatDate, formatUsd } from '@/engine';
+import { MARK_BARS, MARK_HOUSE } from '@/ui/logoPaths';
 
 import { expoPdfAdapter } from './shellNative';
 
 export const APP_NAME = 'Evenlease';
 export const PDF_FOOTER = 'Evenlease is a checklist, not legal advice. Laws vary by state and city.';
+
+/**
+ * Small black-and-white Evenlease mark for the running header (design/v2-indigo/logo/evenlease-mark-mono.svg in black,
+ * white '=' bars): PDFs stay black and white so they print well on any printer.
+ */
+export const PDF_LOGO = `<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="232 216 560 584" width="13" height="13.6" aria-hidden="true"><path d="${MARK_HOUSE}" fill="#000" stroke="#000" stroke-width="44" stroke-linejoin="round"/>${MARK_BARS.map(
+  (b) => `<rect x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" rx="${b.rx}" fill="#fff"/>`,
+).join('')}</svg>`;
 
 // ---------------------------------------------------------------------------
 // Safe HTML
@@ -117,7 +126,7 @@ export function section(heading: string, content: HtmlValue): SafeHtml {
   return html`<section><h2>${heading}</h2>${content}</section>`;
 }
 
-// TODO(design): Phương is preparing the new design — this is a neutral black-and-white print style with system fonts.
+/** Black-and-white print style (decided for 1.0: prints the same on any printer), system fonts, small logo in the header. */
 export const PDF_CSS = `
 @page { size: letter; margin: 0.5in 0.6in; }
 * { box-sizing: border-box; }
@@ -130,6 +139,8 @@ table.page > tfoot { display: table-footer-group; }
 table.page > thead td, table.page > tfoot td, table.page > tbody > tr > td { padding: 0; }
 .page-header { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #000;
   padding-bottom: 4pt; margin-bottom: 10pt; font-size: 9pt; }
+.page-header .brand { display: inline-flex; align-items: center; gap: 4pt; }
+.page-header .logo { display: block; flex: none; }
 .page-header .app { font-weight: 700; letter-spacing: 0.02em; }
 .page-footer { border-top: 1px solid #000; margin-top: 10pt; padding-top: 4pt; font-size: 8.5pt; }
 h1 { font-size: 16pt; margin: 0 0 2pt; }
@@ -156,7 +167,7 @@ export interface PdfDocumentInput {
 }
 
 /**
- * Full HTML page. Header (app name + title) and footer (disclaimer) repeat on each printed page via an outer layout
+ * Full HTML page. Header (logo + app name + title) and footer (disclaimer) repeat on each printed page via an outer layout
  * table. Page numbers: WebView / UIKit printing does not support CSS page counters — not printed; the page count is
  * returned by `printToPdfAndShare`.
  */
@@ -165,7 +176,7 @@ export function pdfDocument(input: PdfDocumentInput): string {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${input.title}</title><style>${raw(PDF_CSS)}</style></head>
 <body><table class="page" role="presentation">
-<thead><tr><td><div class="page-header"><span class="app">${APP_NAME}</span><span>${input.title}</span></div></td></tr></thead>
+<thead><tr><td><div class="page-header"><span class="brand">${raw(PDF_LOGO)}<span class="app">${APP_NAME}</span></span><span>${input.title}</span></div></td></tr></thead>
 <tfoot><tr><td><div class="page-footer">${input.footerNote ? html`<div class="muted">${input.footerNote}</div>` : ''}<div>${PDF_FOOTER}</div></div></td></tr></tfoot>
 <tbody><tr><td><main><h1>${input.title}</h1>${input.subtitle ? html`<p class="subtitle">${input.subtitle}</p>` : ''}${input.body}</main></td></tr></tbody>
 </table></body></html>`;

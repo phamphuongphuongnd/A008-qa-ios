@@ -1,10 +1,15 @@
 /** @jest-environment node */
+import fs from 'fs';
+import path from 'path';
+
 import {
   dateTime,
   escapeHtml,
   html,
   multiline,
+  PDF_CSS,
   PDF_FOOTER,
+  PDF_LOGO,
   pdfDocument,
   printToPdfAndShare,
   raw,
@@ -67,6 +72,7 @@ describe('pdfDocument', () => {
     expect(doc).toContain('<meta charset="utf-8">');
     expect(doc).toContain('@page { size: letter;');
     expect(doc).toContain('<span class="app">Evenlease</span>');
+    expect(doc).toContain(`<span class="brand">${PDF_LOGO}<span class="app">`);
     expect(doc).toContain('<h1>Adverse action notice</h1>');
     expect(doc).toContain('<p>Body &lt;x&gt;</p>');
     expect(doc).toContain(PDF_FOOTER);
@@ -76,6 +82,15 @@ describe('pdfDocument', () => {
     expect(doc).toContain('table.page > tfoot { display: table-footer-group; }');
     expect(doc).toContain('table.grid > thead { display: table-header-group; }');
     expect(doc.indexOf('<tfoot>')).toBeGreaterThan(doc.indexOf('<thead>'));
+  });
+  it('stays black and white: the logo and the print style use no colour', () => {
+    expect(PDF_LOGO).toContain('viewBox="232 216 560 584"');
+    expect(PDF_LOGO.match(/#[0-9A-Fa-f]{3,6}\b/g)!.every((c) => ['#000', '#fff'].includes(c.toLowerCase()))).toBe(true);
+    expect(doc).not.toMatch(/TODO\(design\)/);
+    for (const c of PDF_CSS.match(/#[0-9A-Fa-f]{3,6}\b/g) ?? []) expect(c).toMatch(/^#([0-9a-f])\1\1(\1\1\1)?$/i); // greys only
+  });
+  it.each(['publishedCriteria', 'blankApplication', 'letters', 'decisionFile', 'moveIn'])('%s.ts prints through pdfDocument (same header)', (f) => {
+    expect(fs.readFileSync(path.join(__dirname, '..', `${f}.ts`), 'utf8')).toMatch(/pdfDocument\(/);
   });
   it('escapes the title', () => {
     expect(pdfDocument({ title: 'A & B', body: html`` })).toContain('<title>A &amp; B</title>');

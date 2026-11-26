@@ -11,6 +11,8 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import type { DecisionKind } from '@/engine';
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
 import { router } from '@/services/router';
@@ -171,7 +173,10 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
       ) : null}
 
       {view.showReportBox ? (
-        <Checkbox label={t('decision:s15.reportBox')} value={form.reportInfluenced} onChange={(v) => setForm((f) => ({ ...f, reportInfluenced: v }))} />
+        <>
+          <Checkbox label={t('decision:s15.reportBox')} value={form.reportInfluenced} onChange={(v) => setForm((f) => ({ ...f, reportInfluenced: v }))} />
+          <GuideLink slug={GUIDE.adverseAction} />
+        </>
       ) : null}
 
       {view.warnings.map((w) => (

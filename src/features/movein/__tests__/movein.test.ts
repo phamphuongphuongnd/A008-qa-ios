@@ -6,6 +6,7 @@ import { updateSettings } from '@/db/repos/settings';
 import { makeTestDb } from '@/db/testing/testDb';
 import { moveInHtml, moveInFileName, svgDataUri } from '@/pdf/moveIn';
 import type { PdfAdapter } from '@/pdf/shell';
+import { t } from '@/i18n';
 
 import {
   bothSigned,
@@ -206,7 +207,8 @@ describe('PDF', () => {
     expect(out).toContain('<span class="damaged">Damaged</span>');
     expect(out).toContain('1 photo');
     expect(out).toContain('48,210 kWh');
-    expect(out).toContain('1,032 m³');
+    expect(out).toContain('1,032 gal');
+    expect(out).not.toContain('m³');
     expect(out).not.toContain('>Gas<');
     expect(out).toContain('Smoke &amp; CO alarms tested');
     expect(out).toContain('Alex &lt;Morgan&gt;');
@@ -239,5 +241,11 @@ describe('PDF', () => {
 
     const unsigned = { ...row, signatures: { landlord: draftOf(row).signatures.landlord } };
     await expect(exportMoveIn(db, unsigned, reader, { includePhotos: false, adapter })).rejects.toThrow();
+  });
+});
+
+describe('S-20 meter units (US meters)', () => {
+  it('Electric kWh · Gas ccf · Water gallons', () => {
+    expect(['electric', 'gas', 'water'].map((k) => t(`system:s20.meterUnit.${k as 'gas'}`))).toEqual(['kWh', 'ccf', 'gal']);
   });
 });

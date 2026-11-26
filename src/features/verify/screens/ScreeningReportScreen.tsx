@@ -8,6 +8,8 @@ import { Camera, ExternalLink, FileText, FolderOpen, Image as ImageIcon, Plus, S
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { router } from '@/services/router';
 import { useTheme } from '@/theme';
@@ -127,6 +129,7 @@ export function ReportSheetView({ sheet, now = new Date() }: { sheet: ReportShee
           onChange={(v) => edit({ service: v ? 'applicant_copy' : null })}
         />
       </Card>
+      <GuideLink slug={GUIDE.screeningReports} />
       {view.showTooOld ? (
         <Banner tone="warn" icon={TriangleAlert}>
           {t('verify:report.tooOld')}

@@ -105,6 +105,7 @@
     "hideClosed": "Hide denied / withdrawn",
     "corner": "Criteria",
     "issuesRow": "Issues",
+    "sheetTitle": "{{name}} · {{criterion}}",
     "emptyTitle": "Add at least two applicants to compare.",
     "emptyBody": "Compare shows everyone's results side by side, in the order received.",
     "allHidden": "Everyone here is denied or withdrawn. Turn off the filter to see them."

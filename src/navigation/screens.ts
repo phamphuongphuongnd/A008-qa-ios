@@ -5,7 +5,7 @@ import { routes } from '@/routes';
 
 /**
  * Every screen of product.md §5: owner session (PLAN.md Phase 2), route file(s) under app/, the screen component under
- * src/features/, and a sample link (ids 1 / 2 — used by the placeholder's jump list and by tests).
+ * src/features/, and a sample link (ids 1 / 2 — checked by tests).
  * Route files are thin shells: Phase 2 sessions edit their src/features/<area>/** and, if needed, the route files of
  * their own app/ folder. Root layout, tab layout and this table belong to 1A / the coordinator.
  */
@@ -71,7 +71,7 @@ export const SCREENS = {
   },
   'S-08': {
     owner: '2B',
-    routes: ['app/applicants/new.tsx', 'app/applicants/[id]/form.tsx', 'app/applicants/mode/form/[id].tsx'],
+    routes: ['app/applicants/[id]/form.tsx', 'app/applicants/mode/form/[id].tsx'],
     screen: 'src/features/intake/screens/ApplicationFormScreen.tsx',
     sample: routes.applicationEdit(1, 1),
     title: () => t('intake:s08.title'),
@@ -180,6 +180,13 @@ export const SCREENS = {
     screen: 'src/features/settings/screens/SettingsScreen.tsx',
     sample: routes.settings(),
     title: () => t('system:s21.title'),
+  },
+  'S-21a': {
+    owner: '2E',
+    routes: ['app/settings/about.tsx'],
+    screen: 'src/features/settings/screens/AboutScreen.tsx',
+    sample: routes.about(),
+    title: () => t('system:about.title'),
   },
   'S-22': {
     owner: '2E',

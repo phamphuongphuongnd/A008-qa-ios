@@ -35,8 +35,8 @@
     },
     "meterUnit": {
       "electric": "kWh",
-      "gas": "",
-      "water": "m³"
+      "gas": "ccf",
+      "water": "gal"
     },
     "keys": "Keys handed over",
     "alarms": "Smoke & CO alarms tested",
@@ -305,6 +305,22 @@
     "deleted_other": "Data deleted for {{count}} applicants.",
     "emptyTitle": "Nothing to clean up"
   },
+  "about": {
+    "title": "About",
+    "versionBuild": "Version {{version}} ({{build}})",
+    "noAccount": "No account · No servers",
+    "licenses": "Licenses",
+    "licensesIntro": "Evenlease is built with these open-source packages. Thank you to their authors.",
+    "interFont": "Inter typeface",
+    "licenseName": {
+      "MIT": "MIT License",
+      "ISC": "ISC License",
+      "Apache-2.0": "Apache License 2.0",
+      "OFL-1.1": "SIL Open Font License 1.1"
+    },
+    "feedback": "Send feedback",
+    "feedbackSubject": "Evenlease feedback"
+  },
   "s26": {
     "title": "Legal & privacy",
     "notLawFirm": "Evenlease is a checklist tool, not a law firm. It does not give legal advice, and using it does not make your decisions lawful. Laws vary by state and city — check the rules where your rental is, or talk to a lawyer.",
@@ -313,7 +329,6 @@
     "data": "Your data stays on this phone and in backups you create. We have no servers and collect nothing: no account, no ads, no tracking.",
     "applicantData": "Evenlease never asks for Social Security numbers or dates of birth. Delete applicants' data once you no longer need it (Settings › Data cleanup).",
     "sourcesTitle": "Sources",
-    "licenses": "Licenses",
     "opensBrowser": "Opens in your browser"
   },
   "s27": {

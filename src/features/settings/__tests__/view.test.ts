@@ -13,7 +13,7 @@ describe('S-21 settings rows', () => {
       ios: false,
       cleanupCount: 0,
       hasSample: true,
-      appVersion: '1.0.0',
+      appVersion: { version: '1.0', build: '1' },
     });
     expect(sections.map((s) => s.rows.map((r) => r.key))).toEqual([
       ['name', 'contact'],
@@ -24,9 +24,9 @@ describe('S-21 settings rows', () => {
     const rows = Object.fromEntries(sections.flatMap((s) => s.rows).map((r) => [r.key, r]));
     expect(rows.name.value).toBe('Alex Morgan');
     expect(rows.deleteAll.danger).toBe(true);
-    expect(rows.about.value).toContain('1.0.0');
+    expect(rows.about).toMatchObject({ value: 'Version 1.0 (1)', chevron: true });
     expect(rows.sample.title).not.toBe(
-      settingsSections({ settings: DEFAULT_SETTINGS, now: new Date(), biometric: null, ios: false, cleanupCount: 0, hasSample: false, appVersion: null })[2]
+      settingsSections({ settings: DEFAULT_SETTINGS, now: new Date(), biometric: null, ios: false, cleanupCount: 0, hasSample: false, appVersion: { version: null, build: null } })[2]
         .rows[2].title,
     );
   });

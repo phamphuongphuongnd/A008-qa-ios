@@ -10,6 +10,7 @@ import { makeDeps, sampleDb } from '../testing/helpers';
 import {
   applicantDetailView,
   chooseKind,
+  compareCellTap,
   compareView,
   decisionFilePreview,
   decisionFormView,
@@ -219,6 +220,23 @@ describe('S-17 compare', () => {
     const last = v.rows[v.rows.length - 1];
     expect(last).toMatchObject({ key: 'issues', label: 'Issues', bold: true });
     expect(last.cells[v.columns[0].key]).toEqual({ text: '0', tone: 'muted', bold: false });
+  });
+
+  it('tap on a cell: evidence sheet of that applicant (same as S-09); Issues row opens S-09', () => {
+    const { db, rentalId, id } = sampleDb();
+    const data = loadCompare(db, rentalId, { hideClosed: false })!;
+    const v = compareView(data);
+    const dana = v.columns.find((c) => c.title === 'Dana O.')!;
+    const c1 = data.table.rows.find((r) => r.code === 'C1')!;
+    const tap = compareCellTap(data, c1.criterionId, dana.key);
+    expect(tap?.kind).toBe('evidence');
+    if (tap?.kind !== 'evidence') return;
+    const review = loadApplicantReview(db, id('Dana'), NOW)!;
+    const s09 = evidenceSheetView(evidenceDetail(review.evaluation.results.find((r) => r.code === 'C1')!, review.bundle, review.applicant));
+    expect(tap.sheet).toEqual({ ...s09, title: `Dana O. · ${s09.title}` });
+    expect(compareCellTap(data, 'issues', dana.key)).toEqual({ kind: 'applicant', href: `/review/applicant/${id('Dana')}` });
+    expect(compareCellTap(data, c1.criterionId, 'nobody')).toBeNull();
+    expect(compareCellTap(data, 'no-such-criterion', dana.key)).toBeNull();
   });
 
   it('empty with fewer than two applicants', () => {

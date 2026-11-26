@@ -11,4 +11,5 @@
 - `auto.ts` — weekly backup into the picked folder (keeps newest 3), 30-day reminder (S-02 banner, "Later" = 7 days).
 - `actions.ts` — S-22 buttons (`makeBackupActions(env)`); `index.ts` binds them to the phone + hooks
   `useBackupStatus`, `useBackupReminder`. `native.ts` — expo-file-system / SAF / picker / sharing / expo-crypto.
-- `backgroundTask.ts` — `TaskManager.defineTask`, imported from the app's `index.ts` (TODO(merge 2E)).
+- `backgroundTask.ts` — `TaskManager.defineTask`, imported from the app's `index.ts` before `expo-router/entry` (the task must be defined at
+  JS start-up, outside any route file).
