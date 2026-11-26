@@ -11,8 +11,9 @@ import { getRental } from '@/db/repos/rentals';
 import { withLockSuspended } from '@/features/settings/lockController';
 import { files, fileStore } from '@/files';
 import { assertAppPath } from '@/files/paths';
+import type { SignatureValue } from '@/ui';
 
-import { canExport, isBlankSignature, moveInProgress, strokesToSvg, type MoveInEdit, type SignatureRole, type Stroke } from './model';
+import { canExport, moveInProgress, signaturePathToSvg, svgPathData, type MoveInEdit, type SignatureRole } from './model';
 import { applyMoveInEdit, draftOf, exportMoveIn, openMoveIn, rentalAddress, signMoveIn, type MoveInFileReader } from './service';
 
 /** Reads saved photos / signature SVGs for the PDF (never logged). */
@@ -73,15 +74,26 @@ export function useMoveIn(rentalId: number, applicantId?: number | null) {
       }
       applyMoveInEdit(db, fileStore, current.id, current, { type: 'addPhoto', room, item, path: saved.path });
     },
-    /** Signature pad "Done": blank pads are ignored (returns false). */
-    async sign(role: SignatureRole, strokes: readonly Stroke[], size: { width: number; height: number }) {
-      if (isBlankSignature(strokes)) return false;
-      const svg = strokesToSvg(strokes, size.width, size.height);
+    /** Signature pad "Done" (value from the UI kit's SignaturePad); an empty pad is ignored (returns false). */
+    async sign(role: SignatureRole, value: SignatureValue | null) {
+      if (!value || !value.path.trim()) return false;
+      const svg = signaturePathToSvg(value.path, value.width, value.height);
       const saved = await files.saveText({ owner: { rentalId }, kind: 'signature', text: svg, ext: 'svg', id: `movein-${role}-${Date.now()}` });
       const current = getMoveIn(db, rentalId);
       if (!current) return false;
       signMoveIn(db, fileStore, current, role, saved.path);
       return true;
+    },
+    /** Stored signature as path data to draw it again (null while unsigned / unreadable). */
+    signatureShape(role: SignatureRole) {
+      const p = draft?.signatures[role]?.path;
+      if (!p) return null;
+      try {
+        const f = new File(Paths.document, assertAppPath(p));
+        return f.exists ? svgPathData(f.textSync()) : null;
+      } catch {
+        return null;
+      }
     },
     /** "Export PDF" / "Share". */
     exportPdf(includePhotos: boolean) {

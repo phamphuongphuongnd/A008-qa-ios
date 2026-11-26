@@ -4,13 +4,15 @@
     "search": "Search articles",
     "noResults": "No article matches \"{{query}}\".",
     "minutes_one": "{{count}} min read",
-    "minutes_other": "{{count}} min read"
+    "minutes_other": "{{count}} min read",
+    "clear": "Clear search"
   },
   "s25a": {
     "title": "Guide article",
     "sources": "Sources",
     "related": "Related",
-    "notFound": "This article doesn't exist."
+    "notFound": "This article doesn't exist.",
+    "opensBrowser": "Opens in your browser"
   },
   "articles": {
     "how-it-works": {
@@ -26,7 +28,10 @@
         "6. When the rental closes, delete the data of applicants you didn't select."
       ],
       "sources": [
-        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" }
+        {
+          "label": "FTC — Using consumer reports: what landlords need to know",
+          "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know"
+        }
       ]
     },
     "fair-criteria": {
@@ -41,8 +46,14 @@
         "Publish the criteria (Evenlease makes a one-page PDF) and give it to every applicant before they apply."
       ],
       "sources": [
-        { "label": "HUD — Fair Housing Act overview", "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview" },
-        { "label": "HUD — Occupancy standards (Keating memo)", "url": "https://www.hud.gov/sites/documents/DOC_7780.PDF" }
+        {
+          "label": "HUD — Fair Housing Act overview",
+          "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview"
+        },
+        {
+          "label": "HUD — Occupancy standards (Keating memo)",
+          "url": "https://www.hud.gov/sites/documents/DOC_7780.PDF"
+        }
       ]
     },
     "fair-housing-basics": {
@@ -57,8 +68,14 @@
         "Using the same written criteria for everyone and recording why you decided are good habits; on their own they do not make a decision lawful."
       ],
       "sources": [
-        { "label": "HUD — Fair Housing Act overview", "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview" },
-        { "label": "HUD — Assistance animals", "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/assistance_animals" }
+        {
+          "label": "HUD — Fair Housing Act overview",
+          "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview"
+        },
+        {
+          "label": "HUD — Assistance animals",
+          "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/assistance_animals"
+        }
       ]
     },
     "vouchers-income": {
@@ -72,7 +89,10 @@
         "Expect an inspection and some paperwork from the housing authority before the lease starts. Ask the applicant for their caseworker's contact."
       ],
       "sources": [
-        { "label": "HUD — Housing Choice Voucher program", "url": "https://www.hud.gov/topics/housing_choice_voucher_program_section_8" }
+        {
+          "label": "HUD — Housing Choice Voucher program",
+          "url": "https://www.hud.gov/topics/housing_choice_voucher_program_section_8"
+        }
       ]
     },
     "fake-references": {
@@ -87,7 +107,10 @@
         "If you can't reach anyone after several tries on different days, record the attempts. Evenlease lets you mark the reference unreachable after at least three attempts by at least two methods (call, text, email)."
       ],
       "sources": [
-        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" }
+        {
+          "label": "FTC — Using consumer reports: what landlords need to know",
+          "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know"
+        }
       ]
     },
     "verifying-income": {
@@ -101,7 +124,10 @@
         "If documents and the application disagree, Evenlease shows a Mismatch. Ask the applicant — there may be a simple reason, such as a raise."
       ],
       "sources": [
-        { "label": "IRS — Pay frequency (Publication 15)", "url": "https://www.irs.gov/publications/p15" }
+        {
+          "label": "IRS — Pay frequency (Publication 15)",
+          "url": "https://www.irs.gov/publications/p15"
+        }
       ]
     },
     "screening-reports": {
@@ -116,8 +142,14 @@
         "Store the report's company name, address and phone — you'll need them for any adverse action notice."
       ],
       "sources": [
-        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" },
-        { "label": "CFPB — Tenant background checks", "url": "https://www.consumerfinance.gov/consumer-tools/credit-reports-and-scores/tenant-background-checks/" }
+        {
+          "label": "FTC — Using consumer reports: what landlords need to know",
+          "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know"
+        },
+        {
+          "label": "CFPB — Tenant background checks",
+          "url": "https://www.consumerfinance.gov/consumer-tools/credit-reports-and-scores/tenant-background-checks/"
+        }
       ]
     },
     "adverse-action": {
@@ -131,8 +163,14 @@
         "A denial that had nothing to do with a report (for example, a past landlord's reference you checked yourself) does not need this notice, but a plain denial letter is still good practice."
       ],
       "sources": [
-        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" },
-        { "label": "15 U.S.C. § 1681m — requirements on users of consumer reports", "url": "https://www.law.cornell.edu/uscode/text/15/1681m" }
+        {
+          "label": "FTC — Using consumer reports: what landlords need to know",
+          "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know"
+        },
+        {
+          "label": "15 U.S.C. § 1681m — requirements on users of consumer reports",
+          "url": "https://www.law.cornell.edu/uscode/text/15/1681m"
+        }
       ]
     },
     "first-come-seattle": {
@@ -146,7 +184,10 @@
         "Keep the queue and your notes. If an applicant asks why someone else got the unit, the order and the reasons are your answer."
       ],
       "sources": [
-        { "label": "City of Seattle — Renting in Seattle", "url": "https://www.seattle.gov/rentinginseattle" }
+        {
+          "label": "City of Seattle — Renting in Seattle",
+          "url": "https://www.seattle.gov/rentinginseattle"
+        }
       ]
     },
     "criminal-history": {
@@ -159,8 +200,14 @@
         "If you withdraw an offer based on a screening report, you also need an adverse action notice."
       ],
       "sources": [
-        { "label": "HUD — Guidance on criminal records and the Fair Housing Act (2016)", "url": "https://www.hud.gov/sites/documents/HUD_OGCGUIDAPPFHASTANDCR.PDF" },
-        { "label": "City of Seattle — Renting in Seattle", "url": "https://www.seattle.gov/rentinginseattle" }
+        {
+          "label": "HUD — Guidance on criminal records and the Fair Housing Act (2016)",
+          "url": "https://www.hud.gov/sites/documents/HUD_OGCGUIDAPPFHASTANDCR.PDF"
+        },
+        {
+          "label": "City of Seattle — Renting in Seattle",
+          "url": "https://www.seattle.gov/rentinginseattle"
+        }
       ]
     },
     "disposing-data": {
@@ -174,8 +221,14 @@
         "Shred any paper applications you scanned into the app."
       ],
       "sources": [
-        { "label": "FTC — Disposing of consumer report information", "url": "https://www.ftc.gov/business-guidance/resources/disposing-consumer-report-information-rule-tells-how" },
-        { "label": "16 CFR Part 682 — Disposal of consumer report information", "url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-F/part-682" }
+        {
+          "label": "FTC — Disposing of consumer report information",
+          "url": "https://www.ftc.gov/business-guidance/resources/disposing-consumer-report-information-rule-tells-how"
+        },
+        {
+          "label": "16 CFR Part 682 — Disposal of consumer report information",
+          "url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-F/part-682"
+        }
       ]
     }
   }

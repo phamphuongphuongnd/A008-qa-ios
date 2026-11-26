@@ -198,3 +198,38 @@ export function strokesToSvg(strokes: readonly Stroke[], width: number, height: 
 
 /** A pad with fewer than 2 points in total is "not signed". */
 export const isBlankSignature = (strokes: readonly Stroke[]) => strokes.reduce((n, s) => n + s.length, 0) < 2;
+
+/** SVG path data from the UI kit's SignaturePad → stored SVG. Only path commands and numbers are kept. */
+export function signaturePathToSvg(d: string, width: number, height: number): string {
+  const clean = d.replace(/[^MLQCZmlqcz0-9.,\s-]/g, '').trim();
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${r1(width)} ${r1(height)}" width="${r1(width)}" height="${r1(height)}"><path d="${clean}" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+
+/** The path data back out of a stored signature SVG (to draw it on S-20), or null. */
+export function svgPathData(svg: string | null | undefined): { d: string; width: number; height: number } | null {
+  if (!svg) return null;
+  const d = /<path[^>]*\sd="([^"]*)"/.exec(svg)?.[1];
+  const vb = /viewBox="0 0 ([\d.]+) ([\d.]+)"/.exec(svg);
+  if (!d || !vb) return null;
+  return { d, width: Number(vb[1]), height: Number(vb[2]) };
+}
+
+// ---------------------------------------------------------------------------
+// Screen data (S-20)
+// ---------------------------------------------------------------------------
+
+/** "Jordan Ellis · Jan 1, 2027" under the title. */
+export function moveInSubtitle(tenantName: string | null, handoverOn: string | null, formatDate: (d: string) => string): string {
+  const who = tenantName || t('system:s20.noTenant');
+  return handoverOn ? t('system:s20.subtitle', { tenant: who, date: formatDate(handoverOn) }) : who;
+}
+
+/** Export button + hint ("Both signatures needed to export"). */
+export function exportState(d: MoveInDraft): { enabled: boolean; hint: string | null } {
+  return bothSigned(d) ? { enabled: true, hint: null } : { enabled: false, hint: t('system:s20.bothSignatures') };
+}
+
+/** Meter fields shown: Electric and Water always (mockup), Gas when it has a value or the landlord adds it. */
+export function meterFields(d: MoveInDraft, showGas: boolean): MeterKind[] {
+  return METER_KINDS.filter((k) => k !== 'gas' || showGas || !!d.meters.gas);
+}

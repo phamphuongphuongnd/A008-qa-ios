@@ -10,6 +10,7 @@ import { isApplicantModeActive } from '@/features/intake/applicantMode/store';
 import { listCleanupCandidates } from '@/db/repos/rentals';
 import { getSettings, updateSettings, type AppSettings } from '@/db/repos/settings';
 
+import { cleanupRows } from './dataCleanup';
 import type { AuthCapability } from './lock';
 import { lockStore } from './lockController';
 import { expoAuthAdapter } from './lockNative';
@@ -36,6 +37,12 @@ export function useOnboarded(): boolean {
 export function useCleanupCandidates() {
   'use no memo';
   return useLive(() => listCleanupCandidates(db), [], ['rentals', 'applicants']);
+}
+
+/** S-24 list with labels ("3 applicants not selected · closed 45 days ago"). */
+export function useCleanupRows(cleanupAfterDays: AppSettings['cleanupAfterDays']) {
+  'use no memo';
+  return useLive(() => cleanupRows(db, cleanupAfterDays), [cleanupAfterDays], ['rentals', 'applicants']);
 }
 
 /** What this phone offers for unlocking; re-read when the app comes back (the landlord may have set a passcode). */
