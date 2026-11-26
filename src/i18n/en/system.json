@@ -1,10 +1,306 @@
 {
-  "s01": { "title": "Welcome" },
-  "s20": { "title": "Move-in checklist" },
-  "s21": { "title": "Settings" },
-  "s22": { "title": "Backup & restore" },
-  "s23": { "title": "App lock" },
-  "s24": { "title": "Data cleanup" },
-  "s26": { "title": "Legal & privacy" },
-  "s27": { "title": "Delete all data" }
+  "s01": {
+    "title": "Welcome",
+    "skip": "Skip",
+    "next": "Next",
+    "pageLabel": "Page {{page}} of {{total}}",
+    "pages": {
+      "p1": {
+        "title": "Pick tenants the same way, every time.",
+        "subtitle": "Set your criteria once. Check every applicant against them."
+      },
+      "p2": {
+        "title": "Verify, don't guess.",
+        "subtitle": "Call scripts, document checks and red flags for fake references."
+      },
+      "p3": {
+        "title": "A checklist, not legal advice.",
+        "subtitle": "No account, no ads. Applicant data stays on this phone. We never ask for Social Security numbers."
+      }
+    },
+    "accept": "I understand Evenlease is not legal advice",
+    "getStarted": "Get started",
+    "explore": "Explore with a sample rental",
+    "acceptFirst": "Tick the box above to continue."
+  },
+  "s20": {
+    "title": "Move-in checklist",
+    "subtitle": "{{tenant}} · {{date}}",
+    "noTenant": "Tenant not set",
+    "meters": "Meter readings",
+    "meter": {
+      "electric": "Electric",
+      "gas": "Gas",
+      "water": "Water"
+    },
+    "meterUnit": {
+      "electric": "kWh",
+      "gas": "",
+      "water": "m³"
+    },
+    "keys": "Keys handed over",
+    "alarms": "Smoke & CO alarms tested",
+    "yes": "Yes",
+    "no": "No",
+    "notChecked": "Not checked",
+    "signatures": "Signatures",
+    "landlord": "Landlord",
+    "tenant": "Tenant",
+    "signHere": "{{who}} signs here",
+    "signed": "Signed {{date}}",
+    "notSigned": "Not signed",
+    "addItem": "Add item",
+    "addRoom": "Add room",
+    "exportPdf": "Export PDF",
+    "share": "Share",
+    "bothSignatures": "Both signatures needed to export",
+    "editSigned": "Editing clears both signatures. Continue?",
+    "condition": {
+      "good": "Good",
+      "fair": "Fair",
+      "damaged": "Damaged"
+    },
+    "notRated": "Not rated",
+    "rooms": {
+      "entry": "Entry",
+      "living": "Living room",
+      "kitchen": "Kitchen",
+      "bedroom": "Bedroom {{n}}",
+      "bathroom": "Bathroom {{n}}",
+      "halfBath": "Half bath"
+    },
+    "items": {
+      "walls": "Walls",
+      "floors": "Floors",
+      "windows": "Windows",
+      "doors": "Doors & locks",
+      "lights": "Lights & outlets",
+      "appliances": "Appliances",
+      "cabinets": "Cabinets & counters",
+      "sink": "Sink & faucet",
+      "toilet": "Toilet",
+      "tub": "Tub / shower",
+      "closet": "Closet"
+    },
+    "errors": {
+      "roomName": "Enter a room name.",
+      "roomExists": "There is already a room with this name.",
+      "itemName": "Enter an item name.",
+      "nameLong": "Keep it under {{max}} characters.",
+      "keys": "Enter a number from 0 to 99."
+    },
+    "pdf": {
+      "title": "Move-in checklist",
+      "property": "Property",
+      "tenant": "Tenant",
+      "handover": "Move-in date",
+      "room": "Room",
+      "item": "Item",
+      "conditionCol": "Condition",
+      "note": "Note",
+      "photos": "Photos",
+      "photoCount_one": "{{count}} photo",
+      "photoCount_other": "{{count}} photos",
+      "reading": "Reading",
+      "signedOn": "Signed {{date}}",
+      "intro": "Condition of the home on the move-in date, agreed by the landlord and the tenant.",
+      "fileName": "Move-in checklist - {{address}}"
+    }
+  },
+  "s21": {
+    "title": "Settings",
+    "sectionLetters": "Letters",
+    "sectionPrivacy": "Privacy & data",
+    "sectionApp": "App",
+    "yourName": "Your name",
+    "contact": "Mailing address & phone",
+    "address": "Mailing address",
+    "phone": "Phone",
+    "set": "Set",
+    "notSet": "Not set",
+    "appLock": "App lock",
+    "backup": "Backup & restore",
+    "cleanup": "Data cleanup",
+    "appearance": "Appearance",
+    "reminders": "Reminders",
+    "remindBackup": "Backup reminder",
+    "remindCleanup": "Data cleanup reminder",
+    "remindTimers": "First-come timers",
+    "loadSample": "Load sample rental",
+    "removeSample": "Remove sample rental",
+    "removeSampleConfirm": "Remove the sample rental and its 4 applicants?",
+    "legal": "Legal & privacy",
+    "about": "About",
+    "deleteAll": "Delete all data",
+    "off": "Off",
+    "none": "None",
+    "rentalCount_one": "{{count}} rental",
+    "rentalCount_other": "{{count}} rentals",
+    "theme": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "errors": {
+      "nameLong": "Keep your name under {{max}} characters.",
+      "addressLong": "Keep the address under {{max}} characters.",
+      "phone": "Enter a 10-digit US phone number."
+    }
+  },
+  "s22": {
+    "title": "Backup & restore",
+    "lastBackup": "Last backup",
+    "lastBackupValue": "{{date}} · {{size}}",
+    "never": "No backup yet",
+    "encrypted": "Encrypted with your backup password.",
+    "backUpNow": "Back up now",
+    "automatic": "Automatic backup",
+    "autoOff": "Off",
+    "autoWeekly": "Weekly",
+    "folderHintIos": "Into iCloud Drive › Evenlease",
+    "folderHintAndroid": "Into a Google Drive folder",
+    "chooseFolder": "Choose folder",
+    "changeFolder": "Change folder",
+    "folder": "Folder: {{name}}",
+    "restore": "Restore from backup",
+    "forgetWarning": "If you forget the backup password, the backup can't be opened.",
+    "password": "Backup password",
+    "passwordAgain": "Type it again",
+    "enterPassword": "Enter the backup password",
+    "replaceTitle": "Replace all data?",
+    "replaceBody": "This replaces all data on this phone with the backup from {{date}} ({{rentals}} · {{applicants}}).",
+    "replace": "Replace",
+    "rentals_one": "{{count}} rental",
+    "rentals_other": "{{count}} rentals",
+    "applicants_one": "{{count}} applicant",
+    "applicants_other": "{{count}} applicants",
+    "progress": {
+      "deriving": "Preparing encryption…",
+      "packing": "Packing data and files…",
+      "encrypting": "Encrypting…",
+      "writing": "Saving…",
+      "reading": "Reading the backup…",
+      "checking": "Checking the backup…",
+      "restoring": "Restoring…"
+    },
+    "done": "Backup saved.",
+    "restored": "Data restored.",
+    "autoFailed": "Automatic backup couldn't reach the folder. Choose it again.",
+    "errors": {
+      "passwordShort": "Use at least {{min}} characters.",
+      "passwordMismatch": "The passwords don't match.",
+      "wrongPassword": "Wrong password. Check it and try again.",
+      "notBackup": "This file is not an Evenlease backup.",
+      "corrupt": "This backup file is damaged and can't be restored.",
+      "newer": "This backup was made by a newer version of Evenlease. Update the app, then try again.",
+      "noSpace": "Not enough space on this phone.",
+      "folderGone": "The backup folder can't be opened. Choose it again.",
+      "failed": "Something went wrong. Your data was not changed."
+    }
+  },
+  "s23": {
+    "title": "App lock",
+    "require": "Require Face ID / fingerprint to open",
+    "lockAfter": "Lock after",
+    "after": {
+      "immediately": "Immediately",
+      "1min": "1 min",
+      "5min": "5 min"
+    },
+    "pinTitle": "Set an app PIN",
+    "pinHint": "This phone has no fingerprint, face or screen lock. Choose a 4–6 digit PIN for Evenlease.",
+    "pin": "PIN",
+    "pinAgain": "Type the PIN again",
+    "changePin": "Change PIN",
+    "applicantModeNote": "The same lock is used to leave applicant mode."
+  },
+  "lock": {
+    "title": "Evenlease is locked",
+    "unlock": "Unlock",
+    "prompt": "Unlock Evenlease",
+    "promptExit": "Unlock to leave applicant mode",
+    "enterPin": "Enter your app PIN",
+    "wrongPin": "Wrong PIN.",
+    "blocked": "Too many tries. Try again in {{seconds}} s.",
+    "lockout": "Too many tries. Unlock your phone first, then try again.",
+    "unavailable": "Phone lock is not available. Use your app PIN.",
+    "method": {
+      "faceId": "Face ID",
+      "touchId": "Touch ID",
+      "face": "Face unlock",
+      "fingerprint": "Fingerprint",
+      "iris": "Iris",
+      "device": "Phone passcode",
+      "pin": "App PIN"
+    },
+    "errors": {
+      "pinFormat": "Use 4 to 6 digits.",
+      "pinMismatch": "The PINs don't match."
+    }
+  },
+  "s24": {
+    "title": "Data cleanup",
+    "explain": "Federal rules require you to securely dispose of screening information once you no longer need it.",
+    "item": "{{applicants}} not selected · closed {{days}}",
+    "applicants_one": "{{count}} applicant",
+    "applicants_other": "{{count}} applicants",
+    "deleteTheirData": "Delete their data",
+    "confirmTitle_one": "Permanently delete data for {{count}} applicant?",
+    "confirmTitle_other": "Permanently delete data for {{count}} applicants?",
+    "confirmBody": "This removes their application, files and letters. The decision file keeps an anonymous line. This can't be undone.",
+    "empty": "Nothing to clean up. Closed rentals have no data from applicants you didn't select.",
+    "remindAfter": "Remind me after a rental closes",
+    "remind": {
+      "30": "30 days",
+      "60": "60 days",
+      "90": "90 days",
+      "180": "180 days",
+      "off": "Off"
+    },
+    "deleted_one": "Data deleted for {{count}} applicant.",
+    "deleted_other": "Data deleted for {{count}} applicants."
+  },
+  "s26": {
+    "title": "Legal & privacy",
+    "notLawFirm": "Evenlease is a checklist tool, not a law firm. It does not give legal advice, and using it does not make your decisions lawful. Laws vary by state and city — check the rules where your rental is, or talk to a lawyer.",
+    "sameCriteria": "Evenlease helps you apply the same criteria to everyone and keep a record of why you decided.",
+    "dataTitle": "Your data",
+    "data": "Your data stays on this phone and in backups you create. We have no servers and collect nothing: no account, no ads, no tracking.",
+    "applicantData": "Evenlease never asks for Social Security numbers or dates of birth. Delete applicants' data once you no longer need it (Settings › Data cleanup).",
+    "sourcesTitle": "Sources",
+    "licenses": "Licenses"
+  },
+  "s27": {
+    "title": "Delete all data",
+    "explain": "This deletes every rental, applicant, document, letter, setting and backup password on this phone. Backup files you saved elsewhere are not touched.",
+    "typeToConfirm": "Type DELETE to confirm",
+    "word": "DELETE",
+    "button": "Delete all data",
+    "done": "All data deleted."
+  },
+  "relative": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo_one": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago",
+    "never": "Never"
+  },
+  "reminder": {
+    "backupBanner": "Back up your data",
+    "backupBannerDetail": "— last backup {{days}}",
+    "backupBannerNever": "— no backup yet",
+    "backUp": "Back up",
+    "later": "Later"
+  },
+  "notifications": {
+    "channelReminders": "Reminders",
+    "channelTimers": "First-come timers",
+    "backupTitle": "Time to back up",
+    "backupBody_one": "Time to back up — last backup {{count}} day ago.",
+    "backupBody_other": "Time to back up — last backup {{count}} days ago.",
+    "backupNeverBody": "Time to back up — you haven't made a backup yet.",
+    "cleanupTitle": "Applicant data to delete",
+    "cleanupBody_one": "{{count}} closed rental still holds applicant data.",
+    "cleanupBody_other": "{{count}} closed rentals still hold applicant data."
+  }
 }
