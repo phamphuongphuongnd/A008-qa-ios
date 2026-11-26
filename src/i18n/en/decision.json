@@ -1,10 +1,156 @@
 {
-  "s09": { "title": "Applicant" },
-  "s15": { "title": "Decision" },
-  "s16": { "title": "Letter" },
-  "s17": { "title": "Compare" },
-  "s18": { "title": "Order queue" },
-  "s19": { "title": "Decision file" },
+  "s09": {
+    "title": "Applicant",
+    "received": "Received {{when}}",
+    "inLine": "#{{n}} in line",
+    "offerWithdrawnNote": "Offer withdrawn after background review",
+    "notScore": "Not a score. Same criteria for every applicant.",
+    "issuesTitle_one": "{{count}} thing to check",
+    "issuesTitle_other": "{{count}} things to check",
+    "criteria": "Criteria",
+    "sections": "Sections",
+    "section": {
+      "application": "Application",
+      "documents": "Documents",
+      "references": "References",
+      "report": "Screening report",
+      "background": "Background review",
+      "decision": "Decision"
+    },
+    "sectionValue": {
+      "draft": "Draft",
+      "received": "Received",
+      "entered": "Entered",
+      "afterOffer": "After offer",
+      "reviewed": "Reviewed",
+      "toReview": "To review"
+    },
+    "makeDecision": "Make a decision",
+    "createNotice": "Create notice",
+    "noticePendingHint": "Notice pending — the decision needs its adverse action notice.",
+    "openLetter": "Open letter",
+    "landlordRef": "Landlord · {{address}}",
+    "employerRef": "Employer · {{employer}}",
+    "referencesTitle": "References",
+    "noReferences": "No rented homes or employers in the application yet.",
+    "more": "More",
+    "menu": {
+      "edit": "Edit application",
+      "withdrawn": "Applicant withdrew",
+      "delete": "Delete applicant"
+    },
+    "withdrawnConfirm": {
+      "title": "Mark as withdrawn?",
+      "body": "{{name}} leaves the review. Their data stays until you delete it.",
+      "confirm": "Mark withdrawn"
+    },
+    "deleteConfirm": {
+      "title": "Delete this applicant?",
+      "body": "{{name}}'s application, documents and notes are deleted from this phone. The decision file keeps a \"data deleted\" line.",
+      "confirm": "Delete"
+    },
+    "withdrawnDone": "Marked as withdrawn",
+    "deletedDone": "Applicant deleted",
+    "notFound": "This applicant is no longer here."
+  },
+  "s15": {
+    "title": "Decision",
+    "desc": {
+      "conditional_offer": "Then the background review; approve or withdraw after it",
+      "approve_with_conditions": "Higher deposit · Co-signer or guarantor · Higher rent",
+      "withdraw_offer": "After the background review"
+    },
+    "chooseKind": "Choose a decision",
+    "conditionsTitle": "Conditions",
+    "amount": "Amount",
+    "amountRequired": "Enter the amount",
+    "reasonsTitle": "Reasons (required)",
+    "noteLabel": "Explain in your words",
+    "reportBox": "Information from a screening report played a part in this decision",
+    "noticeHint": "An adverse action notice will be required.",
+    "save": "Save decision",
+    "fixErrors_one": "Fix {{count}} item to save",
+    "fixErrors_other": "Fix {{count}} items to save",
+    "noticeTitle": "An adverse action notice is required",
+    "noticeBody": "This decision used information from a screening report. Federal law (FCRA) requires you to send a notice. The decision is saved as Notice pending until you create it.",
+    "noticeDecision": "Decision",
+    "later": "Later",
+    "saved": "Saved · {{status}}",
+    "notAvailable": "No decision can be recorded for this applicant now."
+  },
+  "s16": {
+    "title": "Letter",
+    "companyMissing": "Add the screening company's name, address and phone in the report first.",
+    "openReport": "Open report",
+    "fcraSubtitle": "FCRA · {{name}}",
+    "fcraLocked": "Required by FCRA — can't be removed",
+    "markSent": "Mark as sent",
+    "markSentOn": "Mark as sent · {{date}}",
+    "sentOn": "Sent {{date}} · {{method}}",
+    "yourName": "Your name",
+    "share": "Share PDF",
+    "preview": "Preview PDF",
+    "editText": "Edit text",
+    "openingLabel": "Opening paragraph",
+    "closingLabel": "Closing line",
+    "nameMissing": "Add your name in Settings — letters are signed with it.",
+    "openSettings": "Open Settings",
+    "sentDone": "Marked as sent",
+    "pdfFailed": "Couldn't create the PDF. Try again.",
+    "howSent": "How did you send it?"
+  },
+  "s17": {
+    "title": "Compare",
+    "notRanking": "Not a ranking. Columns are in the order applications were received.",
+    "hideClosed": "Hide denied / withdrawn",
+    "corner": "Criteria",
+    "issuesRow": "Issues",
+    "emptyTitle": "Add at least two applicants to compare.",
+    "emptyBody": "Compare shows everyone's results side by side, in the order received.",
+    "allHidden": "Everyone here is denied or withdrawn. Turn off the filter to see them."
+  },
+  "s18": {
+    "title": "Order queue",
+    "intro": "First-come order: review one at a time, in the order received.",
+    "review": "Review",
+    "requestMissing": "Request missing info",
+    "moveNextIncomplete": "Move to next",
+    "offerExpiredMoveNext": "Offer expired — move to next",
+    "ends": "Ends {{when}}",
+    "hours": "72 hours",
+    "missing": "Missing",
+    "howTold": "How did you tell the applicant?",
+    "reminder": "You'll get a reminder 2 hours before it ends.",
+    "start": "Start 72-hour timer",
+    "method": {
+      "email": "Email",
+      "text": "Text",
+      "call": "Call",
+      "in_person": "In person"
+    },
+    "empty": "No applicants yet.",
+    "started": "72-hour timer started",
+    "notificationsOff": "Notifications are off — check the queue yourself.",
+    "moveConfirm": {
+      "title": "Move to the next applicant?",
+      "body": "{{name}} will be marked Incomplete.",
+      "confirm": "Move to next"
+    },
+    "expiredConfirm": {
+      "title": "Close the expired offer?",
+      "body": "{{name}}'s offer is marked expired and the next applicant becomes In review.",
+      "confirm": "Move to next"
+    },
+    "compareMode": "This rental reviews in Compare mode — open Compare instead."
+  },
+  "s19": {
+    "title": "Decision file",
+    "thumbnails": "Include document thumbnails",
+    "share": "Share",
+    "export": "Export PDF",
+    "pdfFailed": "Couldn't create the PDF. Try again.",
+    "empty": "No applicants yet."
+  },
   "issueAction": {
     "editApplication": "Edit application",
     "addDocuments": "Add file",
@@ -118,7 +264,8 @@
     "letterSent": "{{letter}} sent {{date}} ({{method}})",
     "letterNotSent": "{{letter}} created {{date}}, not marked as sent",
     "documents": "Documents",
-    "notScore": "Not a score. Same criteria for every applicant."
+    "notScore": "Not a score. Same criteria for every applicant.",
+    "metCount": "{{met}} of {{total}} Met"
   },
   "outcome": {
     "met": "Met",
@@ -139,5 +286,35 @@
     "employer_reference": "Employer reference",
     "screening_report": "Screening report",
     "landlord_note": "Landlord note"
+  },
+  "status": {
+    "new": "New",
+    "in_review": "In review",
+    "conditional_offer": "Conditional offer",
+    "approved": "Approved",
+    "denied": "Denied",
+    "withdrawn": "Withdrawn",
+    "incomplete": "Incomplete",
+    "offer_expired": "Offer expired",
+    "waiting": "Waiting"
+  },
+  "evidenceSheet": {
+    "source": "Source",
+    "income": "Household income",
+    "perMonth": "{{amount}}/mo",
+    "rentForTest": "Rent used for the test",
+    "checked": "Checked",
+    "checkedByYou": "{{date}} · by you",
+    "files": "Files",
+    "fileCount_one": "{{count}} file",
+    "fileCount_other": "{{count}} files"
+  },
+  "refStatus": {
+    "not_started": "Not started",
+    "in_progress": "In progress",
+    "answered": "Answered",
+    "unreachable": "Couldn't reach",
+    "attempts_one": "{{count}} attempt",
+    "attempts_other": "{{count}} attempts"
   }
 }

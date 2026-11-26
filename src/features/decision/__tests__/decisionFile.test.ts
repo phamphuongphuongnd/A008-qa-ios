@@ -47,10 +47,14 @@ describe('S-19 decision file', () => {
         reportInfluenced: true,
         noticePending: false,
         letters: ['Adverse action notice sent Dec 6, 2026 (Email)'],
+        short: expect.stringMatching(/^Denied Dec \d+, \d+:\d{2} [AP]M$/),
+        reasonCodes: ['C5 (Screening report)'],
       },
     ]);
+    expect(priya.metText).toMatch(/^\d+ of \d+ Met$/);
 
     const html = decisionFileHtml(data);
+    expect(html).toContain(priya.metText);
     expect(html).toContain('Decision file');
     expect(html).toContain('1428 Maple St, Unit B, Columbus, OH 43215 · Exported Dec 20, 2026');
     expect(html).toContain('Applicants (order received)');
