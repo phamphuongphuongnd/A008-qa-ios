@@ -35,6 +35,7 @@ import {
   validateEmployerForm,
   validateLandlordForm,
   validateReportForm,
+  waitForReturn,
   yearsAndMonthsBetween,
   type BackgroundForm,
 } from '..';
@@ -299,5 +300,41 @@ describe('S-14 background', () => {
     expect(p).toEqual({ noConvictions: false, convictions: [{ type: 'drug', convictedOn: '2021-03-04', sentenceEndedOn: null }], assessment: { seriousness: 'x', rehabilitation: null, other: null }, reviewedOn: TODAY });
     expect(backgroundPatch({ ...toBackgroundForm(null), mode: 'none', seriousness: 'stale' }, TODAY)).toMatchObject({ noConvictions: true, convictions: [], assessment: {}, reviewedOn: TODAY });
     expect(backgroundPatch(toBackgroundForm(null), TODAY).reviewedOn).toBeNull();
+  });
+});
+
+describe('waitForReturn (App lock held while the browser / mail app is open)', () => {
+  function fakeAppState(current = 'active') {
+    let cb: ((s: string) => void) | null = null;
+    const remove = jest.fn();
+    return {
+      state: { currentState: current, addEventListener: (_: 'change', f: (s: string) => void) => ((cb = f), { remove }) },
+      emit: (s: string) => cb?.(s),
+      remove,
+    };
+  }
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  test('resolves only when the app comes back to the foreground', async () => {
+    const a = fakeAppState();
+    let done = false;
+    const p = waitForReturn(a.state).then(() => (done = true));
+    a.emit('background');
+    jest.advanceTimersByTime(60_000);
+    await Promise.resolve();
+    expect(done).toBe(false);
+    a.emit('active');
+    await p;
+    expect(done).toBe(true);
+    expect(a.remove).toHaveBeenCalled();
+  });
+
+  test('never left the app → resolves after the timeout', async () => {
+    const a = fakeAppState();
+    const p = waitForReturn(a.state, 1500);
+    jest.advanceTimersByTime(1500);
+    await expect(p).resolves.toBeUndefined();
+    expect(a.remove).toHaveBeenCalled();
   });
 });
