@@ -6,7 +6,7 @@
  * adapter is `expoQueueNotifier` in ./queueTimersNative. The engine decides what to send and when
  * (`timerNotifications`, which never reads the clock); this file only schedules / cancels.
  *
- * The app-wide tap handler (open `data.url`) belongs to 2E's notification setup — TODO(merge 2E).
+ * The app-wide tap handler (open `data.url`), the Android 'timers' channel and the permission prompt are 2E's.
  */
 import { timerNotifications, type Timer } from '@/engine';
 import { routes } from '@/routes';
@@ -68,16 +68,12 @@ export async function cancelStoppedTimers(
 }
 
 /**
- * Ask for notification permission once (§6: "Hỏi quyền thông báo lần đầu khi bật First-come mode"). Call when the
- * landlord turns First-come on (S-03, 2A) and before starting a timer. `asked` / `markAsked` read and write
- * `settings.notificationsAsked`. Never asks again after the first time; returns the current state.
+ * Permission before scheduling a timer's notifications. The "ask only the first time" rule (§6: first time First-come
+ * mode is turned on) belongs to 2E: the phone's `requestPermission` is `askNotificationPermission()`, which prompts at
+ * most once and remembers it in `settings.notificationsAsked`. Returns the state after asking.
  */
-export async function ensureTimerPermission(
-  notifier: QueueNotifier,
-  settings: { asked: boolean; markAsked: () => void },
-): Promise<PermissionState> {
+export async function ensureTimerPermission(notifier: QueueNotifier): Promise<PermissionState> {
   const current = await notifier.getPermission();
-  if (current !== 'undetermined' || settings.asked) return current;
-  settings.markAsked();
+  if (current !== 'undetermined') return current;
   return notifier.requestPermission();
 }

@@ -49,22 +49,14 @@ describe('queueTimers', () => {
     expect(n.cancelled).toEqual(['a', 'b', 'c']);
   });
 
-  it('asks the permission only the first time', async () => {
+  it('asks through the notifier only while the permission is undetermined (2E keeps the ask-once rule)', async () => {
     const n = fakeNotifier('undetermined');
-    let asked = false;
-    const settings = {
-      get asked() {
-        return asked;
-      },
-      markAsked: () => {
-        asked = true;
-      },
-    };
-    expect(await ensureTimerPermission(n.notifier, settings)).toBe('granted');
-    expect(asked).toBe(true);
-    const m = fakeNotifier('undetermined');
-    expect(await ensureTimerPermission(m.notifier, { asked: true, markAsked: () => undefined })).toBe('undetermined');
-    expect(m.askedCount()).toBe(0);
-    expect(await ensureTimerPermission(fakeNotifier('denied').notifier, { asked: false, markAsked: () => undefined })).toBe('denied');
+    expect(await ensureTimerPermission(n.notifier)).toBe('granted');
+    expect(n.askedCount()).toBe(1);
+    expect(await ensureTimerPermission(n.notifier)).toBe('granted');
+    expect(n.askedCount()).toBe(1);
+    const d = fakeNotifier('denied');
+    expect(await ensureTimerPermission(d.notifier)).toBe('denied');
+    expect(d.askedCount()).toBe(0);
   });
 });
