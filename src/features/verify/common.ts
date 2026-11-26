@@ -102,3 +102,33 @@ export const ATTEMPT_RESULTS: readonly AttemptResult[] = ['reached', 'no_answer'
 export function isSafeWebUrl(url: string): boolean {
   return /^https:\/\/[a-z0-9.-]+\.[a-z]{2,}(\/[^\s]*)?$/i.test(url.trim());
 }
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+/** Attempt time as recorded (wall clock of the stored ISO timestamp): "Dec 3, 10:02 AM" (mockup v2). */
+export function attemptTimeText(at: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(at);
+  if (!m) return at;
+  const h = Number(m[4]);
+  return `${MONTHS[Number(m[2]) - 1]} ${Number(m[3])}, ${h % 12 === 0 ? 12 : h % 12}:${m[5]} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/** "Jun 2020" from a date (S-14 conviction line). */
+export function monthYearOfDate(d: IsoDate): string {
+  return isIsoDate(d) ? `${MONTHS[Number(d.slice(5, 7)) - 1]} ${d.slice(0, 4)}` : '';
+}
+
+/** "MM/YYYY" typed in a month field → "YYYY-MM"; "" → null; anything else → undefined (invalid). */
+export function parseMonthInput(text: string): YearMonth | null | undefined {
+  const s = text.trim();
+  if (!s) return null;
+  const m = /^(\d{1,2})\s*\/\s*(\d{4})$/.exec(s);
+  if (!m) return undefined;
+  const ym = `${m[2]}-${m[1].padStart(2, '0')}`;
+  return isMonth(ym) ? ym : undefined;
+}
+
+/** "YYYY-MM" → "MM/YYYY" for the month field. */
+export function monthInputText(ym: YearMonth | null | undefined): string {
+  return isMonth(ym) ? `${ym.slice(5, 7)}/${ym.slice(0, 4)}` : '';
+}
