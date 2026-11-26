@@ -15,6 +15,12 @@ name: 01_onboarding
     commands:
       - takeScreenshot: ${LANE}_01z_B40_fresh_install_new_rental
       - openLink: "evenlease://onboarding"
+      # iOS asks 'Open in "Evenlease"?' for a custom-scheme link (run 45791288713).
+      - waitForAnimationToEnd:
+          timeout: 5000
+      - tapOn:
+          text: "Open"
+          optional: true
 - extendedWaitUntil:
     visible: "Pick tenants the same way.*"
     timeout: 90000
