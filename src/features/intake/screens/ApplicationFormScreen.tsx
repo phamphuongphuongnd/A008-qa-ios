@@ -1,7 +1,6 @@
 /**
  * S-08 Application form (landlord + applicant mode) — product.md §5 S-08, mockup v2 "Application" / "Application
- * States" / "Applicant Mode". Routes: /applicants/new?rentalId= (creates a draft, then this screen by id) ·
- * /applicants/[id]/form?section= (landlord) · /applicants/mode/form/[id] (applicant mode: mode bar, no way out
+ * States" / "Applicant Mode". Routes (S-07 creates the draft first): /applicants/[id]/form?section= (landlord) · /applicants/mode/form/[id] (applicant mode: mode bar, no way out
  * without the landlord's lock).
  */
 import { usePreventRemove, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
@@ -44,38 +43,18 @@ import {
 } from '../components/FormSections';
 import { usePickFile } from '../components/usePickFile';
 import { clampSection, SECTION_KEYS, type FormMode } from '../form/model';
-import { clearSignature, createDraft, discardDraft } from '../form/service';
+import { clearSignature, discardDraft } from '../form/service';
 import { useApplicationForm } from '../hooks/useApplicationForm';
 import { useIntakeRental, usePaperPhotos } from '../hooks/useIntakeData';
 import { formFooter, formHeader, thumbLabel, tx } from '../screenModels';
 
 const sectionTitle = (s: FormSection) => tx(`intake:sections.${SECTION_KEYS[s]}`);
 
-/** `/applicants/new?rentalId=`: create the landlord draft, then continue on the by-id route. */
-function NewApplication({ rentalId }: { rentalId: number | null }) {
-  const router = useRouter();
-  useEffect(() => {
-    if (rentalId == null) return;
-    const id = createDraft(db, { rentalId, mode: 'landlord' });
-    router.replace(routes.applicationEdit(id, 1));
-  }, [rentalId, router]);
-  return (
-    <Screen header={<AppBar back />}>
-      {rentalId == null ? <EmptyState icon={X} title={t('intake:s07.rentalMissing')} /> : null}
-    </Screen>
-  );
-}
-
 export default function ApplicationFormScreen({ mode = 'landlord' }: { mode?: FormMode }) {
-  const params = useLocalSearchParams<{ id?: string; rentalId?: string; section?: string }>();
-  const id = parseId(params.id);
+  const params = useLocalSearchParams<{ id?: string; section?: string }>();
   return (
     <View id="S-08" style={{ flex: 1 }}>
-      {mode === 'landlord' && id == null ? (
-        <NewApplication rentalId={parseId(params.rentalId)} />
-      ) : (
-        <FormBody mode={mode} applicantId={id} section={parseId(params.section)} />
-      )}
+      <FormBody mode={mode} applicantId={parseId(params.id)} section={parseId(params.section)} />
     </View>
   );
 }

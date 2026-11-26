@@ -29,7 +29,7 @@ describe('screen table', () => {
 
   it.each(SCREEN_IDS)('%s: screen file exists and every route file is a thin shell importing it', (id) => {
     const info = SCREENS[id];
-    // Placeholder or real screen: the file only has to default-export the component the route shells re-export.
+    // The screen file default-exports the component the route shells re-export.
     expect(read(info.screen)).toMatch(/export default function|export default /);
     const module = info.screen.replace(/^src\//, '@/').replace(/\.tsx$/, '');
     for (const route of info.routes) expect(read(route)).toContain(`'${module}'`);

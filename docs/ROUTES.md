@@ -17,7 +17,7 @@ ask before changing them (new route, new param, sheet options).
 | S-05 Published criteria | `/units/[id]/published?setup=1` | `app/units/[id]/published.tsx` | `features/criteria/screens/PublishedCriteriaScreen` | units | 2A |
 | S-06 Rental hub | `/units/[id]` | `app/units/[id]/index.tsx` | `features/units/screens/RentalHubScreen` | units | 2A |
 | S-07 Add applicant (sheet) | `/applicants/add?rentalId=` | `app/applicants/add.tsx` | `features/intake/screens/AddApplicantScreen` | intake | 2B |
-| S-08 Application form | `/applicants/new?rentalId=` · `/applicants/[id]/form?section=` · `/applicants/mode/form/[id]` | `app/applicants/new.tsx`, `app/applicants/[id]/form.tsx`, `app/applicants/mode/form/[id].tsx` (`mode="applicant"`) | `features/intake/screens/ApplicationFormScreen` | intake | 2B |
+| S-08 Application form | `/applicants/[id]/form?section=` · `/applicants/mode/form/[id]` (S-07 creates the draft first) | `app/applicants/[id]/form.tsx`, `app/applicants/mode/form/[id].tsx` (`mode="applicant"`) | `features/intake/screens/ApplicationFormScreen` | intake | 2B |
 | S-08a Applicant mode — start | `/applicants/mode/start/[rentalId]` | `app/applicants/mode/start/[rentalId].tsx` | `features/intake/screens/ApplicantModeStartScreen` | intake | 2B |
 | S-08b Applicant mode — done | `/applicants/mode/done/[id]` | `app/applicants/mode/done/[id].tsx` | `features/intake/screens/ApplicantModeDoneScreen` | intake | 2B |
 | S-09 Applicant detail | `/review/applicant/[id]` | `app/review/applicant/[id]/index.tsx` | `features/decision/screens/ApplicantDetailScreen` | decision | 2D |

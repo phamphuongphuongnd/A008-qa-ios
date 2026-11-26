@@ -60,8 +60,6 @@ export const routes = {
   // ── 2B: applications ──────────────────────────────────────────────────
   /** S-07 Add applicant (sheet). */
   addApplicant: (rentalId: Id) => withQuery('/applicants/add', { rentalId }),
-  /** S-08 Application form, landlord entering a new application. */
-  applicationNew: (rentalId: Id) => withQuery('/applicants/new', { rentalId }),
   /** S-08 Application form, landlord editing (optionally opening one section). */
   applicationEdit: (applicantId: Id, section?: FormSection) =>
     withQuery(`/applicants/${seg(applicantId)}/form`, { section }),
