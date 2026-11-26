@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { PixelRatio, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { PixelRatio, Pressable, ScrollView, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Evidence, Outcome } from '@/engine';
-import { font, useTheme } from '@/theme';
+import { t } from '@/i18n';
+import { font, useTheme, withAlpha } from '@/theme';
 
-import { BadgeRow, EvidenceTag, StatusBadge } from './Badges';
+import { BadgeRow, EvidenceTag, StatusBadge, evidenceLabel, outcomeLabel } from './Badges';
 import { useCardStyle } from './Card';
 import { Txt } from './Txt';
 
@@ -38,18 +39,22 @@ export function useCompareAsCards(): boolean {
 /**
  * S-17 Compare table: criteria column pinned on the left, one column per applicant, scrolls sideways.
  * At ≥130 % text (or `cards`) it switches to stacked cards (applicant → criterion rows), as product.md requires.
+ * With `onCellPress` every cell (table) / criterion row (cards) is a button — S-17 opens the evidence sheet.
  */
 export function CompareTable({
   columns,
   rows,
   cornerLabel,
   cards,
+  onCellPress,
 }: {
   columns: readonly CompareColumn[];
   rows: readonly CompareRow[];
   /** Header of the pinned column ("Criteria"). */
   cornerLabel: string;
   cards?: boolean;
+  /** Tap on one applicant's cell for one row. */
+  onCellPress?: (rowKey: string, columnKey: string) => void;
 }) {
   const auto = useCompareAsCards();
   const { colors, radius } = useTheme();
@@ -66,10 +71,15 @@ export function CompareTable({
               {col.subtitle ? <Txt variant="caption" color="inkMuted">{col.subtitle}</Txt> : null}
             </View>
             {rows.map((r) => (
-              <View key={r.key} style={[styles.cardRow, { borderTopColor: colors.line }]}>
+              <CellPress
+                key={r.key}
+                label={cellLabel(col, r)}
+                onPress={onCellPress ? () => onCellPress(r.key, col.key) : undefined}
+                style={[styles.cardRow, { borderTopColor: colors.line }]}
+              >
                 <Txt style={font(r.bold ? 600 : 500, 15, 20)}>{r.label}</Txt>
                 {renderCell(r.cells[col.key])}
-              </View>
+              </CellPress>
             ))}
           </View>
         ))}
@@ -105,20 +115,64 @@ export function CompareTable({
                 {col.subtitle ? <Txt style={[font(400, 12, 16), { color: colors.inkMuted }]}>{col.subtitle}</Txt> : null}
               </View>
               {rows.map((r) => (
-                <View
+                <CellPress
                   key={r.key}
+                  label={cellLabel(col, r)}
+                  onPress={onCellPress ? () => onCellPress(r.key, col.key) : undefined}
                   style={[styles.cell, { borderTopColor: colors.line }]}
-                  accessible
-                  accessibilityLabel={`${col.title}, ${r.label}`}
                 >
                   {renderCell(r.cells[col.key], true)}
-                </View>
+                </CellPress>
               ))}
             </View>
           ))}
         </ScrollView>
       </View>
     </View>
+  );
+}
+
+/** Screen reader: "Jordan E., Income ≥ 3.0×, Met, Verified" / "Jordan E., Issues, 2". */
+function cellLabel(col: CompareColumn, row: CompareRow): string {
+  const cell = row.cells[col.key];
+  const value = !cell
+    ? []
+    : 'outcome' in cell
+      ? [outcomeLabel(cell.outcome), cell.evidence ? evidenceLabel(cell.evidence) : null]
+      : [cell.text];
+  return [col.title, row.label, ...value].filter(Boolean).join(', ');
+}
+
+/** One cell: a button when it can be tapped, else a single accessible element. */
+function CellPress({
+  label,
+  onPress,
+  style,
+  children,
+}: {
+  label: string;
+  onPress?: () => void;
+  style: StyleProp<ViewStyle>;
+  children: ReactNode;
+}) {
+  const { colors, dark } = useTheme();
+  if (!onPress) {
+    return (
+      <View style={style} accessible accessibilityLabel={label}>
+        {children}
+      </View>
+    );
+  }
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityHint={t('ui:compare.cellHint')}
+      style={({ pressed }) => [style, pressed && { backgroundColor: withAlpha(colors.ink, dark ? 0.12 : 0.05) }]}
+    >
+      {children}
+    </Pressable>
   );
 }
 
