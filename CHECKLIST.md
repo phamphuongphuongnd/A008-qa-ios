@@ -25,7 +25,7 @@
 - [x] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev` (mở trên A13 dời sang dòng ghép cuối)
 - [x] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
 - [x] 1C DB: schema SQLite, repository, `useLive`, map ↔ engine, dữ liệu mẫu §8, `src/files`
-- [ ] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/`, dev client mới trên A13
+- [x] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/` (build + xem trên A13 dời sang dòng ghép cuối)
 - [ ] 2A Logic căn + tiêu chí (F-02, F-03) + PDF tiêu chí công bố
 - [ ] 2B Logic hồ sơ, Applicant mode, giấy tờ (F-04 – F-07) + PDF đơn trống
 - [ ] 2C Logic xác minh: tham chiếu, báo cáo ngoài, Background review (F-08 – F-10)
