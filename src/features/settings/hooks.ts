@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { AppState, Platform } from 'react-native';
 
 import { db, useLive } from '@/db';
+import { isApplicantModeActive } from '@/features/intake/applicantMode/store';
 import { listCleanupCandidates } from '@/db/repos/rentals';
 import { getSettings, updateSettings, type AppSettings } from '@/db/repos/settings';
 
@@ -22,12 +23,6 @@ export function useSettings(): AppSettings {
 /** Write some settings (whole value per key). */
 export function saveSettings(patch: Partial<AppSettings>): void {
   updateSettings(db, patch);
-}
-
-/** S-21 Appearance for the theme provider (1D): 'system' | 'light' | 'dark'. */
-export function useThemePreference(): AppSettings['theme'] {
-  'use no memo';
-  return useSettings().theme;
 }
 
 /** Root layout gate: false until S-01 is finished (onboarded + "Not legal advice" accepted). */
@@ -82,6 +77,8 @@ export function useAppLockGate(): { locked: boolean; pinBlockedUntil: number } {
   useEffect(() => {
     lockStore.dispatch({ type: 'start', settings: latest.current });
     const sub = AppState.addEventListener('change', (s) => {
+      // The applicant is holding the phone: Applicant mode has its own exit lock (2B); App lock stays out of it.
+      if (isApplicantModeActive()) return;
       const now = Date.now();
       if (s === 'background') lockStore.dispatch({ type: 'background', now });
       else if (s === 'active') lockStore.dispatch({ type: 'foreground', now, settings: latest.current });

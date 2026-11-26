@@ -7,7 +7,9 @@ import Constants from 'expo-constants';
 import { db, useLive } from '@/db';
 import { getSettings } from '@/db/repos/settings';
 import { t } from '@/i18n';
-import { firstDataAt, refreshReminders } from '@/notifications';
+import { expoNotifications, firstDataAt, refreshReminders } from '@/notifications';
+import { rescheduleAllNotifications } from '@/notifications/afterRestore';
+import { expoQueueNotifier } from '@/notifications/queueTimersNative';
 
 import { makeBackupActions } from './actions';
 import { autoBackupFailedAt, backupReminder, backupSnoozedUntil, snoozeBackupReminder, type BackupReminder } from './auto';
@@ -28,6 +30,7 @@ export const backupActions = makeBackupActions({
   },
   share: (uri) => shareBackupFile(uri, t('system:s22.backUpNow')),
   refreshReminders,
+  afterRestore: () => rescheduleAllNotifications(db, expoNotifications, expoQueueNotifier),
 });
 
 export { backupErrorText, autoBackupDue, AUTO_KEEP, REMIND_AFTER_DAYS } from './auto';

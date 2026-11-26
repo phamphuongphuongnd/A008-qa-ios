@@ -35,6 +35,8 @@ export interface BackupEnv {
   share: (uri: string) => Promise<boolean>;
   /** Re-plan reminders (never throws). */
   refreshReminders: () => Promise<void>;
+  /** After a restore: cancel the old data's notifications, schedule running timers + reminders (never throws). */
+  afterRestore?: () => Promise<void>;
 }
 
 export type BackUpResult = { where: 'folder' | 'shared'; made: MadeBackup } | { where: 'not_shared' };
@@ -112,7 +114,7 @@ export function makeBackupActions(env: BackupEnv) {
     /** Step 3: "Replace". */
     async restore(opened: OpenedBackup, onStep?: OnStep): Promise<void> {
       await restoreBackup(deps(), opened, onStep);
-      await env.refreshReminders();
+      await (env.afterRestore ?? env.refreshReminders)();
     },
   };
 }
