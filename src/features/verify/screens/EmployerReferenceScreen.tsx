@@ -14,7 +14,7 @@ import { fieldError, MonthField, NotFoundScreen, Question, StepCard } from '../c
 import { useSheetForm } from '../components/useSheetForm';
 import { useEmployerSheet, verifyActions } from '../hooks';
 import type { EmployerSheet } from '../service';
-import { firstName } from './LandlordReferenceScreen';
+import { employerView } from '../viewModels';
 
 export default function EmployerReferenceScreen() {
   const p = useLocalSearchParams<{ applicantId: string; incomeId: string }>();
@@ -30,10 +30,10 @@ export function EmployerSheetView({ sheet }: { sheet: EmployerSheet }) {
   );
   const guard = useDiscardGuard(dirty);
   const refId = () => sheet.reference?.id ?? verifyActions.ensureEmployerRef(applicant.id, income.id);
-  const employer = income.employer?.trim() || t('verify:employer.unnamed');
+  const view = employerView(sheet, form);
 
   return (
-    <Screen header={<AppBar title={t('verify:s12.title')} subtitle={`${employer} · ${applicant.fullName}`} />}>
+    <Screen header={<AppBar title={t('verify:s12.title')} subtitle={view.subtitle} />}>
       {guard}
       <StepCard n={1} title={t('verify:employer.step1')}>
         <Txt variant="callout" color="inkMuted">{t('verify:employer.step1Body')}</Txt>
@@ -50,12 +50,12 @@ export function EmployerSheetView({ sheet }: { sheet: EmployerSheet }) {
 
       <StepCard n={2} title={t('verify:employer.step2')}>
         <Question
-          label={t('verify:employer.q1', { name: firstName(applicant.fullName) })}
+          label={view.q1}
           options={EMPLOYED.map((v) => ({ value: v, label: t(`verify:employer.employed.${v}`) }))}
           value={form.employed}
           onChange={(v) => commit({ employed: v })}
         />
-        {form.employed !== 'no' ? (
+        {view.showSinceAndTitle ? (
           <>
             <MonthField label={t('verify:employer.q2')} value={form.since} error={fieldError(errors, 'since')} onCommit={(since) => commit({ since })} />
             <TextField label={t('verify:employer.q3')} value={form.title} onChangeText={(s) => edit({ title: s })} onBlur={() => commit()} />

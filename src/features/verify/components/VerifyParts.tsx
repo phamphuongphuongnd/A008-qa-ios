@@ -10,17 +10,12 @@ import { router } from '@/services/router';
 import { font, useTheme } from '@/theme';
 import { AppBar, Card, ChoicePills, EmptyState, FieldShell, IssueItem, IssuesCard, Screen, TextField, Txt, type Choice } from '@/ui';
 
-import { monthInputText, parseMonthInput, type FieldError, type VerifyErrorCode } from '../common';
+import { monthInputText, parseMonthInput } from '../common';
 import type { RedFlagView } from '../landlord';
 
-/** i18n text of a validation code (`verify:errors.*`). */
-export const errorText = (code: VerifyErrorCode) => t(`verify:errors.${code}`);
+import { errorText } from '../viewModels';
 
-/** First error message for a field, or null. */
-export function fieldError<F extends string>(errors: readonly FieldError<F>[], field: F): string | null {
-  const e = errors.find((x) => x.field === field);
-  return e ? errorText(e.code) : null;
-}
+export { errorText, fieldError } from '../viewModels';
 
 /** Numbered step card ("1 Find the real owner"): 28 px accent circle + 17/22 title. */
 export function StepCard({ n, title, children }: { n: number; title: string; children: ReactNode }) {

@@ -1,7 +1,8 @@
 /**
  * S-14 Background review (step 2) — product.md §3.11, §5 S-14, mockup v2 "Background". Locked until a Conditional
  * offer; convictions only (no arrests); any conviction in the lookback is "Needs review" — never an automatic denial.
- * "Withdraw the offer" needs the individual assessment and continues to the Decision sheet (S-15).
+ * "Withdraw the offer" needs the individual assessment and continues to the Decision sheet (S-15, withdraw_offer).
+ * What is shown / enabled comes from `backgroundView` (../viewModels).
  */
 import { useLocalSearchParams } from 'expo-router';
 import { Ban, Lock, Plus, Scale, Trash2, TriangleAlert } from 'lucide-react-native';
@@ -34,12 +35,13 @@ import {
   useDiscardGuard,
 } from '@/ui';
 
-import { CONVICTION_TYPES, backgroundState, emptyConviction, type BackgroundForm, type ConvictionsMode, type OutcomeBlock } from '../background';
-import { localDate, monthYearOfDate, type FieldError } from '../common';
+import { CONVICTION_TYPES, emptyConviction, type BackgroundForm, type ConvictionsMode } from '../background';
+import { localDate, type FieldError } from '../common';
 import { errorText, fieldError, Hint, NotFoundScreen } from '../components/VerifyParts';
 import { useSheetForm } from '../components/useSheetForm';
 import { useBackgroundSheet, verifyActions } from '../hooks';
 import type { BackgroundSheet } from '../service';
+import { CRIMINAL_HISTORY_ARTICLE, backgroundNext, backgroundView } from '../viewModels';
 
 export default function BackgroundReviewScreen() {
   const p = useLocalSearchParams<{ applicantId: string }>();
@@ -48,46 +50,34 @@ export default function BackgroundReviewScreen() {
   return <BackgroundSheetView sheet={sheet} />;
 }
 
-// TODO(merge 2C): guide slug for "Criminal history laws by city" is 2E's (src/features/guide); confirm the slug.
-const LAWS_ARTICLE = 'criminal-history';
-
 export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: BackgroundSheet; now?: Date }) {
-  const { applicant, gate } = sheet;
+  const { applicant } = sheet;
   const today = localDate(now);
-  const editable = gate === 'open';
   const { form, errors, dirty, edit, commit } = useSheetForm<BackgroundForm>(sheet.form, String(applicant.id), (f) => {
     const r = verifyActions.saveBackground(applicant.id, f);
     return r.ok ? r : { ok: false, errors: r.errors as FieldError[] };
   });
-  const guard = useDiscardGuard(dirty && editable);
-  const header = (
-    <AppBar
-      title={t('verify:s14.title')}
-      subtitle={gate === 'open' || gate === 'read_only' ? t('verify:background.subtitleAfterOffer', { name: applicant.fullName }) : applicant.fullName}
-    />
-  );
+  const view = backgroundView(sheet, form, today);
+  const guard = useDiscardGuard(dirty && view.kind === 'review' && view.editable);
+  const header = <AppBar title={t('verify:s14.title')} subtitle={view.subtitle} />;
 
-  if (gate === 'locked' || gate === 'not_in_criteria') {
-    const locked = gate === 'locked';
+  if (view.kind === 'empty') {
     return (
       <Screen header={header}>
         <EmptyState
-          icon={locked ? Lock : Ban}
-          title={t(locked ? 'verify:background.lockedTitle' : 'verify:background.offTitle')}
-          body={t(locked ? 'verify:background.lockedBody' : 'verify:background.offBody')}
-          secondary={{ label: t('verify:background.lawsLink'), onPress: () => router.push(routes.guideArticle(LAWS_ARTICLE)) }}
+          icon={view.icon === 'lock' ? Lock : Ban}
+          title={view.title}
+          body={view.body}
+          secondary={{ label: t('verify:background.lawsLink'), onPress: () => router.push(routes.guideArticle(CRIMINAL_HISTORY_ARTICLE)) }}
         />
       </Screen>
     );
   }
 
-  const state = backgroundState(form, { gate, lookbackYears: sheet.lookbackYears, conditionalOfferAt: sheet.conditionalOfferAt, today });
+  const { editable } = view;
   const err = (f: string) => fieldError(errors, f);
-  const setConviction = (i: number, patch: Partial<BackgroundForm['convictions'][number]>, save: boolean) => {
-    const convictions = form.convictions.map((c, j) => (j === i ? { ...c, ...patch } : c));
-    return save ? commit({ convictions }) : edit({ convictions });
-  };
-  const blockText = (b: OutcomeBlock | null) => (b && b !== 'not_editable' ? t(`verify:background.block.${b}`) : undefined);
+  const setConviction = (i: number, patch: Partial<BackgroundForm['convictions'][number]>) =>
+    commit({ convictions: form.convictions.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
 
   const choose = (outcome: 'continue' | 'withdraw') => {
     const r = verifyActions.chooseBackgroundOutcome(applicant.id, form, outcome);
@@ -97,28 +87,23 @@ export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: Backgr
       return;
     }
     haptics.success();
-    if (outcome === 'withdraw') {
-      // TODO(merge 2C): routes.decision(applicantId, { kind: 'withdraw_offer' }) once src/routes.ts has the param.
-      router.push(routes.decision(applicant.id));
-    } else {
+    const next = backgroundNext(outcome, applicant.id);
+    if (next.kind === 'push') router.push(next.href);
+    else {
       showSnackbar({ message: t('verify:background.continued') });
       router.back();
     }
   };
 
-  // The latest conviction in the lookback drives "How long ago was it?".
-  const inLookback = state.convictions.filter((c) => c.inLookback);
-  const latest = inLookback.slice().sort((a, b) => (a.conviction.convictedOn < b.conviction.convictedOn ? 1 : -1))[0];
-
   return (
     <Screen
       header={header}
       footer={
-        editable ? (
-          <ButtonBar row hint={blockText(state.withdrawBlock === 'no_convictions_in_lookback' ? null : state.withdrawBlock) ?? blockText(state.continueBlock)}>
-            <Button label={t('verify:background.continue')} variant="secondary" disabled={!!state.continueBlock} onPress={() => choose('continue')} />
-            {state.needsAssessment ? (
-              <Button label={t('verify:background.withdraw')} variant="dangerOutline" disabled={!!state.withdrawBlock} onPress={() => choose('withdraw')} />
+        view.footer.show ? (
+          <ButtonBar row hint={view.footer.hint}>
+            <Button label={t('verify:background.continue')} variant="secondary" disabled={view.footer.continueDisabled} onPress={() => choose('continue')} />
+            {view.footer.showWithdraw ? (
+              <Button label={t('verify:background.withdraw')} variant="dangerOutline" disabled={view.footer.withdrawDisabled} onPress={() => choose('withdraw')} />
             ) : null}
           </ButtonBar>
         ) : undefined
@@ -128,89 +113,83 @@ export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: Backgr
       <Banner tone="warn" icon={TriangleAlert}>
         {t('verify:background.lawBanner')}
       </Banner>
-      {gate === 'read_only' ? (
+      {view.readOnly ? (
         <Banner tone="info" icon={Scale}>
           {t('verify:background.readOnly')}
         </Banner>
       ) : null}
 
-      <FieldShell label={t('verify:background.convictionsIn', { count: sheet.lookbackYears })} help={t('verify:background.arrests')} error={err('mode')}>
+      <FieldShell label={view.modeLabel} help={t('verify:background.arrests')} error={err('mode')}>
         <Segmented
           options={[
-            { value: 'none' as ConvictionsMode, label: t('verify:background.none'), accessibilityLabel: t('verify:background.noneA11y', { count: sheet.lookbackYears }) },
+            { value: 'none' as ConvictionsMode, label: t('verify:background.none'), accessibilityLabel: view.noneA11y },
             { value: 'listed' as ConvictionsMode, label: t('verify:background.add') },
           ]}
-          value={form.mode === 'not_entered' ? (null as unknown as ConvictionsMode) : form.mode}
+          value={view.modeValue as ConvictionsMode}
           onChange={(v) => {
             if (!editable) return;
             if (v === 'none') commit({ mode: v });
             else edit({ mode: v, convictions: form.convictions.length ? form.convictions : [emptyConviction()] });
           }}
-          accessibilityLabel={t('verify:background.convictionsIn', { count: sheet.lookbackYears })}
+          accessibilityLabel={view.modeLabel}
         />
       </FieldShell>
 
-      {form.mode === 'listed'
-        ? form.convictions.map((c, i) => {
-            const view = state.convictions.find((v) => v.conviction.convictedOn === c.convictedOn && v.conviction.type === c.type);
-            const typeLabel = c.type ? t(`verify:background.convictionType.${c.type}`) : t('verify:background.convictionN', { n: i + 1 });
-            return (
-              <Card key={i}>
-                <View style={styles.row}>
-                  <Txt variant="bodyStrong" style={{ flex: 1 }}>{typeLabel}</Txt>
-                  {view ? (
-                    view.inLookback ? <StatusBadge outcome="needs_review" /> : <Chip size="sm" label={t('verify:background.outside', { count: sheet.lookbackYears })} />
-                  ) : null}
-                  {editable ? (
-                    <IconButton
-                      icon={Trash2}
-                      accessibilityLabel={t('verify:background.removeConviction', { n: i + 1 })}
-                      onPress={() => commit({ convictions: form.convictions.filter((_, j) => j !== i) })}
-                    />
-                  ) : null}
-                </View>
-                {view ? (
-                  <Txt variant="caption" color="inkMuted">
-                    {c.sentenceEndedOn
-                      ? t('verify:background.lineWithSentence', { convicted: monthYearOfDate(view.conviction.convictedOn), ended: monthYearOfDate(c.sentenceEndedOn) })
-                      : t('verify:background.line', { convicted: monthYearOfDate(view.conviction.convictedOn) })}
-                  </Txt>
-                ) : null}
-                {editable ? (
-                  <>
-                    <FieldShell label={t('verify:background.type')} error={err(`convictions.${i}.type`)}>
-                      <ChoicePills
-                        options={CONVICTION_TYPES.map((v) => ({ value: v, label: t(`verify:background.convictionType.${v}`) }))}
-                        value={c.type}
-                        onChange={(type) => setConviction(i, { type }, true)}
-                        accessibilityLabel={t('verify:background.type')}
-                      />
-                    </FieldShell>
-                    <DateField
-                      label={t('verify:background.convictedOn')}
-                      value={c.convictedOn}
-                      maximumDate={today}
-                      error={err(`convictions.${i}.convictedOn`)}
-                      onChange={(d) => setConviction(i, { convictedOn: d }, true)}
-                    />
-                    <DateField
-                      label={t('verify:background.sentenceEndedOn')}
-                      value={c.sentenceEndedOn}
-                      maximumDate={today}
-                      error={err(`convictions.${i}.sentenceEndedOn`)}
-                      onChange={(d) => setConviction(i, { sentenceEndedOn: d }, true)}
-                    />
-                  </>
-                ) : null}
-              </Card>
-            );
-          })
-        : null}
+      {view.cards.map((card) => {
+        const c = form.convictions[card.index];
+        const i = card.index;
+        return (
+          <Card key={i}>
+            <View style={styles.row}>
+              <Txt variant="bodyStrong" style={{ flex: 1 }}>{card.title}</Txt>
+              {card.badge === 'needs_review' ? <StatusBadge outcome="needs_review" /> : card.badge === 'outside' ? <Chip size="sm" label={card.outsideLabel} /> : null}
+              {editable ? (
+                <IconButton
+                  icon={Trash2}
+                  accessibilityLabel={t('verify:background.removeConviction', { n: i + 1 })}
+                  onPress={() => commit({ convictions: form.convictions.filter((_, j) => j !== i) })}
+                />
+              ) : null}
+            </View>
+            {card.line ? <Txt variant="caption" color="inkMuted">{card.line}</Txt> : null}
+            {editable ? (
+              <>
+                <FieldShell label={t('verify:background.type')} error={err(`convictions.${i}.type`)}>
+                  <ChoicePills
+                    options={CONVICTION_TYPES.map((v) => ({ value: v, label: t(`verify:background.convictionType.${v}`) }))}
+                    value={c.type}
+                    onChange={(type) => setConviction(i, { type })}
+                    accessibilityLabel={t('verify:background.type')}
+                  />
+                </FieldShell>
+                <DateField
+                  label={t('verify:background.convictedOn')}
+                  value={c.convictedOn}
+                  maximumDate={today}
+                  error={err(`convictions.${i}.convictedOn`)}
+                  onChange={(d) => setConviction(i, { convictedOn: d })}
+                />
+                <DateField
+                  label={t('verify:background.sentenceEndedOn')}
+                  value={c.sentenceEndedOn}
+                  maximumDate={today}
+                  error={err(`convictions.${i}.sentenceEndedOn`)}
+                  onChange={(d) => setConviction(i, { sentenceEndedOn: d })}
+                />
+              </>
+            ) : null}
+          </Card>
+        );
+      })}
       {form.mode === 'listed' && editable ? (
-        <TextButton label={t('verify:background.addConviction')} onPress={() => edit({ convictions: [...form.convictions, emptyConviction()] })} />
+        form.convictions.length ? (
+          <TextButton label={t('verify:background.addConviction')} onPress={() => edit({ convictions: [...form.convictions, emptyConviction()] })} />
+        ) : (
+          <Button label={t('verify:background.addConviction')} icon={Plus} variant="secondary" block onPress={() => edit({ convictions: [emptyConviction()] })} />
+        )
       ) : null}
 
-      {state.needsAssessment ? (
+      {view.showAssessment ? (
         <>
           <SectionHeader title={t('verify:background.assessmentTitle')} />
           <TextField
@@ -223,9 +202,7 @@ export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: Backgr
             onBlur={() => commit()}
           />
           <FieldShell label={t('verify:background.q2')}>
-            <Txt tabular accessibilityLabel={latest ? `${latest.howLongAgo} ${t('verify:background.calculated')}` : undefined}>
-              {latest ? `${latest.howLongAgo} ${t('verify:background.calculated')}` : '—'}
-            </Txt>
+            <Txt tabular>{view.howLongAgo}</Txt>
           </FieldShell>
           <TextField
             label={t('verify:background.q3')}
@@ -248,10 +225,7 @@ export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: Backgr
           <Hint>{t('verify:background.neverAuto')}</Hint>
         </>
       ) : null}
-      {form.mode === 'listed' && !state.needsAssessment && state.convictions.length > 0 ? <Hint>{t('verify:background.noneInLookback')}</Hint> : null}
-      {editable && form.mode === 'listed' && form.convictions.length === 0 ? (
-        <Button label={t('verify:background.addConviction')} icon={Plus} variant="secondary" block onPress={() => edit({ convictions: [emptyConviction()] })} />
-      ) : null}
+      {view.showNoneInLookback ? <Hint>{t('verify:background.noneInLookback')}</Hint> : null}
     </Screen>
   );
 }

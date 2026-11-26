@@ -16,12 +16,11 @@ import { AttemptsSection } from '../components/AttemptsSection';
 import { fieldError, Hint, MonthField, NotFoundScreen, Question, RedFlagsCard, StepCard } from '../components/VerifyParts';
 import { useSheetForm } from '../components/useSheetForm';
 import { useLandlordSheet, verifyActions } from '../hooks';
-import { liveRedFlags, type LandlordSheet } from '../service';
+import type { LandlordSheet } from '../service';
+import { landlordView, saveOwesNow } from '../viewModels';
 
 const opts = <T extends string>(values: readonly T[], group: string) =>
   values.map((v) => ({ value: v, label: t(`verify:landlord.${group}.${v}` as 'verify:landlord.answer3.yes') }));
-
-export const firstName = (fullName: string) => fullName.trim().split(/\s+/)[0] ?? fullName;
 
 export default function LandlordReferenceScreen() {
   const p = useLocalSearchParams<{ applicantId: string; residenceId: string }>();
@@ -39,8 +38,7 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
   );
   const guard = useDiscardGuard(dirty);
   const err = (f: keyof LandlordForm) => fieldError(errors, f);
-  const flags = liveRedFlags(sheet, form);
-  const name = firstName(applicant.fullName);
+  const view = landlordView(sheet, form);
   const refId = () => sheet.reference?.id ?? verifyActions.ensureLandlordRef(applicant.id, residence.id);
   const money = (text: string) => {
     const c = parseMoneyInput(text);
@@ -52,9 +50,9 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
   };
 
   return (
-    <Screen header={<AppBar title={t('verify:s11.title')} subtitle={`${residence.address} · ${applicant.fullName}`} />}>
+    <Screen header={<AppBar title={t('verify:s11.title')} subtitle={view.subtitle} />}>
       {guard}
-      {sheet.showBothLandlordsTip ? (
+      {view.showBothTip ? (
         <Banner tone="info" icon={Info}>
           {t('verify:landlord.bothTip')}
         </Banner>
@@ -92,11 +90,11 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
         />
       </StepCard>
 
-      <RedFlagsCard flags={flags} />
+      <RedFlagsCard flags={view.redFlags} />
 
       <StepCard n={2} title={t('verify:landlord.step2')}>
         <Question
-          label={t('verify:landlord.q1', { name, address: residence.address })}
+          label={view.q1}
           options={opts(ANSWER3, 'answer3')}
           value={form.rentedFromYou}
           onChange={(v) => commit({ rentedFromYou: v })}
@@ -110,7 +108,7 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
               <MonthField
                 label={t('verify:landlord.to')}
                 value={form.to === 'still_there' ? null : form.to}
-                disabled={form.to === 'still_there'}
+                disabled={view.toDisabled}
                 onCommit={(to) => commit({ to })}
               />
             </View>
@@ -131,7 +129,7 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
           value={form.violations}
           onChange={(v) => commit({ violations: v })}
         />
-        {form.violations === 'yes' ? (
+        {view.showViolationsNote ? (
           <TextField label={t('verify:landlord.q5Note')} value={form.violationsNote} multiline onChangeText={(s) => edit({ violationsNote: s })} onBlur={() => commit()} />
         ) : null}
         <Question label={t('verify:landlord.q6')} options={opts(LEFT_UNIT, 'leftUnit')} value={form.leftUnit} onChange={(v) => commit({ leftUnit: v })} />
@@ -140,9 +138,9 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
           label={t('verify:landlord.q8')}
           options={opts(['no', 'yes', 'wouldnt_say'] as const, 'owes')}
           value={form.owes}
-          onChange={(v) => (v === 'yes' ? edit({ owes: v }) : commit({ owes: v }))}
+          onChange={(v) => (saveOwesNow(v) ? commit({ owes: v }) : edit({ owes: v }))}
         />
-        {form.owes === 'yes' ? (
+        {view.showOwesAmount ? (
           <MoneyField
             label={t('verify:landlord.q8Amount')}
             required
@@ -153,7 +151,7 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
           />
         ) : null}
         <Question label={t('verify:landlord.q9')} options={opts(ANSWER3, 'answer3')} value={form.rentAgain} onChange={(v) => commit({ rentAgain: v })} />
-        {form.rentAgain && form.rentAgain !== 'yes' ? (
+        {view.showRentAgainWhy ? (
           <TextField label={t('verify:landlord.q9Why')} value={form.rentAgainWhy} multiline onChangeText={(s) => edit({ rentAgainWhy: s })} onBlur={() => commit()} />
         ) : null}
         <TextField label={t('verify:common.notes')} value={form.notes} multiline onChangeText={(s) => edit({ notes: s })} onBlur={() => commit()} />

@@ -12,23 +12,14 @@ import type { Attempt } from '@/db/types';
 import { t } from '@/i18n';
 import { Button, Card, ChoicePills, ConfirmDialog, DateField, FieldShell, IconButton, ListGroup, ListRow, SectionHeader, Sheet, Txt, haptics } from '@/ui';
 
-import { ATTEMPT_METHODS, ATTEMPT_RESULTS, attemptResultKey, attemptTimeText, localDate, localTimestamp } from '../common';
+import { ATTEMPT_METHODS, ATTEMPT_RESULTS, localDate } from '../common';
 import type { unreachableState } from '../landlord';
 import type { AttemptInput } from '../service';
+import { attemptAt, attemptResultLabel, attemptRows, canSaveAttempt, unreachableCard } from '../viewModels';
 import { Hint } from './VerifyParts';
 
 const METHOD_ICON = { call: Phone, email: Mail, text: MessageSquare } as const;
 
-export function resultLabel(method: AttemptMethod, result: AttemptResult): string {
-  return t(`verify:${attemptResultKey(method, result)}` as 'verify:attempts.result.reached');
-}
-
-/** An attempt on another day is stored at noon local time (the sheet asks for the day; today = now). */
-export function attemptAt(day: string, now: Date): string {
-  if (day === localDate(now)) return localTimestamp(now);
-  const [y, m, d] = day.split('-').map(Number);
-  return localTimestamp(new Date(y, m - 1, d, 12, 0, 0));
-}
 
 export function AttemptsSection({
   attempts,
@@ -48,33 +39,34 @@ export function AttemptsSection({
   now?: Date;
 }) {
   const [open, setOpen] = useState(false);
-  const [toDelete, setToDelete] = useState<Attempt | null>(null);
+  const [toDelete, setToDelete] = useState<number | null>(null);
+  const card = unreachableCard(unreachable);
   return (
     <>
       <SectionHeader title={t('verify:attempts.title')} />
       <ListGroup>
-        {attempts.map((a) => (
+        {attemptRows(attempts).map((a) => (
           <ListRow
             key={a.id}
             icon={METHOD_ICON[a.method]}
-            title={resultLabel(a.method, a.result)}
-            subtitle={`${t(`verify:attempts.method.${a.method}`)} · ${attemptTimeText(a.at)}`}
-            right={<IconButton icon={Trash2} accessibilityLabel={t('verify:attempts.delete')} onPress={() => setToDelete(a)} />}
+            title={a.title}
+            subtitle={a.subtitle}
+            right={<IconButton icon={Trash2} accessibilityLabel={t('verify:attempts.delete')} onPress={() => setToDelete(a.id)} />}
           />
         ))}
         <ListRow icon={Plus} iconTone="accent" title={t('verify:attempts.log')} onPress={() => setOpen(true)} testID="log-attempt" />
       </ListGroup>
 
-      {unreachable.unreachable ? (
+      {card.kind === 'marked' ? (
         <Card>
           <Txt accessibilityRole="header" variant="bodyStrong">{t('verify:attempts.markedTitle')}</Txt>
           <Hint>{t('verify:attempts.markedBody')}</Hint>
           <Button label={t('verify:attempts.undoUnreachable')} variant="secondary" block onPress={onClearUnreachable} />
         </Card>
-      ) : unreachable.canMark ? (
+      ) : card.kind === 'can_mark' ? (
         <Card>
           <Txt accessibilityRole="header" variant="bodyStrong">
-            {t('verify:attempts.unreachableHint', { count: unreachable.failedCount, methods: unreachable.methodCount })}
+            {card.title}
           </Txt>
           <Hint>{t('verify:attempts.unreachableBody')}</Hint>
           <Button label={t('verify:attempts.markUnreachable')} variant="secondary" block onPress={onMarkUnreachable} testID="mark-unreachable" />
@@ -92,13 +84,13 @@ export function AttemptsSection({
         }}
       />
       <ConfirmDialog
-        visible={!!toDelete}
+        visible={toDelete !== null}
         title={t('verify:attempts.deleteTitle')}
         confirmLabel={t('verify:attempts.delete')}
         destructive
         onCancel={() => setToDelete(null)}
         onConfirm={() => {
-          if (toDelete) onDelete(toDelete.id);
+          if (toDelete !== null) onDelete(toDelete);
           setToDelete(null);
         }}
       />
@@ -130,7 +122,7 @@ function LogAttemptSheet({ visible, now, onClose, onSave }: { visible: boolean; 
         <Button
           label={t('common:actions.save')}
           block
-          disabled={!method || !result}
+          disabled={!canSaveAttempt(method, result)}
           onPress={() => {
             if (!method || !result) return;
             onSave({ at: attemptAt(day, now), method, result });
@@ -151,7 +143,7 @@ function LogAttemptSheet({ visible, now, onClose, onSave }: { visible: boolean; 
         </FieldShell>
         <FieldShell label={t('verify:attempts.result.label')}>
           <ChoicePills
-            options={ATTEMPT_RESULTS.map((r) => ({ value: r, label: resultLabel(method ?? 'call', r) }))}
+            options={ATTEMPT_RESULTS.map((r) => ({ value: r, label: attemptResultLabel(method ?? 'call', r) }))}
             value={result}
             onChange={setResult}
             accessibilityLabel={t('verify:attempts.result.label')}

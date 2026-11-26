@@ -8,6 +8,8 @@ describe('routes', () => {
     expect(routes.applicationEdit(7)).toBe('/applicants/7/form');
     expect(routes.applicationEdit(7, 4)).toBe('/applicants/7/form?section=4');
     expect(routes.letter(7, { kind: 'adverse_action' })).toBe('/review/applicant/7/letter?kind=adverse_action');
+    expect(routes.decision(7)).toBe('/review/applicant/7/decision');
+    expect(routes.decision(7, { kind: 'withdraw_offer' })).toBe('/review/applicant/7/decision?kind=withdraw_offer');
     expect(routes.moveIn(1, 2)).toBe('/move-in/1?applicantId=2');
     expect(routes.guideArticle('first come rules')).toBe('/guide/first%20come%20rules');
   });

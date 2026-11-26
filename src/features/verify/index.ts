@@ -11,3 +11,4 @@ export * from './background';
 export * from './progress';
 export * from './links';
 export * from './service';
+export * from './viewModels';
