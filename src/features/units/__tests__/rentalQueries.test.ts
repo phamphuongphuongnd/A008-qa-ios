@@ -5,7 +5,7 @@ import { loadSampleRental } from '@/db/repos/sample';
 import * as Set from '@/db/repos/settings';
 import { makeTestDb } from '@/db/testing/testDb';
 
-import { loadRentalCards, loadRentalHub, loadRentalsReminders } from '../rentalQueries';
+import { loadCleanupReminderCount, loadRentalCards, loadRentalHub } from '../rentalQueries';
 import { deriveRentalStatus, initials } from '../rentalSummary';
 import { closeRental, createRentalFromForm } from '../rentalService';
 import { emptyRentalForm } from '../rentalForm';
@@ -111,35 +111,30 @@ describe('S-06 hub', () => {
   });
 });
 
-describe('S-02 reminders', () => {
+describe('S-02 cleanup card', () => {
   function realRental(db: ReturnType<typeof makeTestDb>) {
     const r = createRentalFromForm(db, { ...emptyRentalForm(), street: '1 Main St', rentCents: 100000 });
     return r.ok ? r.id : 0;
   }
-
-  it('asks for a backup only with real data and after 30 days', () => {
-    const db = makeTestDb();
-    loadSampleRental(db);
-    expect(loadRentalsReminders(db, NOW).backup).toBeNull();
-    realRental(db);
-    expect(loadRentalsReminders(db, NOW).backup).toEqual({ days: null });
-    Set.updateSettings(db, { lastBackupAt: '2026-11-06T12:00:00Z' });
-    expect(loadRentalsReminders(db, NOW).backup).toEqual({ days: 34 });
-    Set.updateSettings(db, { lastBackupAt: '2026-11-20T12:00:00Z' });
-    expect(loadRentalsReminders(db, NOW).backup).toBeNull();
-    Set.updateSettings(db, { lastBackupAt: null, reminders: { backup: false, cleanup: true, timers: true } });
-    expect(loadRentalsReminders(db, NOW).backup).toBeNull();
-  });
 
   it('counts closed rentals still holding applicant data after the cleanup delay', () => {
     const db = makeTestDb();
     const id = realRental(db);
     A.createApplicant(db, { rentalId: id, receivedAt: '2026-09-01T09:00:00-04:00', fullName: 'Sam Lee', occupants: 1 });
     closeRental(db, id, '2026-09-15T12:00:00Z');
-    expect(loadRentalsReminders(db, NOW).cleanupCount).toBe(1);
+    expect(loadCleanupReminderCount(db, NOW)).toBe(1);
     Set.updateSettings(db, { cleanupAfterDays: 180 });
-    expect(loadRentalsReminders(db, NOW).cleanupCount).toBe(0);
-    Set.updateSettings(db, { cleanupAfterDays: null });
-    expect(loadRentalsReminders(db, NOW).cleanupCount).toBe(0);
+    expect(loadCleanupReminderCount(db, NOW)).toBe(0);
+    Set.updateSettings(db, { cleanupAfterDays: 30, reminders: { backup: true, cleanup: false, timers: true } });
+    expect(loadCleanupReminderCount(db, NOW)).toBe(0);
+    Set.updateSettings(db, { reminders: { backup: true, cleanup: true, timers: true } });
+    expect(loadCleanupReminderCount(db, NOW)).toBe(1);
+  });
+
+  it('never counts the sample rental', () => {
+    const db = makeTestDb();
+    const id = loadSampleRental(db);
+    closeRental(db, id, '2026-09-15T12:00:00Z');
+    expect(loadCleanupReminderCount(db, NOW)).toBe(0);
   });
 });

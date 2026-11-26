@@ -23,6 +23,10 @@ export interface DecisionFileResultRow {
 export interface DecisionFileDecision {
   /** "Deny · Dec 6, 2026, 3:12 PM". */
   heading: string;
+  /** S-19 preview: "Denied Dec 6, 3:12 PM". */
+  short: string;
+  /** S-19 preview: "C5 (Screening report)". */
+  reasonCodes: string[];
   reasons: string[];
   note: string | null;
   conditions: string[];
@@ -40,6 +44,10 @@ export type DecisionFileApplicant =
       name: string;
       /** "Dec 2, 2026, 9:14 AM". */
       receivedText: string;
+      /** "Dec 2, 9:14 AM" (S-19 preview). */
+      receivedShort: string;
+      /** "8 of 8 Met" — the Decision file is the only place this count appears (Phương 2026-11-26). */
+      metText: string;
       /** "Ready to decide" / "2 items missing" (engine summary, never a score). */
       summary: string;
       results: DecisionFileResultRow[];
@@ -50,6 +58,8 @@ export type DecisionFileApplicant =
 
 export interface DecisionFileInput {
   rentalAddress: string;
+  /** "1428 Maple St, Unit B" (S-19 header, file name). */
+  rentalShortAddress: string;
   /** "Dec 20, 2026". */
   exportedText: string;
   reviewMode: 'compare' | 'first_come';
@@ -76,7 +86,7 @@ function applicantBlock(a: DecisionFileApplicant): SafeHtml {
       )
     : html`<p>${t('decision:decisionFile.noDecision')}</p>`;
   return html`<section class="applicant"><h2>${a.position}. ${a.name} — ${t('decision:decisionFile.received', { when: a.receivedText })}</h2>
-<p class="muted">${a.summary} · ${t('decision:decisionFile.notScore')}</p>
+<p class="muted">${a.metText} · ${a.summary} · ${t('decision:decisionFile.notScore')}</p>
 ${table(
   [
     { header: t('decision:decisionFile.colCriterion'), width: '24%' },

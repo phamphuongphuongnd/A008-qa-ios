@@ -8,6 +8,7 @@
  *   new | in_review ─Approve / with conditions→ approved   ─Deny→ denied
  *   (First-come) 72 h ran out → incomplete · 48 h ran out → offer_expired · S-09 menu → withdrawn
  * denied / withdrawn / incomplete / offer_expired are final and, in First-come, hand the turn to the next in line.
+ * First-come clocks: Conditional offer starts the 48 h reply clock; Approve (the landlord's final answer) stops it.
  * Every rule comes from the engine (`validateDecision`, `noticeRequirement`, `decisionGate`, `closeTurn`, `startTimer`).
  */
 import {
@@ -31,9 +32,10 @@ import {
   type TimerKind,
   type TurnChange,
 } from '@/engine';
-import { getApplicantBundle, setApplicantStatus } from '@/db/repos/applicants';
+import { getApplicantBundle, purgeApplicant, setApplicantStatus } from '@/db/repos/applicants';
+import type { FileStore } from '@/db/files';
 import { activeTimer, resolveTimer, saveDecision, setTimerNotifications, startTimer as dbStartTimer } from '@/db/repos/decisions';
-import { getSettings, updateSettings } from '@/db/repos/settings';
+import { getSettings } from '@/db/repos/settings';
 import { toQueueApplicant } from '@/db/toEngine';
 import type { AppDb, Timer as TimerRow } from '@/db/types';
 import {
@@ -173,10 +175,8 @@ async function startClock(
   try {
     const s = getSettings(deps.db);
     if (s.reminders.timers) {
-      permission = await ensureTimerPermission(deps.notifier, {
-        asked: s.notificationsAsked,
-        markAsked: () => updateSettings(deps.db, { notificationsAsked: true }),
-      });
+      // 2E's prompt (ask once, `settings.notificationsAsked`) on the phone; see queueTimersNative.
+      permission = await ensureTimerPermission(deps.notifier);
       if (permission === 'granted') {
         const ids = await scheduleTimerNotifications(deps.notifier, {
           timer: t,
@@ -255,10 +255,14 @@ export async function saveDecisionAction(
         nextApplicantId = turn.nextId ? Number(turn.nextId) : null;
       }
     } else {
-      // Conditional offer / Approve → 48 h to reply (§3.14); any earlier clock of this applicant ends now.
+      // Any earlier clock of this applicant ends now (72 h missing info, or the 48 h offer when Approve is the
+      // landlord's final answer — Phương 2026-11-26: no "Applicant accepted" button, Approve stops the clock).
       await resolveOpenTimers(deps, applicantId, at);
-      const clock = await startClock(deps, { applicantId, fullName: r.bundle.applicant.fullName, rentalId: r.rentalRow.id, kind: 'offer', at });
-      offerEndsAt = clock.endsAt;
+      if (decision.kind === 'conditional_offer') {
+        // Conditional offer → 48 h to reply (§3.14).
+        const clock = await startClock(deps, { applicantId, fullName: r.bundle.applicant.fullName, rentalId: r.rentalRow.id, kind: 'offer', at });
+        offerEndsAt = clock.endsAt;
+      }
     }
   } else if (FINAL_STATUSES.has(status)) {
     await resolveOpenTimers(deps, applicantId, at);
@@ -340,8 +344,8 @@ export const moveToNextIncomplete = (deps: DecisionDeps, applicantId: number) =>
 export const expireOffer = (deps: DecisionDeps, applicantId: number) => closeWith(deps, applicantId, 'offer_expired_move_next', 'offer_expired');
 
 /**
- * The applicant replied to the offer in time: stop the 48 h clock so the queue shows them as Approved / offered
- * without "Offer expired". (Not drawn in mockup v2 — asked the coordinator where the button goes.)
+ * Stop a running 48 h offer clock. Internal only (Phương 2026-11-26: no "Applicant accepted" button in the UI — saving
+ * the final "Approve" stops the clock, see saveDecisionAction).
  */
 export async function markOfferAccepted(deps: DecisionDeps, applicantId: number): Promise<ActionResult> {
   const at = localIso(deps.now());
@@ -367,6 +371,32 @@ export async function markWithdrawnByApplicant(deps: DecisionDeps, applicantId: 
   setApplicantStatus(deps.db, applicantId, 'withdrawn');
   await resolveOpenTimers(deps, applicantId, at);
   return { ok: true, nextApplicantId: null };
+}
+
+/**
+ * S-09 menu "Delete applicant" (FTC Disposal Rule): erase the application, files, decisions and letters for good; an
+ * anonymous row stays so the Decision file can say "Applicant 3 — data deleted …". Clocks + their notifications are
+ * cancelled first; in First-come an applicant still in line ends their turn (as withdrawn) so the next one moves up.
+ */
+export async function deleteApplicantAction(
+  deps: DecisionDeps & { files: FileStore },
+  applicantId: number,
+): Promise<ActionResult<{ nextApplicantId: number | null }>> {
+  const at = localIso(deps.now());
+  const b = getApplicantBundle(deps.db, applicantId);
+  if (!b || b.applicant.deletedAt) return fail('not_found', 'Applicant not found');
+  let nextApplicantId: number | null = null;
+  const rental = loadRentalReview(deps.db, b.applicant.rentalId, at);
+  if (rental?.queue && !b.applicant.draft && !FINAL_STATUSES.has(b.applicant.status)) {
+    const turn = turnChange(deps.db, b.applicant.rentalId, applicantId, 'withdrawn', at);
+    if (turn) {
+      await applyTurn(deps, turn, at);
+      nextApplicantId = turn.nextId ? Number(turn.nextId) : null;
+    }
+  }
+  await resolveOpenTimers(deps, applicantId, at);
+  purgeApplicant(deps.db, deps.files, applicantId, { keepRecord: !b.applicant.draft, at });
+  return { ok: true, nextApplicantId };
 }
 
 /**

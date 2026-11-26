@@ -282,7 +282,7 @@ export function landlordEmailDraft(input: { to: string | null; applicantName: st
 /** Q2 shown back ("Jan 2023 – Still there"). */
 export function referencePeriodText(from: YearMonth | null, to: YearMonth | 'still_there' | null): string {
   if (!from && !to) return '';
-  const end = to === 'still_there' ? t('verify:landlord.q2.stillThere') : monthText(to);
+  const end = to === 'still_there' ? t('verify:landlord.q2Still') : monthText(to);
   return `${monthText(from)} – ${end}`;
 }
 

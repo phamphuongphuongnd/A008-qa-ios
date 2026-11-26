@@ -15,7 +15,10 @@ import { Platform, Text, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { ensureMigrated } from '@/db';
+import { db, ensureMigrated } from '@/db';
+import { useApplicantModeGuard } from '@/features/intake/applicantMode/hooks';
+import { settingsPersistence } from '@/features/intake/applicantMode/persistence';
+import { hydrateApplicantMode } from '@/features/intake/applicantMode/store';
 import { RouterBridge } from '@/services/router';
 import { useTheme } from '@/theme';
 import { AppThemeProvider, SystemBars } from '@/theme/preference';
@@ -37,7 +40,7 @@ export const unstable_settings = { initialRouteName: '(tabs)' };
  * - 1D: AppThemeProvider (settings.theme; Settings › Appearance calls setThemePreference from '@/theme/preference'),
  *   system bars, SnackbarHost (showSnackbar from '@/ui').
  * - 2E: onboarding guard (Stack.Protected on `onboarded`), App lock gate, notification tap → route.
- * - 2B: Applicant mode guard (while active, only `applicants/mode/*` is reachable; see the group below).
+ * - 2B: Applicant mode restored from settings after migrations; guard keeps the router inside `applicants/mode/*`.
  */
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(RUNTIME_FONTS);
@@ -47,7 +50,11 @@ export default function RootLayout() {
 
   useEffect(() => {
     ensureMigrated().then(
-      () => setDbState('ready'),
+      () => {
+        // 2B: a session that was on when the app closed comes back (the applicant never lands in the landlord's data).
+        hydrateApplicantMode(settingsPersistence(db));
+        setDbState('ready');
+      },
       () => setDbState('failed'),
     );
   }, []);
@@ -92,6 +99,7 @@ function RootStack() {
     <ThemeProvider value={navTheme}>
       {/* A006 B-23: keeps `router` from @/services/router bound to the live tree after a config change. */}
       <RouterBridge />
+      <ApplicantModeGuard />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface0 } }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="onboarding/index" options={{ gestureEnabled: false }} />
@@ -110,6 +118,12 @@ function RootStack() {
       </Stack>
     </ThemeProvider>
   );
+}
+
+/** 2B: while Applicant mode is on, any other path is sent back to the session's screen; Android Back swallowed. */
+function ApplicantModeGuard() {
+  useApplicantModeGuard();
+  return null;
 }
 
 /** The database could not be opened / migrated (disk full, corrupt file): nothing else can work. */

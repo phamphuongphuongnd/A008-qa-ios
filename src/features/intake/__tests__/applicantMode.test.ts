@@ -8,6 +8,7 @@ import { routes } from '@/routes';
 import { enterApplicantMode, startApplicantForm, submitInApplicantMode } from '../applicantMode/actions';
 import { checkCanEnter, isPinShape, unlockLandlord, unlockWithPin, type LocalAuthAdapter, type SecurityLevel } from '../applicantMode/auth';
 import { canAccessApplicant, guardRedirect, isAllowedPath } from '../applicantMode/guard';
+import { settingsPersistence } from '../applicantMode/persistence';
 import { exitRoute, MODE_OFF, modeReducer, registerTap, routeForState, type ModeEvent, type ModeState } from '../applicantMode/machine';
 import {
   dispatchApplicantMode,
@@ -241,5 +242,23 @@ describe('applicant mode flow (DB)', () => {
     expect(getApplicantMode()).toMatchObject({ phase: 'done', applicantId: id });
     expect(getApplicant(db, id)!.draft).toBe(false);
     expect(() => startApplicantForm(db)).toThrow(); // only from the start screen
+  });
+});
+
+describe('settingsPersistence (applicantMode key)', () => {
+  it('saves the active session and restores it after a restart', () => {
+    const tdb = makeTestDb();
+    const p = settingsPersistence(tdb);
+    expect(p.load()).toBeNull();
+    resetApplicantModeForTests(p);
+    dispatchApplicantMode({ type: 'ENTER', rentalId: 7 });
+    expect(p.load()).toMatchObject({ phase: 'start', rentalId: 7, exit: 'none' });
+    resetApplicantModeForTests(p);
+    expect(hydrateApplicantMode(p)).toMatchObject({ phase: 'start', rentalId: 7 });
+    expect(isApplicantModeActive()).toBe(true);
+    dispatchApplicantMode({ type: 'EXIT_REQUEST' });
+    dispatchApplicantMode({ type: 'AUTH_SUCCESS' });
+    expect(isApplicantModeActive()).toBe(false);
+    expect(p.load()).toBeNull();
   });
 });

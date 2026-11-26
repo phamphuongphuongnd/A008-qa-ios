@@ -1,45 +1,31 @@
 /**
  * The phone's QueueNotifier (expo-notifications, local only). Kept tiny so Jest never loads it.
+ *
+ * 2E owns the permission prompt and the Android channels (`setupNativeNotifications`, `askNotificationPermission`):
+ * timers go to 2E's 'timers' channel and the "ask once" rule lives in `askNotificationPermission()`.
  */
 import * as Notifications from 'expo-notifications';
-import { AndroidImportance } from 'expo-notifications/build/NotificationChannelManager.types';
-import { Platform } from 'react-native';
 
+import { askNotificationPermission } from './index';
+import { CHANNELS } from './adapter';
+import { expoNotifications } from './native';
 import type { PermissionState, QueueNotifier } from './queueTimers';
-
-const CHANNEL_ID = 'first-come-timers';
-let channelReady: Promise<unknown> | null = null;
-
-function ensureChannel() {
-  if (Platform.OS !== 'android') return Promise.resolve();
-  channelReady ??= Notifications.setNotificationChannelAsync(CHANNEL_ID, {
-    name: 'First-come timers',
-    importance: AndroidImportance.HIGH,
-  }).catch(() => undefined);
-  return channelReady;
-}
-
-function toState(p: Notifications.NotificationPermissionsStatus): PermissionState {
-  if (p.granted) return 'granted';
-  return p.canAskAgain ? 'undetermined' : 'denied';
-}
 
 export const expoQueueNotifier: QueueNotifier = {
   async schedule({ title, body, at, data }) {
-    await ensureChannel();
     return Notifications.scheduleNotificationAsync({
       content: { title, body, data },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: CHANNEL_ID },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at, channelId: CHANNELS.timers },
     });
   },
   async cancel(id) {
     await Notifications.cancelScheduledNotificationAsync(id);
   },
-  async getPermission() {
-    return toState(await Notifications.getPermissionsAsync());
+  getPermission(): Promise<PermissionState> {
+    return expoNotifications.permission();
   },
-  async requestPermission() {
-    await ensureChannel();
-    return toState(await Notifications.requestPermissionsAsync());
+  async requestPermission(): Promise<PermissionState> {
+    if (await askNotificationPermission()) return 'granted';
+    return expoNotifications.permission();
   },
 };

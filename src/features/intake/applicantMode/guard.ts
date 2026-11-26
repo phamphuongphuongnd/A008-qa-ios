@@ -2,7 +2,7 @@
  * Route guard of Applicant mode: while it is on, the only reachable screens are the three applicant-mode routes OF
  * THIS SESSION (its rental, its draft). Anything else (tabs, another applicant, a deep link, the system back) is sent
  * back to where the state machine says the applicant is.
- * Plugged into app/_layout.tsx at merge (`useApplicantModeGuard`) — TODO(merge 2B).
+ * Plugged into app/_layout.tsx (`useApplicantModeGuard`).
  */
 import type { Href } from 'expo-router';
 

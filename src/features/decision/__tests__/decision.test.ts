@@ -1,13 +1,14 @@
 import * as A from '@/db/repos/applicants';
 import * as Dec from '@/db/repos/decisions';
 import * as R from '@/db/repos/rentals';
-import * as Set from '@/db/repos/settings';
 import * as V from '@/db/repos/verify';
+import { makeTestFiles } from '@/db/testing/testDb';
 import type { DecisionInput } from '@/engine';
 
 import {
   checkDecision,
   decisionOptions,
+  deleteApplicantAction,
   emptyDecision,
   expireOffer,
   loadDecisionContext,
@@ -200,10 +201,13 @@ describe('First-come order (§3.14)', () => {
     expect(deny).toMatchObject({ ok: true, nextApplicantId: id('Dana'), notice: { letter: 'denial' } });
     expect(A.getApplicant(db, id('Dana'))!.status).toBe('in_review');
 
-    // #4 approved → 48 h; the applicant accepts → clock stops, queue shows Approved.
+    // #4 conditional offer → 48 h; the landlord's final "Approve" stops the clock (no "Applicant accepted" button).
+    await saveDecisionAction(deps, id('Dana'), { kind: 'conditional_offer', conditions: [], reasons: [], note: '', reportInfluenced: false });
+    expect(Dec.activeTimer(db, id('Dana'), 'offer')).not.toBeNull();
+    expect(notes.scheduled.size).toBe(2);
     const ok = await saveDecisionAction(deps, id('Dana'), { kind: 'approve', conditions: [], reasons: [], note: '', reportInfluenced: true });
-    expect(ok).toMatchObject({ ok: true, status: 'approved', notice: { letter: 'approval' } });
-    expect(await markOfferAccepted(deps, id('Dana'))).toEqual({ ok: true });
+    expect(ok).toMatchObject({ ok: true, status: 'approved', notice: { letter: 'approval' }, offerEndsAt: null });
+    expect(Dec.activeTimer(db, id('Dana'))).toBeNull();
     expect(await markOfferAccepted(deps, id('Dana'))).toMatchObject({ ok: false });
     const q2 = loadQueue(db, rentalId, clock.now().toISOString())!;
     expect(q2.rows.map((r) => r.state)).toEqual(['done', 'done', 'done', 'approved']);
@@ -214,9 +218,8 @@ describe('First-come order (§3.14)', () => {
     const { db, rentalId, id } = sampleDb();
     R.updateRental(db, rentalId, { reviewMode: 'first_come' });
     const { deps, notes } = makeDeps(db, T0, 'undetermined');
-    await saveDecisionAction(deps, id('Jordan'), { kind: 'approve', conditions: [], reasons: [], note: '', reportInfluenced: true });
+    await saveDecisionAction(deps, id('Jordan'), { kind: 'conditional_offer', conditions: [], reasons: [], note: '', reportInfluenced: false });
     expect(notes.askedCount()).toBe(1);
-    expect(Set.getSettings(db).notificationsAsked).toBe(true);
     expect(notes.scheduled.size).toBe(2);
 
     const other = makeDeps(db, T0, 'denied');
@@ -233,5 +236,25 @@ describe('First-come order (§3.14)', () => {
     const { deps } = makeDeps(db, T0);
     expect(await markWithdrawnByApplicant(deps, id('Jordan'))).toEqual({ ok: true, nextApplicantId: id('Priya') });
     expect(A.getApplicant(db, id('Priya'))!.status).toBe('in_review');
+  });
+});
+
+describe('S-09 Delete applicant', () => {
+  it('erases the data, keeps an anonymous row, cancels clocks and hands the First-come turn on', async () => {
+    const { db, rentalId, id } = sampleDb();
+    R.updateRental(db, rentalId, { reviewMode: 'first_come' });
+    const { deps, notes } = makeDeps(db, T0);
+    syncQueueStatus(db, rentalId, T0);
+    await saveDecisionAction(deps, id('Jordan'), { kind: 'conditional_offer', conditions: [], reasons: [], note: '', reportInfluenced: false });
+    expect(notes.scheduled.size).toBe(2);
+    const files = makeTestFiles();
+    const res = await deleteApplicantAction({ ...deps, files }, id('Jordan'));
+    expect(res).toEqual({ ok: true, nextApplicantId: id('Priya') });
+    expect(notes.scheduled.size).toBe(0);
+    const row = A.getApplicant(db, id('Jordan'))!;
+    expect(row.deletedAt).not.toBeNull();
+    expect(row.fullName).toBe('');
+    expect(A.getApplicant(db, id('Priya'))!.status).toBe('in_review');
+    expect(await deleteApplicantAction({ ...deps, files }, id('Jordan'))).toMatchObject({ ok: false, error: 'not_found' });
   });
 });
