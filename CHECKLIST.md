@@ -32,7 +32,7 @@
 - [x] 2D Logic chấm, Compare, hàng đợi + đồng hồ, quyết định, thư + PDF, Decision file (F-11 – F-15)
 - [x] 2E Logic onboarding, khoá, sao lưu mã hoá, dọn / xoá dữ liệu, thông báo, giao nhà + PDF (F-01, F-16 – F-19)
 - Màn theo mockup v2 (sau 1D, cùng phiên 2A–2E):
-- [ ] F-01 Onboarding (S-01)
+- [x] F-01 Onboarding (S-01)
 - [x] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
 - [x] F-03 Criteria builder + published criteria PDF (S-04, S-05)
 - [x] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
@@ -47,10 +47,10 @@
 - [x] F-13 Decision (S-15)
 - [x] F-14 Letters + PDF (S-16)
 - [x] F-15 Decision file PDF (S-19)
-- [ ] F-16 Move-in checklist (S-20)
-- [ ] F-17 Data cleanup (S-24)
-- [ ] F-18 Backup & restore mã hoá + tự động + nhắc (S-22)
-- [ ] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27)
+- [x] F-16 Move-in checklist (S-20)
+- [x] F-17 Data cleanup (S-24)
+- [x] F-18 Backup & restore mã hoá + tự động + nhắc (S-22)
+- [x] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27)
 - [ ] Ghép nhánh, toàn bộ test xanh + cài chạy trên Galaxy A13 → gộp `dev` → `main`
 
 ## Bước 4 — Test toàn bộ (chỉ ghi lỗi)
