@@ -7,6 +7,7 @@ import { Trash2 } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
 import type { CriteriaWarningCode, DocType, PetPolicy } from '@/engine';
+import { GUIDE } from '@/features/guide/articles';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
 import { font, useTheme } from '@/theme';
@@ -15,8 +16,8 @@ import { Banner, ChoicePills, Glyph, IconButton, Stepper, Switch, TextButton, Te
 import type { CriteriaEditorAction } from '../criteriaEditor';
 import type { CriterionCardModel } from '../screenModels';
 
-/** Guide article slugs. TODO(merge 2A): confirm with 2E's Guide content (S-25a). */
-export const GUIDE_SLUGS = { fairCriteria: 'writing-fair-criteria', landlordReference: 'previous-landlord-reference' } as const;
+/** Guide articles linked from S-04 (2E's S-25a content). C4 "Why this matters" → checking references / fake landlords. */
+export const GUIDE_SLUGS = { fairCriteria: GUIDE.fairCriteria, landlordReference: GUIDE.fakeReferences } as const;
 
 export function CriterionCard({
   card,

@@ -75,10 +75,7 @@ export type SaveRentalResult =
       ok: true;
       id: number;
       modeChanged: boolean;
-      /**
-       * Timers resolved because First-come was turned off. Their `notificationIds` must be cancelled.
-       * TODO(merge 2A): the screen cancels them with 2D's src/notifications/queueTimers once merged.
-       */
+      /** Timers resolved because First-come was turned off; `useRentalActions` cancels their notifications (2D). */
       stoppedTimers: Timer[];
       /** First time First-come is on and notifications were never asked: ask now (§6). */
       askNotifications: boolean;

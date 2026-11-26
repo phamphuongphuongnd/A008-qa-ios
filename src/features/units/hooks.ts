@@ -8,9 +8,12 @@ import { db } from '@/db/client';
 import { countRentals, getRental } from '@/db/repos/rentals';
 import { useLive } from '@/db/useLive';
 import { fileStore } from '@/files';
+import { askNotificationPermission, refreshReminders } from '@/notifications';
+import { cancelStoppedTimers } from '@/notifications/queueTimers';
+import { expoQueueNotifier } from '@/notifications/queueTimersNative';
 
 import { emptyRentalForm, rentalToForm, type RentalForm } from './rentalForm';
-import { loadRentalCards, loadRentalHub, loadRentalsReminders, RENTAL_LIVE_TABLES } from './rentalQueries';
+import { loadCleanupReminderCount, loadRentalCards, loadRentalHub, RENTAL_LIVE_TABLES } from './rentalQueries';
 import {
   closeRental,
   createRentalFromForm,
@@ -31,16 +34,13 @@ export function useRentals(filter: 'open' | 'closed') {
   return { cards, counts, isEmpty: counts.open + counts.closed === 0 };
 }
 
-/** S-02 reminder cards; "Later" hides one for this app session. */
-export function useRentalsReminders() {
+/** S-02 cleanup card ("2 closed rentals still hold applicant data"); "Later" hides it for this app session. The backup
+ * card is 2E's `useBackupReminder()` (@/backup). */
+export function useCleanupReminder() {
   'use no memo';
-  const r = useLive(() => loadRentalsReminders(db), [], ['settings', 'rentals', 'applicants']);
-  const [hidden, setHidden] = useState<{ backup: boolean; cleanup: boolean }>({ backup: false, cleanup: false });
-  return {
-    backup: hidden.backup ? null : r.backup,
-    cleanupCount: hidden.cleanup ? 0 : r.cleanupCount,
-    later: (card: 'backup' | 'cleanup') => setHidden((h) => ({ ...h, [card]: true })),
-  };
+  const count = useLive(() => loadCleanupReminderCount(db), [], ['settings', 'rentals', 'applicants']);
+  const [hidden, setHidden] = useState(false);
+  return { count: hidden ? 0 : count, later: () => setHidden(true) };
 }
 
 /** S-06 data (null = deleted / not found). */
@@ -66,16 +66,36 @@ export function useRentalForm(rentalId: number | null): RentalForm | null {
 /** Rental actions bound to the app database / file store. */
 export function useRentalActions() {
   return {
-    create: useCallback((form: RentalForm) => createRentalFromForm(db, form), []),
-    update: useCallback(
-      (id: number, form: RentalForm, confirmModeChange?: boolean) => updateRentalFromForm(db, id, form, { confirmModeChange }),
-      [],
-    ),
+    /** Also asks the notification permission the first time First-come is on (§6, 2E asks at most once). */
+    create: useCallback((form: RentalForm) => {
+      const r = createRentalFromForm(db, form);
+      if (r.ok && r.askNotifications) void askNotificationPermission();
+      return r;
+    }, []),
+    /** Also cancels the notifications of first-come timers stopped by a switch to Compare (2D). */
+    update: useCallback((id: number, form: RentalForm, confirmModeChange?: boolean) => {
+      const r = updateRentalFromForm(db, id, form, { confirmModeChange });
+      if (r.ok) {
+        if (r.stoppedTimers.length) void cancelStoppedTimers(expoQueueNotifier, r.stoppedTimers);
+        if (r.askNotifications) void askNotificationPermission();
+      }
+      return r;
+    }, []),
     planModeChange: useCallback((id: number, to: ReviewMode) => planReviewModeChange(db, id, to), []),
-    close: useCallback((id: number) => closeRental(db, id), []),
-    reopen: useCallback((id: number) => reopenRental(db, id), []),
+    // Closing / reopening / deleting changes what the 2E cleanup reminder counts.
+    close: useCallback((id: number) => {
+      closeRental(db, id);
+      void refreshReminders();
+    }, []),
+    reopen: useCallback((id: number) => {
+      reopenRental(db, id);
+      void refreshReminders();
+    }, []),
     deleteMessage: useCallback((id: number) => deleteRentalMessage(db, id), []),
-    remove: useCallback((id: number) => deleteRentalAndData(db, fileStore, id), []),
+    remove: useCallback((id: number) => {
+      deleteRentalAndData(db, fileStore, id);
+      void refreshReminders();
+    }, []),
     openSample: useCallback(() => openSampleRental(db), []),
   };
 }

@@ -14,9 +14,9 @@ Logic (tested with `makeTestDb()`); screens use the hooks. Repos are imported di
   `summarizeRental` ("4 applicants · 2 ready to decide" / "decision made"), `hubApplicantRows` (received order, `#n` in
   First-come), `moveInApplicantId`, `initials`.
 - `rentalQueries.ts` — `loadRentalCards(db, 'open'|'closed')` (S-02), `loadRentalHub(db, id)` (S-06),
-  `loadRentalsReminders(db, now)` (backup > 30 days with real data · closed rentals holding data), `RENTAL_LIVE_TABLES`.
+  `loadCleanupReminderCount(db, now)` (2E `cleanupRows` due; backup card = 2E `useBackupReminder`), `RENTAL_LIVE_TABLES`.
 - `format.ts` — address / city / rent / "Available Jan 1" / "Received Dec 2, 9:14 AM" / labels. `usStates.ts` — 50 + DC.
-- `hooks.ts` — `useRentals(filter)`, `useRentalsReminders()` (Later = this session), `useRentalHub(id)`, `useRentalForm(id|null)`, `useRentalActions()`.
+- `hooks.ts` — `useRentals(filter)`, `useCleanupReminder()` (Later = this session), `useRentalHub(id)`, `useRentalForm(id|null)`, `useRentalActions()`.
 
 ## criteria/
 - `criteriaEditor.ts` — S-04 reducer: phases editing / locked / unlocking / unlocked (reason), toggle, step / setNumber
