@@ -39,9 +39,9 @@
 - [ ] F-05 Applicant mode (S-08a, S-08b)
 - [ ] F-06 Blank application PDF
 - [ ] F-07 Documents + income check (S-10)
-- [ ] F-08 Landlord + employer reference (S-11, S-12)
-- [ ] F-09 Screening report ngoài (S-13)
-- [ ] F-10 Background review bước 2 (S-14)
+- [x] F-08 Landlord + employer reference (S-11, S-12)
+- [x] F-09 Screening report ngoài (S-13)
+- [x] F-10 Background review bước 2 (S-14)
 - [ ] F-11 Applicant summary (S-09)
 - [ ] F-12 Compare + Order queue + thông báo đồng hồ (S-17, S-18)
 - [ ] F-13 Decision (S-15)
