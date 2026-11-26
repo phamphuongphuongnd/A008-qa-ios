@@ -197,6 +197,12 @@ jobs:
             xcrun simctl shutdown "$UDID" || true
           done
           cat "$OUT/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          # run-ios.sh exits 0 so every lane runs; the job still goes red when any flow / file check failed
+          # (run 45771579639 was green with 16/16 flows failed). Evidence is uploaded anyway (if: always()).
+          if grep -qE '❌|NOT_EXCLUDED|G05 .* MISSING|backups_in_folder=0|folder_storage_not_found|no junit|crashes: [1-9]' "$OUT/summary.md"; then
+            echo "::error::QA failures — see summary.md"
+            exit 1
+          fi
 
       - name: Minutes used
         if: always()
