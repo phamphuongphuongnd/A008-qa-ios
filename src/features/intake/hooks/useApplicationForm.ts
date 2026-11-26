@@ -21,9 +21,11 @@ export interface UseApplicationFormOptions {
   mode: FormMode;
   /** Open this part (route `?section=`), else where the draft was left. */
   initialStep?: FormSection | null;
+  /** Replaces the default submit (applicant mode: `submitInApplicantMode`, which also moves the state machine). */
+  submitFn?: (db: AppDb, applicantId: number, form: ApplicationForm) => SubmitResult;
 }
 
-export function useApplicationForm({ db, files, applicantId, mode, initialStep }: UseApplicationFormOptions) {
+export function useApplicationForm({ db, files, applicantId, mode, initialStep, submitFn }: UseApplicationFormOptions) {
   const [state, dispatch] = useReducer(formReducer, INITIAL_FORM_STATE);
   const latest = useRef(state);
   latest.current = state; // eslint-disable-line react-hooks/refs -- read by timers / async handlers
@@ -98,7 +100,9 @@ export function useApplicationForm({ db, files, applicantId, mode, initialStep }
       form = { ...form, pendingSignature: null, signaturePath: sig.path, signedAt: sig.signedAt };
       dispatch({ type: 'patch', patch: { pendingSignature: null, signaturePath: sig.path, signedAt: sig.signedAt } });
     }
-    if (s.step === 2 && !form.petsAnswered) dispatch({ type: 'patch', patch: { petsAnswered: true } });
+    // Passing part 2 answers the pets question and the voucher question (shown as "No" until changed).
+    if (s.step === 2 && (!form.petsAnswered || form.hasVoucher == null))
+      dispatch({ type: 'patch', patch: { petsAnswered: true, hasVoucher: form.hasVoucher ?? false } });
     if (r.next) goTo(r.next);
     return { ok: true, warnings: r.warnings };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -113,7 +117,8 @@ export function useApplicationForm({ db, files, applicantId, mode, initialStep }
   const submit = useCallback((): SubmitResult | null => {
     const s = latest.current;
     if (!s.form || applicantId == null) return null;
-    const r = submitApplication(db, applicantId, s.form, { mode });
+    flush();
+    const r = submitFn ? submitFn(db, applicantId, latest.current.form ?? s.form) : submitApplication(db, applicantId, latest.current.form ?? s.form, { mode });
     if (r.ok) {
       dispatch({ type: 'load', form: r.form, step: s.step, receivedEditable: false });
     } else {
@@ -121,7 +126,7 @@ export function useApplicationForm({ db, files, applicantId, mode, initialStep }
       dispatch({ type: 'checked', errors: r.errors.filter((e) => e.field !== 'receivedAt' || r.section === 7), warnings: [] });
     }
     return r;
-  }, [db, applicantId, mode]);
+  }, [db, applicantId, mode, submitFn, flush]);
 
   return {
     ...state,
