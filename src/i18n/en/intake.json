@@ -9,7 +9,9 @@
     "printHint": "A PDF with this rental's questions.",
     "noSsn": "Never collect Social Security numbers here. Screening services collect them directly.",
     "setPinFirst": "This phone has no screen lock. Set an app PIN first so only you can end applicant mode.",
-    "pdfFailed": "Couldn't create the PDF. Try again."
+    "pdfFailed": "Couldn't create the PDF. Try again.",
+    "rentalMissing": "This rental no longer exists.",
+    "setPin": "Set an app PIN"
   },
   "s08": {
     "title": "Application",
@@ -21,7 +23,10 @@
     "save": "Save applicant",
     "submit": "Submit application",
     "discardTitle": "Discard this application?",
-    "discardBody": "Nothing you typed will be kept."
+    "discardBody": "Nothing you typed will be kept.",
+    "notFound": "This application no longer exists.",
+    "close": "Close",
+    "saved": "Applicant saved"
   },
   "sections": {
     "about": "About you",
@@ -85,15 +90,24 @@
     "attachPaper": "Attach photos of the paper form",
     "receivedOn": "Received on",
     "receivedHint": "Use the time you actually received it. Locked after saving.",
-    "receivedLocked": "Locked after saving."
+    "receivedLocked": "Locked after saving.",
+    "time": "Time"
   },
   "questions": {
     "evicted": "Have you been evicted or had an eviction case filed against you in the past 7 years?",
     "bankruptcy": "Have you filed for bankruptcy in the past 7 years?",
     "smokes": "Does anyone in the household smoke?"
   },
-  "yesNo": { "yes": "Yes", "no": "No" },
-  "residenceType": { "rent": "Rent", "own": "Own", "with_family": "With family", "other": "Other" },
+  "yesNo": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "residenceType": {
+    "rent": "Rent",
+    "own": "Own",
+    "with_family": "With family",
+    "other": "Other"
+  },
   "incomeKind": {
     "employment": "Job",
     "self_employment": "Self-employment",
@@ -103,8 +117,17 @@
     "other": "Other",
     "other_adult": "Other adult"
   },
-  "petKind": { "cat": "Cat", "dog": "Dog", "other": "Other" },
-  "payFrequency": { "weekly": "Weekly", "biweekly": "Every 2 weeks", "semimonthly": "Twice a month", "monthly": "Monthly" },
+  "petKind": {
+    "cat": "Cat",
+    "dog": "Dog",
+    "other": "Other"
+  },
+  "payFrequency": {
+    "weekly": "Weekly",
+    "biweekly": "Every 2 weeks",
+    "semimonthly": "Twice a month",
+    "monthly": "Monthly"
+  },
   "errors": {
     "nameRequired": "Enter a full name",
     "contactRequired": "Add a phone number or an email",
@@ -145,13 +168,16 @@
     "savedOnPhone": "Your answers are saved only on this landlord's phone.",
     "noSsn": "Do not enter your Social Security number.",
     "duration": "About 10 minutes · 7 short steps",
-    "start": "Start"
+    "start": "Start",
+    "notActive": "Applicant mode isn't on.",
+    "backToRentals": "Back to rentals"
   },
   "s08b": {
     "title": "Application received",
     "thanks": "Thank you, {{name}}.",
     "receivedOn": "Your application was received on {{date}} at {{time}}.",
-    "handBack": "Please hand the phone back."
+    "handBack": "Please hand the phone back.",
+    "a11yUnlock": "Tap 3 times to hand back to the landlord"
   },
   "mode": {
     "landlord": "Landlord",
@@ -191,7 +217,16 @@
     "whichIncome": "Which income does this prove?",
     "noStated": "No stated amount for this income in the application.",
     "tip": "Compare pay stubs with bank deposits; look for mismatched fonts or totals that don't add up.",
-    "addFailed": "Couldn't add the file. Try again."
+    "addFailed": "Couldn't add the file. Try again.",
+    "payStub": "Pay stub",
+    "letter": "Letter",
+    "fileN": "File {{n}}",
+    "pdf": "PDF document",
+    "viewer": "Document",
+    "markAllChecked": "Mark as checked",
+    "incomeCheckFor": "Income check · file {{n}}",
+    "linkIncome": "Proves this income",
+    "stated": "stated"
   },
   "pdf": {
     "title": "Rental application",

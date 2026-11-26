@@ -103,3 +103,25 @@ export function hasInk(input: SignatureInput | null | undefined): boolean {
   if (!input) return false;
   return input.kind === 'typed' ? input.name.trim().length > 0 : input.strokes.some((s) => s.length > 0);
 }
+
+/**
+ * The UI kit's SignaturePad gives one SVG path in pad coordinates ("M10 20L30 40M…", see src/ui/signaturePath.ts).
+ * Back to strokes so `normalizeSignature` / `validateSignature` can judge it.
+ */
+export function pathToStrokes(path: string): Point[][] {
+  const strokes: Point[][] = [];
+  const re = /([ML])\s*(-?\d+(?:\.\d+)?)[\s,]+(-?\d+(?:\.\d+)?)/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(path))) {
+    const p = { x: Number(m[2]), y: Number(m[3]) };
+    if (m[1] === 'M' || strokes.length === 0) strokes.push([p]);
+    else strokes[strokes.length - 1].push(p);
+  }
+  return strokes;
+}
+
+/** SignaturePad value → our input (null after Clear). */
+export function padToSignature(v: { path: string; width: number; height: number } | null): SignatureInput | null {
+  if (!v || !v.path) return null;
+  return { kind: 'drawn', strokes: pathToStrokes(v.path), pad: { width: v.width, height: v.height } };
+}
