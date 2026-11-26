@@ -1,4 +1,182 @@
 {
-  "s25": { "title": "Guide" },
-  "s25a": { "title": "Guide article" }
+  "s25": {
+    "title": "Guide",
+    "search": "Search articles",
+    "noResults": "No article matches \"{{query}}\".",
+    "minutes_one": "{{count}} min read",
+    "minutes_other": "{{count}} min read"
+  },
+  "s25a": {
+    "title": "Guide article",
+    "sources": "Sources",
+    "related": "Related",
+    "notFound": "This article doesn't exist."
+  },
+  "articles": {
+    "how-it-works": {
+      "title": "How Evenlease works",
+      "summary": "Criteria first, then the same checks for every applicant.",
+      "body": [
+        "Evenlease is a checklist for choosing a tenant the same way every time. It never scores, ranks or picks anyone — you decide.",
+        "1. Set your criteria for a rental before applications come in: income, rental history, evictions, references, documents, occupancy and pets. Publish them so every applicant sees the same rules.",
+        "2. Take applications: type one in, hand the phone to the applicant, or print a blank form. Evenlease never asks for a Social Security number or date of birth.",
+        "3. Verify: check documents, call past landlords and employers with the call scripts, and enter the key results of a screening report the applicant buys from an outside company.",
+        "4. Each criterion shows Met, Not met, Missing or Needs review, and how sure it is: Claimed (the applicant said so), Verified (you checked a source) or Mismatch (a source disagrees).",
+        "5. Compare applicants side by side, or review them in the order received (First-come mode). Record your decision and the reasons. If a screening report played a part in a denial, Evenlease prepares the adverse action notice.",
+        "6. When the rental closes, delete the data of applicants you didn't select."
+      ],
+      "sources": [
+        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" }
+      ]
+    },
+    "fair-criteria": {
+      "title": "Writing fair criteria",
+      "summary": "Write them down first, apply them to everyone, keep them about the tenancy.",
+      "body": [
+        "Good criteria are written before you see any applicant, are about paying rent and caring for the home, and are applied the same way to everyone.",
+        "Keep each rule measurable: \"monthly income at least 3 times the rent\" is clear; \"stable job\" is not. Say which documents count as proof.",
+        "Avoid rules that point at a protected group, even indirectly. \"No children\", \"English speakers only\" or \"must be employed\" (which can shut out people with disabilities or retirees) can break fair housing law. Evenlease warns about some of these words, but it cannot catch everything.",
+        "Occupancy limits should follow local codes. A common starting point is two people per bedroom, but the size of the rooms and local rules matter.",
+        "If you change a criterion after applications arrive, Evenlease asks for a reason and keeps the history. Changing rules mid-way, especially for one applicant, is a common source of complaints.",
+        "Publish the criteria (Evenlease makes a one-page PDF) and give it to every applicant before they apply."
+      ],
+      "sources": [
+        { "label": "HUD — Fair Housing Act overview", "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview" },
+        { "label": "HUD — Occupancy standards (Keating memo)", "url": "https://www.hud.gov/sites/documents/DOC_7780.PDF" }
+      ]
+    },
+    "fair-housing-basics": {
+      "title": "Fair housing basics",
+      "summary": "Who is protected, and what that means when you screen.",
+      "body": [
+        "The federal Fair Housing Act bars treating applicants differently because of race, color, religion, sex (including sexual orientation and gender identity), national origin, familial status (children under 18, pregnancy) or disability.",
+        "Many states and cities add more protected groups — for example age, marital status, source of income, military status or criminal history. Check the rules where your rental is.",
+        "It covers ads, what you say, which applicants you show the home to, the terms you offer and how you decide. A rule that looks neutral can still be a problem if it shuts out a protected group without a real business need.",
+        "Disability: you must consider reasonable accommodations, such as an assistance animal in a no-pet home, and allow reasonable modifications.",
+        "Some small owner-occupied buildings are exempt from parts of the federal law, but never from the ban on discriminatory ads, and state law may still apply.",
+        "Using the same written criteria for everyone and recording why you decided are good habits; on their own they do not make a decision lawful."
+      ],
+      "sources": [
+        { "label": "HUD — Fair Housing Act overview", "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/fair_housing_act_overview" },
+        { "label": "HUD — Assistance animals", "url": "https://www.hud.gov/program_offices/fair_housing_equal_opp/assistance_animals" }
+      ]
+    },
+    "vouchers-income": {
+      "title": "Housing vouchers and income rules",
+      "summary": "Count the voucher, and apply the income rule to the tenant's share.",
+      "body": [
+        "A Housing Choice Voucher (Section 8) or other rental assistance pays part of the rent directly to you. The tenant pays the rest.",
+        "There is no federal rule requiring landlords to accept vouchers, but many states and cities ban refusing an applicant because of a voucher or other lawful source of income.",
+        "In several of those places, an income requirement may only be applied to the part of the rent the tenant pays. Evenlease does this when \"Apply to tenant's share\" is on: with rent of $1,650 and a $900 voucher, the income rule is checked against $750.",
+        "Treat benefits, child support, retirement and other steady income like wages when the applicant can show it with a letter or statement.",
+        "Expect an inspection and some paperwork from the housing authority before the lease starts. Ask the applicant for their caseworker's contact."
+      ],
+      "sources": [
+        { "label": "HUD — Housing Choice Voucher program", "url": "https://www.hud.gov/topics/housing_choice_voucher_program_section_8" }
+      ]
+    },
+    "fake-references": {
+      "title": "Spotting fake references",
+      "summary": "Find the real owner yourself before you call.",
+      "body": [
+        "A friend posing as a past landlord is one of the most common tricks. A few checks catch most of them.",
+        "Look up who owns the past address in the county property records or assessor website. If the \"landlord\" isn't the owner or a property manager for the owner, ask why.",
+        "Call a number you found yourself (the management company's website, public listing), not only the one the applicant wrote down.",
+        "Ask questions only a real landlord knows: the exact rent, move-in and move-out months, how many people lived there. Compare the answers with the application. Evenlease marks dates more than 31 days apart, or rent more than 5% different, as a Mismatch.",
+        "Red flags: a personal cell number for a large building, someone who answers instantly and praises the applicant without details, a reference who can't give the address or rent.",
+        "If you can't reach anyone after several tries on different days, record the attempts. Evenlease lets you mark the reference unreachable after at least three attempts by at least two methods (call, text, email)."
+      ],
+      "sources": [
+        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" }
+      ]
+    },
+    "verifying-income": {
+      "title": "Verifying income",
+      "summary": "Ask for documents, convert to monthly, compare with what was claimed.",
+      "body": [
+        "Ask for recent proof: the last two or three pay stubs, an offer letter for a new job, a benefits award letter, or bank statements for self-employment.",
+        "Convert pay to a monthly amount the same way for everyone: weekly × 52 ÷ 12, every two weeks (biweekly) × 26 ÷ 12, twice a month (semimonthly) × 2. Evenlease does the math and shows the ratio to rent.",
+        "Use gross pay (before taxes) if your criterion says gross. Note one-off bonuses separately.",
+        "Check that the employer exists and the numbers make sense: names and dates match, the year-to-date total grows from stub to stub, and the employer's phone number is one you found yourself.",
+        "If documents and the application disagree, Evenlease shows a Mismatch. Ask the applicant — there may be a simple reason, such as a raise."
+      ],
+      "sources": [
+        { "label": "IRS — Pay frequency (Publication 15)", "url": "https://www.irs.gov/publications/p15" }
+      ]
+    },
+    "screening-reports": {
+      "title": "Screening reports explained (credit, eviction, criminal)",
+      "summary": "What the report contains and how to use it.",
+      "body": [
+        "Evenlease doesn't sell or pull reports. The applicant buys one from a screening company (for example MySmartMove by TransUnion) and shares it with you, or you order it with their written consent.",
+        "A tenant screening company is a consumer reporting agency under the Fair Credit Reporting Act. That is why some decisions based on a report require an adverse action notice.",
+        "Credit: look at payment history and amounts owed to past landlords, not just the score. Medical debt and student loans tell you little about rent.",
+        "Evictions: a filing is not a judgment. Cases can be dismissed or settled. Evenlease treats a settled or dismissed case as Needs review, not Not met. Some places limit how far back you may look.",
+        "Criminal history: Evenlease keeps it for a second step, after a conditional offer, and never rejects anyone automatically. See \"Criminal history laws by city\".",
+        "Store the report's company name, address and phone — you'll need them for any adverse action notice."
+      ],
+      "sources": [
+        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" },
+        { "label": "CFPB — Tenant background checks", "url": "https://www.consumerfinance.gov/consumer-tools/credit-reports-and-scores/tenant-background-checks/" }
+      ]
+    },
+    "adverse-action": {
+      "title": "When you must send an adverse action notice",
+      "summary": "Deny, ask for more deposit or a co-signer because of a report → notice.",
+      "body": [
+        "Under the Fair Credit Reporting Act, if information in a consumer report played any part in a decision against the applicant, you must give them an adverse action notice.",
+        "Adverse actions include denying the application, asking for a bigger deposit or a co-signer, charging more rent, or withdrawing an offer.",
+        "The notice must include: the name, address and phone number of the company that supplied the report; a statement that the company didn't make the decision and can't explain why it was made; the applicant's right to a free copy of their report within 60 days; and their right to dispute anything inaccurate. If a credit score was used, include the score, its range, the key factors and the date.",
+        "Evenlease detects when a notice is needed from the reasons you give, fills in the company details from the report, and keeps a record of when and how it was sent.",
+        "A denial that had nothing to do with a report (for example, a past landlord's reference you checked yourself) does not need this notice, but a plain denial letter is still good practice."
+      ],
+      "sources": [
+        { "label": "FTC — Using consumer reports: what landlords need to know", "url": "https://www.ftc.gov/business-guidance/resources/using-consumer-reports-what-landlords-need-know" },
+        { "label": "15 U.S.C. § 1681m — requirements on users of consumer reports", "url": "https://www.law.cornell.edu/uscode/text/15/1681m" }
+      ]
+    },
+    "first-come-seattle": {
+      "title": "First-come rules (Seattle)",
+      "summary": "Review in the order received; offer to the first who qualifies.",
+      "body": [
+        "Seattle's \"first-in-time\" rule asks landlords to publish their criteria, note the date and time each complete application arrives, review them in that order, and offer the unit to the first applicant who meets the criteria.",
+        "Evenlease's First-come mode follows that pattern: a timestamped queue, one applicant at a time, a 72-hour window for missing information and a 48-hour window to accept an offer, with reminders.",
+        "There are exceptions, such as setting aside units for people with low incomes or special needs. Check the current rule and its exceptions before you rely on it.",
+        "Outside Seattle, First-come mode is optional. Reviewing in order can still be a simple, consistent way to decide when several people qualify.",
+        "Keep the queue and your notes. If an applicant asks why someone else got the unit, the order and the reasons are your answer."
+      ],
+      "sources": [
+        { "label": "City of Seattle — Renting in Seattle", "url": "https://www.seattle.gov/rentinginseattle" }
+      ]
+    },
+    "criminal-history": {
+      "title": "Criminal history laws by city",
+      "summary": "Many places limit it. Evenlease only allows an individual review after an offer.",
+      "body": [
+        "HUD has warned that blanket bans on people with criminal records can violate the Fair Housing Act, because they shut out some groups more than others. Arrests that didn't lead to a conviction should not be used.",
+        "A growing list of places restrict criminal history in rental screening further — for example Seattle, Portland, Oakland, Berkeley, Cook County (Illinois), Washington, D.C., and New Jersey. Some ban it almost entirely; others allow it only after a conditional offer, for certain offenses and look-back periods, with a chance for the applicant to explain.",
+        "Evenlease keeps criminal history to a second step: it opens only after a conditional offer and is always an individual review — what happened, how long ago, what the person has done since, and whether it relates to the safety of other residents or the property. It never rejects automatically.",
+        "If you withdraw an offer based on a screening report, you also need an adverse action notice."
+      ],
+      "sources": [
+        { "label": "HUD — Guidance on criminal records and the Fair Housing Act (2016)", "url": "https://www.hud.gov/sites/documents/HUD_OGCGUIDAPPFHASTANDCR.PDF" },
+        { "label": "City of Seattle — Renting in Seattle", "url": "https://www.seattle.gov/rentinginseattle" }
+      ]
+    },
+    "disposing-data": {
+      "title": "Getting rid of applicant data",
+      "summary": "Delete screening information once you no longer need it.",
+      "body": [
+        "The FTC's Disposal Rule requires anyone who uses consumer reports to take reasonable steps to dispose of that information securely — shred paper, erase files so they can't be recovered.",
+        "Applications, pay stubs, ID photos and reference notes are sensitive too. Keep them only as long as you have a reason, such as answering a complaint. Some states set how long records must be kept; check yours.",
+        "Evenlease reminds you after a rental closes (60 days by default) and deletes, in one step, the application, files and letters of everyone you didn't select. The decision file keeps an anonymous line so your record of the process stays complete.",
+        "Backups you saved to Google Drive or iCloud Drive are separate files: delete old ones too.",
+        "Shred any paper applications you scanned into the app."
+      ],
+      "sources": [
+        { "label": "FTC — Disposing of consumer report information", "url": "https://www.ftc.gov/business-guidance/resources/disposing-consumer-report-information-rule-tells-how" },
+        { "label": "16 CFR Part 682 — Disposal of consumer report information", "url": "https://www.ecfr.gov/current/title-16/chapter-I/subchapter-F/part-682" }
+      ]
+    }
+  }
 }
