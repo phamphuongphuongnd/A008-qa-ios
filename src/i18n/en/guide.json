@@ -14,6 +14,9 @@
     "notFound": "This article doesn't exist.",
     "opensBrowser": "Opens in your browser"
   },
+  "link": {
+    "hint": "Opens the Guide article"
+  },
   "articles": {
     "how-it-works": {
       "title": "How Evenlease works",

@@ -9,6 +9,8 @@ import { Columns2, EyeOff } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
 import { router } from '@/services/router';
@@ -38,6 +40,7 @@ export default function CompareScreen() {
   return (
     <Screen header={<AppBar title={t('decision:s17.title')} subtitle={data.address.short} />}>
       <Hint>{t('decision:s17.notRanking')}</Hint>
+      <GuideLink slug={GUIDE.firstCome} />
       {view.state !== 'empty' ? (
         <ListGroup>
           <SwitchRow title={t('decision:s17.hideClosed')} value={hide} onChange={setHide} />

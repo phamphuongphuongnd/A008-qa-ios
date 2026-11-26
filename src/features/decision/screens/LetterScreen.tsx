@@ -12,6 +12,8 @@ import { View } from 'react-native';
 import type { LetterKind } from '@/engine';
 import type { SentMethod } from '@/db/schema';
 import { withLockSuspended } from '@/features/settings/lockController';
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
 import { router } from '@/services/router';
@@ -190,6 +192,7 @@ function Letter({ ctx, kindParam }: { ctx: LetterContext; kindParam?: string }) 
         <TextButton label={t('decision:s16.editText')} onPress={() => setEditing(body)} />
         <TextButton label={t('decision:s16.preview')} onPress={preview} />
       </View>
+      {paper.fcra ? <GuideLink slug={GUIDE.adverseAction} /> : null}
 
       <View style={{ gap: 8 }}>
         <SectionHeader title={t('decision:s16.howSent')} />

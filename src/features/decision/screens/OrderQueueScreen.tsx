@@ -9,6 +9,8 @@ import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { db } from '@/db';
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
 import { router } from '@/services/router';
@@ -97,6 +99,7 @@ export default function OrderQueueScreen() {
   return (
     <Screen header={header}>
       <Hint>{t('decision:s18.intro')}</Hint>
+      <GuideLink slug={GUIDE.firstCome} />
       {data.rows.length === 0 ? <EmptyState icon={Columns2} title={t('decision:s18.empty')} /> : null}
       {data.rows.map((row) => {
         const v = queueRowView(row, data.currentId);

@@ -7,6 +7,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { Info, Mail, Search } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { AppBar, Banner, Button, Checkbox, ChoicePills, FieldShell, MoneyField, Screen, Switch, TextField, Txt, showSnackbar, useDiscardGuard } from '@/ui';
 
@@ -57,6 +59,7 @@ export function LandlordSheetView({ sheet }: { sheet: LandlordSheet }) {
           {t('verify:landlord.bothTip')}
         </Banner>
       ) : null}
+      <GuideLink slug={GUIDE.fakeReferences} />
 
       <StepCard n={1} title={t('verify:landlord.step1')}>
         <Txt variant="callout" color="inkMuted">{t('verify:landlord.step1Body')}</Txt>

@@ -6,6 +6,8 @@
 import { Eraser, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
 
+import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { refreshReminders } from '@/notifications';
 import { font } from '@/theme';
@@ -41,6 +43,7 @@ export default function DataCleanupScreen() {
   return (
     <Screen header={<AppBar title={t('system:s24.title')} />}>
       <Txt color="inkMuted">{t('system:s24.explain')}</Txt>
+      <GuideLink slug={GUIDE.disposingData} />
       {rows.length === 0 ? (
         <EmptyState icon={Eraser} title={t('system:s24.emptyTitle')} body={t('system:s24.empty')} />
       ) : (

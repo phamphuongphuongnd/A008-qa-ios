@@ -8,6 +8,7 @@ import { StyleSheet, View } from 'react-native';
 
 import type { CriteriaWarningCode, DocType, PetPolicy } from '@/engine';
 import { GUIDE } from '@/features/guide/articles';
+import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
 import { font, useTheme } from '@/theme';
@@ -83,9 +84,14 @@ export function CriterionCard({
             );
           case 'voucherShare':
             return (
-              <View key={i} style={styles.param}>
-                <Txt style={[font(400, 14, 20), styles.paramLabel, { color: colors.inkMuted }]}>{p.label}</Txt>
-                <Switch value={p.value} onChange={(on) => dispatch({ type: 'setVoucherShare', id: card.id, on })} accessibilityLabel={p.label} />
+              <View key={i}>
+                <View style={styles.param}>
+                  <Txt style={[font(400, 14, 20), styles.paramLabel, { color: colors.inkMuted }]}>{p.label}</Txt>
+                  <Switch value={p.value} onChange={(on) => dispatch({ type: 'setVoucherShare', id: card.id, on })} accessibilityLabel={p.label} />
+                </View>
+                <View style={styles.link}>
+                  <GuideLink slug={GUIDE.vouchers} />
+                </View>
               </View>
             );
           case 'petPolicy':
