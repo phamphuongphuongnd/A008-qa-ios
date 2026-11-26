@@ -4,8 +4,44 @@
     "notMet": "Not met",
     "missing": "Missing",
     "needsReview": "Needs review",
+    "notReviewed": "Not reviewed yet",
     "claimed": "Claimed",
     "verified": "Verified",
     "mismatch": "Mismatch"
+  },
+  "queue": {
+    "position": "Number {{n}} in order received"
+  },
+  "field": {
+    "required": "(required)"
+  },
+  "money": {
+    "tooLarge": "That amount is too large."
+  },
+  "date": {
+    "placeholder": "Select a date",
+    "notSet": "not set",
+    "hint": "Opens a calendar."
+  },
+  "stepper": {
+    "increase": "Increase",
+    "decrease": "Decrease"
+  },
+  "progress": {
+    "step": "Step {{n}} of {{total}}",
+    "page": "Page {{n}} of {{total}}"
+  },
+  "thumb": {
+    "add": "Add"
+  },
+  "sheet": {
+    "dragHint": "Drag down to close."
+  },
+  "signature": {
+    "label": "Signature",
+    "empty": "not signed",
+    "signed": "signed",
+    "hint": "Sign with your finger.",
+    "clear": "Clear"
   }
 }
