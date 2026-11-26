@@ -35,10 +35,10 @@
 - [ ] F-01 Onboarding (S-01)
 - [x] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
 - [x] F-03 Criteria builder + published criteria PDF (S-04, S-05)
-- [ ] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
-- [ ] F-05 Applicant mode (S-08a, S-08b)
-- [ ] F-06 Blank application PDF
-- [ ] F-07 Documents + income check (S-10)
+- [x] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
+- [x] F-05 Applicant mode (S-08a, S-08b)
+- [x] F-06 Blank application PDF
+- [x] F-07 Documents + income check (S-10)
 - [x] F-08 Landlord + employer reference (S-11, S-12)
 - [x] F-09 Screening report ngoài (S-13)
 - [x] F-10 Background review bước 2 (S-14)

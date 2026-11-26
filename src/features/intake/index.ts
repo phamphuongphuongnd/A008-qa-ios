@@ -17,6 +17,7 @@ export * from './applicantMode/store';
 export * from './applicantMode/auth';
 export * from './applicantMode/actions';
 export * from './applicantMode/hooks';
+export { settingsPersistence } from './applicantMode/persistence';
 export { expoLocalAuthAdapter } from './applicantMode/authNative';
 export * from './documents/picker';
 export * from './documents/service';

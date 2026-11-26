@@ -4,15 +4,16 @@
  */
 import { useState, type ReactNode } from 'react';
 
+import { verifyAppPin } from '@/features/settings';
 import { t } from '@/i18n';
 import { ConfirmDialog, haptics, ModeBar, TextField } from '@/ui';
 
-import { unlockWithPin, verifyAppPinPending, type PinVerifier } from '../applicantMode/auth';
+import { unlockWithPin, type PinVerifier } from '../applicantMode/auth';
 import { expoLocalAuthAdapter } from '../applicantMode/authNative';
 import { useLandlordExit } from '../applicantMode/hooks';
 import { useApplicantMode } from '../applicantMode/store';
 
-export function useLandlordUnlock(verifyPin: PinVerifier = verifyAppPinPending): { request: () => void; dialogs: ReactNode } {
+export function useLandlordUnlock(verifyPin: PinVerifier = verifyAppPin): { request: () => void; dialogs: ReactNode } {
   const [mode] = useApplicantMode();
   const exit = useLandlordExit(expoLocalAuthAdapter);
   const [pinOpen, setPinOpen] = useState(false);
