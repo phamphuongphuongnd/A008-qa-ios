@@ -35,8 +35,8 @@
     },
     "meterUnit": {
       "electric": "kWh",
-      "gas": "",
-      "water": "m³"
+      "gas": "ccf",
+      "water": "gal"
     },
     "keys": "Keys handed over",
     "alarms": "Smoke & CO alarms tested",
