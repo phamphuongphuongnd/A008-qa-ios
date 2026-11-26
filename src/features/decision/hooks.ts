@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { db, useLive, type LiveTable } from '@/db';
 
 import { loadDecisionContext } from './decision';
+import { decisionFileData } from './decisionFile';
 import { loadLetterContext } from './letters';
 import { loadApplicantReview, loadCompare, loadQueue, loadRentalReview } from './review';
 import { localIso } from './time';
@@ -82,4 +83,11 @@ export function useRentalReview(rentalId: number | null) {
   'use no memo';
   const now = useNow();
   return useLive(() => (rentalId == null ? null : loadRentalReview(db, rentalId, now)), [rentalId, now], REVIEW_TABLES);
+}
+
+/** S-19 on-screen Decision file (no thumbnails; the PDF reads those on Export). */
+export function useDecisionFileData(rentalId: number | null) {
+  'use no memo';
+  const now = useNow();
+  return useLive(() => (rentalId == null ? null : decisionFileData(db, rentalId, new Date(now))), [rentalId, now], REVIEW_TABLES);
 }
