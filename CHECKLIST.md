@@ -1,6 +1,6 @@
 # A008-evenlease — Checklist
 
-> Làm từ trên xuống, xong mục nào (đã kiểm) tick `[x]` + commit rồi mới sang mục sau. Mỗi việc **1 dòng**.
+> Làm từ trên xuống, xong mục nào (**code xong + đã kiểm**; màn hình = đã thử trên máy, jest thôi chưa đủ) tick `[x]` + commit rồi mới sang mục sau. Mỗi việc **1 dòng**.
 > Việc mới phát sinh → thêm dòng vào đúng bước, không làm ngay. Quy trình: `playbook/PLAYBOOK.md` · phase: `PLAN.md`.
 
 ## Bước 0 — Khảo sát
@@ -22,35 +22,35 @@
 - [x] Phương duyệt mockup (2026-11-25)
 
 ## Bước 3 — Làm app theo mockup (phiên điều phối chạy `PLAN.md`)
-- [x] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev` (mở trên A13 dời sang dòng ghép cuối)
+- [ ] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev` — code + jest xong; **chưa mở trên A13**
 - [x] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
 - [x] 1C DB: schema SQLite, repository, `useLive`, map ↔ engine, dữ liệu mẫu §8, `src/files`
-- [x] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/` (build + xem trên A13 dời sang dòng ghép cuối)
+- [ ] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/` — code + jest xong; **chưa build / xem trên A13**
 - [x] 2A Logic căn + tiêu chí (F-02, F-03) + PDF tiêu chí công bố
 - [x] 2B Logic hồ sơ, Applicant mode, giấy tờ (F-04 – F-07) + PDF đơn trống
 - [x] 2C Logic xác minh: tham chiếu, báo cáo ngoài, Background review (F-08 – F-10)
 - [x] 2D Logic chấm, Compare, hàng đợi + đồng hồ, quyết định, thư + PDF, Decision file (F-11 – F-15)
 - [x] 2E Logic onboarding, khoá, sao lưu mã hoá, dọn / xoá dữ liệu, thông báo, giao nhà + PDF (F-01, F-16 – F-19)
-- Màn theo mockup v2 (sau 1D, cùng phiên 2A–2E):
-- [x] F-01 Onboarding (S-01)
-- [x] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
-- [x] F-03 Criteria builder + published criteria PDF (S-04, S-05)
-- [x] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
-- [x] F-05 Applicant mode (S-08a, S-08b)
-- [x] F-06 Blank application PDF
-- [x] F-07 Documents + income check (S-10)
-- [x] F-08 Landlord + employer reference (S-11, S-12)
-- [x] F-09 Screening report ngoài (S-13)
-- [x] F-10 Background review bước 2 (S-14)
-- [x] F-11 Applicant summary (S-09)
-- [x] F-12 Compare + Order queue + thông báo đồng hồ (S-17, S-18)
-- [x] F-13 Decision (S-15)
-- [x] F-14 Letters + PDF (S-16)
-- [x] F-15 Decision file PDF (S-19)
-- [x] F-16 Move-in checklist (S-20)
-- [x] F-17 Data cleanup (S-24)
-- [x] F-18 Backup & restore mã hoá + tự động + nhắc (S-22)
-- [x] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27)
+- Màn theo mockup v2 — code xong + jest xanh (dev bdf9385), **chưa thử máy**, đang sửa khoảng trống G-01…G-10 → chỉ tick khi đã thử trên A13 và khớp mockup:
+- [ ] F-01 Onboarding (S-01)
+- [ ] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
+- [ ] F-03 Criteria builder + published criteria PDF (S-04, S-05)
+- [ ] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
+- [ ] F-05 Applicant mode (S-08a, S-08b)
+- [ ] F-06 Blank application PDF
+- [ ] F-07 Documents + income check (S-10)
+- [ ] F-08 Landlord + employer reference (S-11, S-12)
+- [ ] F-09 Screening report ngoài (S-13)
+- [ ] F-10 Background review bước 2 (S-14)
+- [ ] F-11 Applicant summary (S-09)
+- [ ] F-12 Compare + Order queue + thông báo đồng hồ (S-17, S-18)
+- [ ] F-13 Decision (S-15)
+- [ ] F-14 Letters + PDF (S-16)
+- [ ] F-15 Decision file PDF (S-19)
+- [ ] F-16 Move-in checklist (S-20)
+- [ ] F-17 Data cleanup (S-24)
+- [ ] F-18 Backup & restore mã hoá + tự động + nhắc (S-22)
+- [ ] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27)
 - [ ] Thử máy dồn từ Phase 2: dev client mới (icon/splash), SQLite migration thật, files native, PDF + expo-print, formSheet/sheet kéo, ô ký trong ScrollView, 320 dp/200 %, S-01 gate + S-27 về S-01, App lock + withLockSuspended, Applicant mode qua khởi động lại, đồng hồ 72/48 h + thông báo → S-18, sao lưu nền + đo PBKDF2, iOS bookmark thư mục
 - [ ] Ghép nhánh, toàn bộ test xanh + cài chạy trên Galaxy A13 → gộp `dev` → `main`
 
@@ -65,7 +65,7 @@
 ## Bước 6 — Kiểm cuối & lên store
 - [ ] Giả lập người dùng thật trên máy, xem giao diện từng màn
 - [ ] Store listing + privacy + Data safety / App Privacy + ảnh store
-- [ ] **Dừng: báo Phương** — chốt Bundle ID, Phương tạo khoá ký, Apple Team ID → tag `v1.0.0` → AAB + iOS
+- [ ] **Dừng: báo Phương** — chốt Bundle ID, Phương tạo khoá ký, Apple Team ID → tag `1.0.0` → AAB + iOS
 - [ ] checklists release-android + release-ios
 - [ ] Nộp Google Play (closed test) + App Store (TestFlight)
 - [ ] Retro 3 dòng APP.md + 1 dòng METRICS.md
