@@ -1,6 +1,8 @@
 /** expo-local-authentication behind `LocalAuthAdapter` (mocked in Jest). */
 import * as LocalAuthentication from 'expo-local-authentication';
 
+import { withLockSuspended } from '@/features/settings/lockController';
+
 import type { LocalAuthAdapter, SecurityLevel } from './auth';
 
 const LEVELS: Record<number, SecurityLevel> = {
@@ -15,7 +17,8 @@ export const expoLocalAuthAdapter: LocalAuthAdapter = {
     return LEVELS[await LocalAuthentication.getEnrolledLevelAsync()] ?? 'none';
   },
   async authenticate({ promptMessage, cancelLabel }) {
-    const r = await LocalAuthentication.authenticateAsync({ promptMessage, cancelLabel, disableDeviceFallback: false });
+    // The system biometric / passcode prompt is not "leaving the app" for App lock.
+    const r = await withLockSuspended(() => LocalAuthentication.authenticateAsync({ promptMessage, cancelLabel, disableDeviceFallback: false }));
     return r.success ? { success: true } : { success: false, error: r.error };
   },
 };

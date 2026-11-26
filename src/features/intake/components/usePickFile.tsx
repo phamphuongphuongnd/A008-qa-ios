@@ -4,6 +4,7 @@ import { Linking } from 'react-native';
 
 import { db } from '@/db';
 import { files } from '@/files';
+import { withLockSuspended } from '@/features/settings/lockController';
 import { t } from '@/i18n';
 import { Banner, haptics, showSnackbar } from '@/ui';
 
@@ -21,7 +22,8 @@ export function usePickFile(): { open: (target: AddTarget) => void; ui: ReactNod
 
   const onPick = async (source: PickSource) => {
     if (!target) return;
-    const r = await pick(expoAttachmentPicker, source);
+    // Camera / photo picker / file picker are our own system sheets: App lock must not count them as leaving.
+    const r = await withLockSuspended(() => pick(expoAttachmentPicker, source));
     if (r.status === 'denied') {
       setCameraDenied(true);
       setSources((s) => sourcesAfter(r, s));
@@ -48,7 +50,7 @@ export function usePickFile(): { open: (target: AddTarget) => void; ui: ReactNod
     open: setTarget,
     ui: <AddSourceSheet visible={target != null} title={target?.title ?? ''} sources={sources} onPick={onPick} onClose={() => setTarget(null)} />,
     cameraBanner: cameraDenied ? (
-      <Banner tone="info" actions={[{ label: t('intake:s10.openSettings'), onPress: () => void Linking.openSettings() }]}>
+      <Banner tone="info" actions={[{ label: t('intake:s10.openSettings'), onPress: () => void withLockSuspended(() => Linking.openSettings()) }]}>
         {t('intake:s10.cameraDenied')}
       </Banner>
     ) : null,

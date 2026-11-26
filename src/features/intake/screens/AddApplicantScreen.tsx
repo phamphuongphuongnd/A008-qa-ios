@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { db } from '@/db';
+import { withLockSuspended } from '@/features/settings/lockController';
 import { t } from '@/i18n';
 import { parseId, routes } from '@/routes';
 import { Banner, BigOption, EmptyState, haptics, showSnackbar, Txt } from '@/ui';
@@ -59,7 +60,7 @@ export default function AddApplicantScreen() {
     if (busy) return;
     setBusy('print');
     try {
-      await shareBlankApplication(db, rentalId);
+      await withLockSuspended(() => shareBlankApplication(db, rentalId));
     } catch {
       showSnackbar({ message: t('intake:s07.pdfFailed') });
     } finally {
