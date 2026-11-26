@@ -1,8 +1,16 @@
 {
-  "s11": { "title": "Landlord reference" },
-  "s12": { "title": "Employer reference" },
-  "s13": { "title": "Screening report" },
-  "s14": { "title": "Background review" },
+  "s11": {
+    "title": "Landlord reference"
+  },
+  "s12": {
+    "title": "Employer reference"
+  },
+  "s13": {
+    "title": "Screening report"
+  },
+  "s14": {
+    "title": "Background review"
+  },
   "errors": {
     "required": "Required",
     "money_invalid": "Enter an amount like 1,250.00",
@@ -19,16 +27,32 @@
     "saveFailed": "Couldn't save. Try again."
   },
   "attempts": {
-    "method": { "call": "Call", "email": "Email", "text": "Text" },
+    "method": {
+      "call": "Call",
+      "email": "Email",
+      "text": "Text"
+    },
     "result": {
       "reached": "Reached",
       "no_answer": "No answer",
       "no_reply": "No reply yet",
       "left_message": "Left message",
-      "wrong_number": "Wrong number"
+      "wrong_number": "Wrong number",
+      "label": "Result"
     },
     "unreachableHint": "{{count}} tries, {{methods}} ways",
-    "unreachableBody": "You can mark this reference as unreachable. It stays Missing with the reason \"Unreachable after 3 attempts\"."
+    "unreachableBody": "You can mark this reference as unreachable. It stays Missing with the reason \"Unreachable after 3 attempts\".",
+    "title": "Attempts",
+    "log": "Log attempt",
+    "delete": "Delete attempt",
+    "deleteTitle": "Delete this attempt?",
+    "when": "Day",
+    "whenHelp": "Today uses the current time.",
+    "how": "How",
+    "markUnreachable": "Mark as unreachable",
+    "undoUnreachable": "Not unreachable anymore",
+    "markedTitle": "Marked as unreachable",
+    "markedBody": "This reference stays Missing with the reason \"Unreachable after 3 attempts\". Log a new attempt if you reach them."
   },
   "redFlags": {
     "dates_mismatch": "Dates differ by more than 31 days",
@@ -38,12 +62,72 @@
     "gap_over_two_months": "Gap of more than 2 months between residences"
   },
   "landlord": {
-    "q2": { "stillThere": "Still there" },
+    "q2": "2. From when to when?",
     "confirmSource": {
       "county_records": "County records",
       "management_website": "Management company website",
       "lease_shown": "Lease shown by applicant",
       "other": "Other"
+    },
+    "bothTip": "Call both the current and the previous landlord. A current landlord may give a good reference just to see them go.",
+    "step1": "Find the real owner",
+    "step1Body": "Don't rely only on the number the applicant gave. Look up the owner in county property records or the management company's website.",
+    "searchCounty": "Search county records",
+    "howConfirmed": "How you confirmed",
+    "ownerConfirmed": "I confirmed this person owns or manages the property",
+    "contactName": "Name of the owner or manager you reached",
+    "contactPhone": "Phone you found",
+    "redFlags": "Red flags",
+    "step2": "Call script",
+    "q1": "1. Did {{name}} rent from you at {{address}}?",
+    "from": "From",
+    "to": "To",
+    "q2Still": "Still there",
+    "q3": "3. What was the monthly rent?",
+    "q4": "4. Did they pay on time and in full?",
+    "q5": "5. Any lease violations (extra occupants, unauthorized pets, noise)?",
+    "q5Note": "What happened?",
+    "q6": "6. How did they leave the unit?",
+    "q7": "7. Did they give proper notice?",
+    "q8": "8. Do they owe unpaid rent or damages?",
+    "q8Amount": "Amount owed",
+    "q9": "9. Would you rent to them again?",
+    "q9Why": "Why?",
+    "email": "Email a verification request",
+    "emailHint": "Opens your mail app with the questions. Evenlease sends nothing.",
+    "noMailApp": "No mail app found on this phone.",
+    "answer3": {
+      "yes": "Yes",
+      "no": "No",
+      "wouldnt_say": "Wouldn't say"
+    },
+    "yesNo": {
+      "yes": "Yes",
+      "no": "No"
+    },
+    "owes": {
+      "yes": "Yes",
+      "no": "No",
+      "wouldnt_say": "Wouldn't say"
+    },
+    "paidOnTime": {
+      "always": "Always",
+      "mostly": "Mostly",
+      "often_late": "Often late",
+      "wouldnt_say": "Wouldn't say"
+    },
+    "leftUnit": {
+      "good": "Good",
+      "normal_wear": "Normal wear",
+      "damage": "Damage beyond normal wear",
+      "still_living": "Still living there",
+      "wouldnt_say": "Wouldn't say"
+    },
+    "properNotice": {
+      "yes": "Yes",
+      "no": "No",
+      "still_living": "Still living there",
+      "wouldnt_say": "Wouldn't say"
     }
   },
   "email": {
@@ -73,7 +157,11 @@
       "other": "Other service",
       "applicant_copy": "The applicant already has a recent report (30 days or less)"
     },
-    "company": { "name": "Name", "address": "Mailing address", "phone": "Phone (toll-free if listed)" },
+    "company": {
+      "name": "Name",
+      "address": "Mailing address",
+      "phone": "Phone (toll-free if listed)"
+    },
     "evictionOutcome": {
       "judgment": "Judgment against applicant",
       "settled": "Settled",
@@ -81,7 +169,58 @@
       "tenant_won": "Applicant won",
       "unknown": "Outcome not shown"
     },
-    "tooOld": "This report is more than 30 days old. Ask for a new one."
+    "tooOld": "This report is more than 30 days old. Ask for a new one.",
+    "explain": "Screening reports come from licensed companies. The applicant pays and enters their SSN on the company's site — you never handle it.",
+    "open": {
+      "mysmartmove": "MySmartMove",
+      "checkr": "Checkr",
+      "other": "Other service"
+    },
+    "companyTitle": "Company that supplied the report",
+    "companyHelp": "Copy these from the top of the report. Needed for an adverse action notice.",
+    "companyMissing": "Name, mailing address and phone are needed before you can create an adverse action notice.",
+    "reportDate": "Report date",
+    "results": "Results",
+    "evictions": "Eviction records",
+    "noneFound": "None found",
+    "casesListed": "Cases listed",
+    "caseN": "Case {{n}}",
+    "removeCase": "Remove case {{n}}",
+    "caseDate": "Date or year",
+    "caseDateHelp": "As shown on the report: 2021, 2021-06 or 2021-06-15.",
+    "caseOutcome": "Outcome",
+    "addCase": "Add a case",
+    "collections": "Collections owed to a landlord or property manager",
+    "none": "None",
+    "amount": "Amount",
+    "collectionsAmount": "Amount owed",
+    "creditTitle": "Credit score",
+    "noScore": "The report shows no score",
+    "score": "Score",
+    "scoreModel": "Score model",
+    "scoreRange": "Score range",
+    "scoreDate": "Date the score was created",
+    "keyFactors": "Key factors",
+    "keyFactorsHelp": "Up to 4, as listed on the report. Needed for an adverse action notice.",
+    "keyFactorN": "Key factor {{n}}",
+    "removeKeyFactor": "Remove key factor {{n}}",
+    "addKeyFactor": "Add a key factor",
+    "filesTitle": "Report file",
+    "noFiles": "Attach the report (PDF or photos) so you can show what you relied on.",
+    "filePdf": "Report PDF {{n}}",
+    "filePhoto": "Report photo {{n}}",
+    "removeFile": "Delete file {{n}}",
+    "removeFileTitle": "Delete this file?",
+    "addPdf": "Add PDF",
+    "takePhoto": "Take photo",
+    "choosePhotos": "Choose photos",
+    "cameraDenied": "Camera access is off. Turn it on in your phone's settings.",
+    "photosDenied": "Photo access is off. Turn it on in your phone's settings.",
+    "attachFailed": "Couldn't attach the file. Try again.",
+    "saved": "Report saved",
+    "remove": "Remove report",
+    "removeTitle": "Remove this report?",
+    "removeBody": "The results and attached files are deleted from this phone. This can't be undone."
   },
   "background": {
     "years_one": "{{count}} year",
@@ -101,6 +240,66 @@
       "no_convictions_in_lookback": "There are no convictions in the lookback period to base a withdrawal on.",
       "assessment_required": "Answer the individual assessment questions first.",
       "not_editable": "This review can't be changed now."
-    }
+    },
+    "subtitleAfterOffer": "{{name}} · after conditional offer",
+    "lockedTitle": "Unlocks after you make a conditional offer.",
+    "lockedBody": "Criminal history is reviewed only as a second step, and only for convictions.",
+    "offTitle": "Criminal history isn't in this rental's criteria.",
+    "offBody": "Evenlease reviews convictions only when your published criteria include it.",
+    "lawsLink": "Criminal history laws by city",
+    "lawBanner": "Some cities and states ban or delay criminal history checks (e.g. NYC, Maryland, Oakland, Berkeley, Seattle, Portland, Cook County). Check your local law.",
+    "readOnly": "This review is part of the record and can't be changed now.",
+    "convictionsIn_one": "Convictions in the past {{count}} year",
+    "convictionsIn_other": "Convictions in the past {{count}} years",
+    "noneA11y_one": "No convictions in the past {{count}} year",
+    "noneA11y_other": "No convictions in the past {{count}} years",
+    "arrests": "Arrests without a conviction must not be considered.",
+    "none": "None",
+    "add": "Add convictions",
+    "convictionN": "Conviction {{n}}",
+    "removeConviction": "Remove conviction {{n}}",
+    "type": "Type",
+    "convictedOn": "Date of conviction",
+    "sentenceEndedOn": "Sentence completed (if known)",
+    "line": "Convicted {{convicted}}",
+    "lineWithSentence": "Convicted {{convicted}} · sentence completed {{ended}}",
+    "outside_one": "Older than {{count}} year — not considered",
+    "outside_other": "Older than {{count}} years — not considered",
+    "addConviction": "Add a conviction",
+    "assessmentTitle": "Your individual assessment",
+    "q1": "How serious was it, and how does it relate to the safety of residents or property?",
+    "q2": "How long ago was it?",
+    "calculated": "(calculated)",
+    "q3": "Any evidence of rehabilitation or good tenant history since?",
+    "q4": "Anything else the applicant told you?",
+    "notesPlaceholder": "Type your notes",
+    "neverAuto": "A conviction never rules anyone out automatically. Decide after weighing these answers.",
+    "noneInLookback": "No conviction falls inside the lookback period, so none is considered.",
+    "continue": "Continue with the offer",
+    "withdraw": "Withdraw the offer",
+    "continued": "Background review saved — the offer stands."
+  },
+  "common": {
+    "step": "Step {{n}}: {{title}}",
+    "monthPlaceholder": "MM/YYYY",
+    "noBrowser": "Couldn't open the browser.",
+    "notes": "Notes"
+  },
+  "employer": {
+    "step1": "Find the employer's number",
+    "step1Body": "Find the employer's main number yourself (company website or directory) and ask for HR or payroll.",
+    "contactName": "Who you spoke with (HR or payroll)",
+    "contactPhone": "Main number you found",
+    "step2": "Questions",
+    "q1": "Is {{name}} employed with you?",
+    "q2": "Since when?",
+    "q3": "Job title?",
+    "employed": {
+      "yes": "Yes",
+      "no": "No",
+      "wont_confirm": "Won't confirm"
+    },
+    "note": "Many employers only confirm dates and title. Verify income with pay stubs instead.",
+    "unnamed": "Employer"
   }
 }

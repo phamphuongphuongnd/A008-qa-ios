@@ -1,6 +1,306 @@
-import { ScreenPlaceholder } from '@/navigation/ScreenPlaceholder';
+/**
+ * S-13 Screening report (external) — product.md §5 S-13, mockup v2 "Enter report results". The applicant buys the report
+ * from a licensed company (SSN never touches Evenlease); the landlord enters the key results, the company details the
+ * FCRA letter needs, and attaches the PDF / photos. Criminal history is not here (S-14). Saved with "Save".
+ */
+import { useLocalSearchParams } from 'expo-router';
+import { Camera, ExternalLink, FileText, FolderOpen, Image as ImageIcon, Plus, ShieldCheck, Trash2, TriangleAlert } from 'lucide-react-native';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
-/** S-13 Screening report (external) — product.md §5 S-13. Owner: Phase 2C. Placeholder until that session builds it. */
+import { t } from '@/i18n';
+import { router } from '@/services/router';
+import { useTheme } from '@/theme';
+import {
+  AppBar,
+  Banner,
+  Button,
+  Card,
+  Checkbox,
+  ChoicePills,
+  ConfirmDialog,
+  DateField,
+  FieldShell,
+  IconButton,
+  ListGroup,
+  ListRow,
+  MoneyField,
+  Screen,
+  SectionHeader,
+  Segmented,
+  TextButton,
+  TextField,
+  Txt,
+  haptics,
+  showSnackbar,
+  useDiscardGuard,
+} from '@/ui';
+
+import { localDate, moneyInputText, parseMoneyInput } from '../common';
+import { fieldError, Hint, NotFoundScreen } from '../components/VerifyParts';
+import { useSheetForm } from '../components/useSheetForm';
+import { useReportSheet, verifyActions } from '../hooks';
+import type { PickSource } from '../links';
+import { EVICTION_OUTCOMES, MAX_KEY_FACTORS, SERVICE_URLS, isReportTooOld, missingCompanyFields, type ReportForm, type Tri } from '../report';
+import type { ReportSheet } from '../service';
+
 export default function ScreeningReportScreen() {
-  return <ScreenPlaceholder id="S-13" />;
+  const p = useLocalSearchParams<{ applicantId: string }>();
+  const sheet = useReportSheet(Number(p.applicantId));
+  if (!sheet) return <NotFoundScreen title={t('verify:s13.title')} />;
+  return <ReportSheetView sheet={sheet} />;
 }
+
+const cents = (text: string) => {
+  const c = parseMoneyInput(text);
+  return c === null || Number.isNaN(c) ? null : c;
+};
+
+export function ReportSheetView({ sheet, now = new Date() }: { sheet: ReportSheet; now?: Date }) {
+  const { colors } = useTheme();
+  const { applicant } = sheet;
+  const today = localDate(now);
+  const { form, errors, dirty, edit, commit } = useSheetForm<ReportForm>(sheet.form, String(applicant.id), (f) => verifyActions.saveReport(applicant.id, f));
+  const guard = useDiscardGuard(dirty);
+  const [busy, setBusy] = useState<PickSource | null>(null);
+  const [confirmRemove, setConfirmRemove] = useState(false);
+  const [fileToRemove, setFileToRemove] = useState<string | null>(null);
+  const err = (f: string) => fieldError(errors, f);
+  const missing = missingCompanyFields(form);
+
+  const save = () => {
+    if (commit()) {
+      haptics.success();
+      showSnackbar({ message: t('verify:report.saved') });
+    }
+  };
+
+  const openService = async (s: keyof typeof SERVICE_URLS) => {
+    edit({ service: s });
+    if (!(await verifyActions.openUrl(SERVICE_URLS[s]))) showSnackbar({ message: t('verify:common.noBrowser') });
+  };
+
+  const attach = async (source: PickSource) => {
+    setBusy(source);
+    try {
+      const res = await verifyActions.pick(source);
+      if (res.status === 'denied') showSnackbar({ message: t(source === 'camera' ? 'verify:report.cameraDenied' : 'verify:report.photosDenied') });
+      if (res.status === 'picked' && res.files.length) {
+        await verifyActions.attachReportFiles(applicant.id, res.files);
+        haptics.success();
+      }
+    } catch {
+      showSnackbar({ message: t('verify:report.attachFailed') });
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const setCase = (i: number, patch: Partial<ReportForm['cases'][number]>) => edit({ cases: form.cases.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
+  const tri = (v: Tri) => (v === 'not_entered' ? (null as unknown as Tri) : v);
+
+  return (
+    <Screen
+      header={
+        <AppBar
+          title={t('verify:s13.title')}
+          subtitle={applicant.fullName}
+          right={<TextButton label={t('common:actions.save')} onPress={save} />}
+        />
+      }
+    >
+      {guard}
+      <Card variant="tint">
+        <View style={styles.row}>
+          <ShieldCheck size={20} color={colors.accent} />
+          <Txt variant="callout" style={{ flex: 1 }}>{t('verify:report.explain')}</Txt>
+        </View>
+        <View style={styles.btnrow}>
+          {(['mysmartmove', 'checkr', 'other'] as const).map((s) => (
+            <Button key={s} label={t(`verify:report.open.${s}`)} icon={ExternalLink} variant="secondary" size="sm" onPress={() => openService(s)} />
+          ))}
+        </View>
+        <Checkbox
+          label={t('verify:report.service.applicant_copy')}
+          value={form.service === 'applicant_copy'}
+          onChange={(v) => edit({ service: v ? 'applicant_copy' : null })}
+        />
+      </Card>
+      {form.service === 'applicant_copy' && isReportTooOld(form.reportDate, today) ? (
+        <Banner tone="warn" icon={TriangleAlert}>
+          {t('verify:report.tooOld')}
+        </Banner>
+      ) : null}
+
+      <SectionHeader title={t('verify:report.companyTitle')} />
+      <TextField
+        label={t('verify:report.company.name')}
+        value={form.companyName}
+        help={t('verify:report.companyHelp')}
+        onChangeText={(s) => edit({ companyName: s })}
+        autoComplete="off"
+      />
+      <TextField label={t('verify:report.company.address')} value={form.companyAddress} multiline onChangeText={(s) => edit({ companyAddress: s })} autoComplete="off" />
+      <TextField
+        label={t('verify:report.company.phone')}
+        value={form.companyPhone}
+        keyboardType="phone-pad"
+        onChangeText={(s) => edit({ companyPhone: s })}
+        autoComplete="off"
+      />
+      {missing.length ? <Hint>{t('verify:report.companyMissing')}</Hint> : null}
+      <DateField label={t('verify:report.reportDate')} value={form.reportDate} maximumDate={today} error={err('reportDate')} onChange={(d) => edit({ reportDate: d })} />
+
+      <SectionHeader title={t('verify:report.results')} />
+      <FieldShell label={t('verify:report.evictions')} error={err('evictionsMode')}>
+        <Segmented
+          options={[
+            { value: 'none' as Tri, label: t('verify:report.noneFound') },
+            { value: 'listed' as Tri, label: t('verify:report.casesListed') },
+          ]}
+          value={tri(form.evictionsMode)}
+          onChange={(v) => edit({ evictionsMode: v, cases: v === 'listed' && form.cases.length === 0 ? [{ date: '', outcome: null }] : form.cases })}
+          accessibilityLabel={t('verify:report.evictions')}
+        />
+      </FieldShell>
+      {form.evictionsMode === 'listed'
+        ? form.cases.map((c, i) => (
+            <Card key={i}>
+              <View style={styles.row}>
+                <Txt variant="bodyStrong" style={{ flex: 1 }}>{t('verify:report.caseN', { n: i + 1 })}</Txt>
+                <IconButton icon={Trash2} accessibilityLabel={t('verify:report.removeCase', { n: i + 1 })} onPress={() => edit({ cases: form.cases.filter((_, j) => j !== i) })} />
+              </View>
+              <TextField
+                label={t('verify:report.caseDate')}
+                help={t('verify:report.caseDateHelp')}
+                value={c.date}
+                keyboardType="numbers-and-punctuation"
+                maxLength={10}
+                error={err(`cases.${i}.date`)}
+                onChangeText={(s) => setCase(i, { date: s })}
+              />
+              <FieldShell label={t('verify:report.caseOutcome')} error={err(`cases.${i}.outcome`)}>
+                <ChoicePills
+                  options={EVICTION_OUTCOMES.map((o) => ({ value: o, label: t(`verify:report.evictionOutcome.${o}`) }))}
+                  value={c.outcome}
+                  onChange={(o) => setCase(i, { outcome: o })}
+                  accessibilityLabel={t('verify:report.caseOutcome')}
+                />
+              </FieldShell>
+            </Card>
+          ))
+        : null}
+      {form.evictionsMode === 'listed' ? (
+        <TextButton label={t('verify:report.addCase')} onPress={() => edit({ cases: [...form.cases, { date: '', outcome: null }] })} />
+      ) : null}
+
+      <FieldShell label={t('verify:report.collections')}>
+        <Segmented
+          options={[
+            { value: 'none' as Tri, label: t('verify:report.none') },
+            { value: 'listed' as Tri, label: t('verify:report.amount') },
+          ]}
+          value={tri(form.collectionsMode)}
+          onChange={(v) => edit({ collectionsMode: v })}
+          accessibilityLabel={t('verify:report.collections')}
+        />
+      </FieldShell>
+      {form.collectionsMode === 'listed' ? (
+        <MoneyField
+          label={t('verify:report.collectionsAmount')}
+          required
+          cents={cents(form.collectionsText)}
+          error={err('collectionsText')}
+          onChangeCents={(c) => edit({ collectionsText: moneyInputText(c) })}
+        />
+      ) : null}
+
+      {sheet.c9Enabled ? (
+        <>
+          <SectionHeader title={t('verify:report.creditTitle')} />
+          <Checkbox label={t('verify:report.noScore')} value={form.noScore} onChange={(v) => edit({ noScore: v })} />
+          {!form.noScore ? (
+            <>
+              <TextField label={t('verify:report.score')} value={form.scoreText} keyboardType="number-pad" maxLength={3} error={err('scoreText')} onChangeText={(s) => edit({ scoreText: s })} />
+              <TextField label={t('verify:report.scoreModel')} value={form.scoreModel} error={err('scoreModel')} onChangeText={(s) => edit({ scoreModel: s })} />
+              <TextField label={t('verify:report.scoreRange')} value={form.scoreRange} placeholder="300–850" error={err('scoreRange')} onChangeText={(s) => edit({ scoreRange: s })} />
+              <DateField label={t('verify:report.scoreDate')} value={form.scoreDate} maximumDate={today} error={err('scoreDate')} onChange={(d) => edit({ scoreDate: d })} />
+              <FieldShell label={t('verify:report.keyFactors')} help={t('verify:report.keyFactorsHelp')} error={err('keyFactors')}>
+                {form.keyFactors.map((k, i) => (
+                  <View key={i} style={styles.row}>
+                    <View style={{ flex: 1 }}>
+                      <TextField
+                        label={t('verify:report.keyFactorN', { n: i + 1 })}
+                        value={k}
+                        onChangeText={(s) => edit({ keyFactors: form.keyFactors.map((x, j) => (j === i ? s : x)) })}
+                      />
+                    </View>
+                    <IconButton icon={Trash2} accessibilityLabel={t('verify:report.removeKeyFactor', { n: i + 1 })} onPress={() => edit({ keyFactors: form.keyFactors.filter((_, j) => j !== i) })} />
+                  </View>
+                ))}
+              </FieldShell>
+              {form.keyFactors.length < MAX_KEY_FACTORS ? (
+                <TextButton label={t('verify:report.addKeyFactor')} onPress={() => edit({ keyFactors: [...form.keyFactors, ''] })} />
+              ) : null}
+            </>
+          ) : null}
+        </>
+      ) : null}
+
+      <SectionHeader title={t('verify:report.filesTitle')} />
+      {sheet.filePaths.length ? (
+        <ListGroup>
+          {sheet.filePaths.map((path, i) => (
+            <ListRow
+              key={path}
+              icon={path.endsWith('.pdf') ? FileText : ImageIcon}
+              title={t(path.endsWith('.pdf') ? 'verify:report.filePdf' : 'verify:report.filePhoto', { n: i + 1 })}
+              right={<IconButton icon={Trash2} accessibilityLabel={t('verify:report.removeFile', { n: i + 1 })} onPress={() => setFileToRemove(path)} />}
+            />
+          ))}
+        </ListGroup>
+      ) : (
+        <Hint>{t('verify:report.noFiles')}</Hint>
+      )}
+      <View style={styles.btnrow}>
+        <Button label={t('verify:report.addPdf')} icon={FolderOpen} variant="secondary" size="sm" loading={busy === 'files'} disabled={!!busy} onPress={() => attach('files')} />
+        <Button label={t('verify:report.takePhoto')} icon={Camera} variant="secondary" size="sm" loading={busy === 'camera'} disabled={!!busy} onPress={() => attach('camera')} />
+        <Button label={t('verify:report.choosePhotos')} icon={Plus} variant="secondary" size="sm" loading={busy === 'photos'} disabled={!!busy} onPress={() => attach('photos')} />
+      </View>
+
+      {sheet.report ? (
+        <TextButton label={t('verify:report.remove')} tone="danger" onPress={() => setConfirmRemove(true)} />
+      ) : null}
+
+      <ConfirmDialog
+        visible={confirmRemove}
+        title={t('verify:report.removeTitle')}
+        body={t('verify:report.removeBody')}
+        confirmLabel={t('verify:report.remove')}
+        destructive
+        onCancel={() => setConfirmRemove(false)}
+        onConfirm={() => {
+          setConfirmRemove(false);
+          verifyActions.clearReport(applicant.id);
+          router.back();
+        }}
+      />
+      <ConfirmDialog
+        visible={!!fileToRemove}
+        title={t('verify:report.removeFileTitle')}
+        confirmLabel={t('common:actions.delete')}
+        destructive
+        onCancel={() => setFileToRemove(null)}
+        onConfirm={() => {
+          if (fileToRemove) verifyActions.removeReportFile(applicant.id, fileToRemove);
+          setFileToRemove(null);
+        }}
+      />
+    </Screen>
+  );
+}
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  btnrow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+});

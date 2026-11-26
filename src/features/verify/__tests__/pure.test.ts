@@ -1,5 +1,9 @@
 import {
   attemptResultKey,
+  attemptTimeText,
+  monthInputText,
+  monthYearOfDate,
+  parseMonthInput,
   backgroundGate,
   backgroundPatch,
   backgroundState,
@@ -69,6 +73,18 @@ describe('common', () => {
     expect(attemptResultKey('email', 'no_answer')).toBe('attempts.result.no_reply');
     expect(attemptResultKey('call', 'no_answer')).toBe('attempts.result.no_answer');
     expect(attemptResultKey('call', 'left_message')).toBe('attempts.result.left_message');
+  });
+  test('attempt time, month input, month-year text', () => {
+    expect(attemptTimeText('2026-12-03T10:02:00-05:00')).toBe('Dec 3, 10:02 AM');
+    expect(attemptTimeText('2026-12-04T16:30:00-05:00')).toBe('Dec 4, 4:30 PM');
+    expect(attemptTimeText('2026-12-04T00:05:00-05:00')).toBe('Dec 4, 12:05 AM');
+    expect(parseMonthInput('3/2022')).toBe('2022-03');
+    expect(parseMonthInput(' 12 / 2023 ')).toBe('2023-12');
+    expect(parseMonthInput('')).toBeNull();
+    expect(parseMonthInput('13/2022')).toBeUndefined();
+    expect(parseMonthInput('2022-03')).toBeUndefined();
+    expect(monthInputText('2022-03')).toBe('03/2022');
+    expect(monthYearOfDate('2020-06-01')).toBe('Jun 2020');
   });
   test('localTimestamp carries the device offset', () => {
     expect(localTimestamp(new Date())).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
