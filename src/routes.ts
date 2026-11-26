@@ -1,5 +1,7 @@
 import type { Href } from 'expo-router';
 
+import type { DecisionKind } from '@/engine';
+
 /**
  * Every link between screens goes through these builders — never a hand-written path in a screen.
  * Owner: 1A / coordinator. A Phase 2 session that needs a new route or param asks the coordinator; the folders under
@@ -88,8 +90,9 @@ export const routes = {
   // ── 2D: review + decision ─────────────────────────────────────────────
   /** S-09 Applicant detail. */
   applicant: (applicantId: Id) => `/review/applicant/${seg(applicantId)}` as Href,
-  /** S-15 Decision (sheet). */
-  decision: (applicantId: Id) => `/review/applicant/${seg(applicantId)}/decision` as Href,
+  /** S-15 Decision (sheet), optionally preselecting the kind (S-14 "Withdraw the offer" → withdraw_offer). */
+  decision: (applicantId: Id, opts?: { kind?: DecisionKind }) =>
+    withQuery(`/review/applicant/${seg(applicantId)}/decision`, { kind: opts?.kind }),
   /** S-16 Letter — for a decision (latest one when omitted), optionally preselecting the kind. */
   letter: (applicantId: Id, opts?: { decisionId?: Id; kind?: LetterKind }) =>
     withQuery(`/review/applicant/${seg(applicantId)}/letter`, { decisionId: opts?.decisionId, kind: opts?.kind }),

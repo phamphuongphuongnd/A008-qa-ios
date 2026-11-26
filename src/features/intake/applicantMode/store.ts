@@ -2,8 +2,8 @@
  * The one Applicant mode session of the app (module store + React hook). Persisted so that killing and reopening the
  * app does not drop the applicant into the landlord's data: on start the layout calls `hydrateApplicantMode()`.
  *
- * Persistence: TODO(merge 2B) — needs a settings key `applicantMode` (src/db/repos/settings.ts is shared, asked the
- * coordinator). Until then the session lives in memory only (`memoryPersistence`).
+ * Persistence: settings key `applicantMode` (`settingsPersistence(db)` in ./persistence.ts, passed by app/_layout.tsx);
+ * Jest and the default before hydration use `memoryPersistence`.
  * 2E reads `isApplicantModeActive()` to hold notifications and the App lock prompt while the applicant has the phone.
  */
 import { useSyncExternalStore } from 'react';

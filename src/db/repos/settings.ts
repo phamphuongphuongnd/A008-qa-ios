@@ -1,3 +1,5 @@
+import type { ModeState } from '@/features/intake/applicantMode/machine';
+
 import { settings } from '../schema';
 import type { AppDb } from '../types';
 
@@ -28,6 +30,8 @@ export interface AppSettings {
   reminders: { backup: boolean; cleanup: boolean; timers: boolean };
   /** The notification permission was asked once (first-come on / reminder on). */
   notificationsAsked: boolean;
+  /** S-08a: the Applicant mode session that is on (survives an app restart), null when off. */
+  applicantMode: ModeState | null;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -47,6 +51,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   cleanupAfterDays: 60,
   reminders: { backup: true, cleanup: true, timers: true },
   notificationsAsked: false,
+  applicantMode: null,
 };
 
 type Key = keyof AppSettings;

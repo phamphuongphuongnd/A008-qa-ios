@@ -30,3 +30,35 @@ export async function openExternal(native: Pick<VerifyNative, 'openUrl'>, url: s
     return false;
   }
 }
+
+/** The part of React Native's AppState that `waitForReturn` needs (injected so Jest uses a fake). */
+export interface AppStateLike {
+  currentState?: string | null;
+  addEventListener(type: 'change', cb: (state: string) => void): { remove(): void };
+}
+
+/**
+ * Resolves when the landlord comes back after we opened another app (browser, mail). `Linking.openURL` resolves as
+ * soon as that app opens, so the App lock suspension is held until the return instead (no race with the background
+ * event). If the phone never leaves the app within `leaveTimeoutMs` (link refused, in-app chooser closed), resolves then.
+ */
+export function waitForReturn(appState: AppStateLike, leaveTimeoutMs = 1500): Promise<void> {
+  return new Promise((resolve) => {
+    let left = appState.currentState != null && appState.currentState !== 'active';
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      sub.remove();
+      resolve();
+    };
+    const sub = appState.addEventListener('change', (s) => {
+      if (s !== 'active') left = true;
+      else if (left) finish();
+    });
+    const timer = setTimeout(() => {
+      if (!left) finish();
+    }, leaveTimeoutMs);
+  });
+}

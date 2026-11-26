@@ -1,5 +1,9 @@
 import {
   attemptResultKey,
+  attemptTimeText,
+  monthInputText,
+  monthYearOfDate,
+  parseMonthInput,
   backgroundGate,
   backgroundPatch,
   backgroundState,
@@ -31,6 +35,7 @@ import {
   validateEmployerForm,
   validateLandlordForm,
   validateReportForm,
+  waitForReturn,
   yearsAndMonthsBetween,
   type BackgroundForm,
 } from '..';
@@ -69,6 +74,18 @@ describe('common', () => {
     expect(attemptResultKey('email', 'no_answer')).toBe('attempts.result.no_reply');
     expect(attemptResultKey('call', 'no_answer')).toBe('attempts.result.no_answer');
     expect(attemptResultKey('call', 'left_message')).toBe('attempts.result.left_message');
+  });
+  test('attempt time, month input, month-year text', () => {
+    expect(attemptTimeText('2026-12-03T10:02:00-05:00')).toBe('Dec 3, 10:02 AM');
+    expect(attemptTimeText('2026-12-04T16:30:00-05:00')).toBe('Dec 4, 4:30 PM');
+    expect(attemptTimeText('2026-12-04T00:05:00-05:00')).toBe('Dec 4, 12:05 AM');
+    expect(parseMonthInput('3/2022')).toBe('2022-03');
+    expect(parseMonthInput(' 12 / 2023 ')).toBe('2023-12');
+    expect(parseMonthInput('')).toBeNull();
+    expect(parseMonthInput('13/2022')).toBeUndefined();
+    expect(parseMonthInput('2022-03')).toBeUndefined();
+    expect(monthInputText('2022-03')).toBe('03/2022');
+    expect(monthYearOfDate('2020-06-01')).toBe('Jun 2020');
   });
   test('localTimestamp carries the device offset', () => {
     expect(localTimestamp(new Date())).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
@@ -283,5 +300,41 @@ describe('S-14 background', () => {
     expect(p).toEqual({ noConvictions: false, convictions: [{ type: 'drug', convictedOn: '2021-03-04', sentenceEndedOn: null }], assessment: { seriousness: 'x', rehabilitation: null, other: null }, reviewedOn: TODAY });
     expect(backgroundPatch({ ...toBackgroundForm(null), mode: 'none', seriousness: 'stale' }, TODAY)).toMatchObject({ noConvictions: true, convictions: [], assessment: {}, reviewedOn: TODAY });
     expect(backgroundPatch(toBackgroundForm(null), TODAY).reviewedOn).toBeNull();
+  });
+});
+
+describe('waitForReturn (App lock held while the browser / mail app is open)', () => {
+  function fakeAppState(current = 'active') {
+    let cb: ((s: string) => void) | null = null;
+    const remove = jest.fn();
+    return {
+      state: { currentState: current, addEventListener: (_: 'change', f: (s: string) => void) => ((cb = f), { remove }) },
+      emit: (s: string) => cb?.(s),
+      remove,
+    };
+  }
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => jest.useRealTimers());
+
+  test('resolves only when the app comes back to the foreground', async () => {
+    const a = fakeAppState();
+    let done = false;
+    const p = waitForReturn(a.state).then(() => (done = true));
+    a.emit('background');
+    jest.advanceTimersByTime(60_000);
+    await Promise.resolve();
+    expect(done).toBe(false);
+    a.emit('active');
+    await p;
+    expect(done).toBe(true);
+    expect(a.remove).toHaveBeenCalled();
+  });
+
+  test('never left the app → resolves after the timeout', async () => {
+    const a = fakeAppState();
+    const p = waitForReturn(a.state, 1500);
+    jest.advanceTimersByTime(1500);
+    await expect(p).resolves.toBeUndefined();
+    expect(a.remove).toHaveBeenCalled();
   });
 });

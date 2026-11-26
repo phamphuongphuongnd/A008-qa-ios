@@ -1,6 +1,6 @@
 /**
  * React side of Applicant mode.
- * - `useApplicantModeGuard()` — TODO(merge 2B): call once in app/_layout.tsx (inside the navigator). Sends the router
+ * - `useApplicantModeGuard()` — called once in app/_layout.tsx (inside the navigator). Sends the router
  *   back into the session's screen whenever the path is not allowed, and swallows the Android back button while on.
  * - `useLandlordExit()` — what the "Landlord" button and S-08b's triple tap run.
  */

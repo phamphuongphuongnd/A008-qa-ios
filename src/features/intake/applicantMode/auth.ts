@@ -42,17 +42,14 @@ export async function unlockLandlord(adapter: LocalAuthAdapter, opts: { promptMe
 /** Checks the app PIN of S-23. */
 export type PinVerifier = (pin: string) => Promise<boolean>;
 
-/**
- * TODO(merge 2B): replace with 2E's app-PIN check (settings.appPinHash, salted hash owned by S-23). Until then no PIN
- * is accepted, so a phone without a screen lock cannot enter Applicant mode (checkCanEnter → set_app_pin).
- */
-export const verifyAppPinPending: PinVerifier = async () => false;
+/** Accepts no PIN (default when no verifier is passed). The app passes 2E's `verifyAppPin` (settings.appPinHash). */
+export const rejectAllPins: PinVerifier = async () => false;
 
 export const PIN_MIN = 4;
 export const PIN_MAX = 6;
 export const isPinShape = (pin: string) => new RegExp(`^\\d{${PIN_MIN},${PIN_MAX}}$`).test(pin);
 
-export async function unlockWithPin(pin: string, verify: PinVerifier = verifyAppPinPending): Promise<'ok' | 'failed'> {
+export async function unlockWithPin(pin: string, verify: PinVerifier = rejectAllPins): Promise<'ok' | 'failed'> {
   if (!isPinShape(pin)) return 'failed';
   try {
     return (await verify(pin)) ? 'ok' : 'failed';

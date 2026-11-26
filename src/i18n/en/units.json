@@ -2,7 +2,10 @@
   "s02": {
     "title": "Rentals",
     "newRental": "New rental",
-    "filter": { "open": "Open", "closed": "Closed" },
+    "filter": {
+      "open": "Open",
+      "closed": "Closed"
+    },
     "empty": {
       "title": "No rentals yet",
       "body": "Add your first rental to set criteria and start reviewing applicants.",
@@ -20,7 +23,11 @@
       "ready": "{{count}} ready to decide",
       "decisionMade": "decision made"
     },
-    "swipe": { "close": "Close", "reopen": "Reopen", "delete": "Delete" },
+    "swipe": {
+      "close": "Close",
+      "reopen": "Reopen",
+      "delete": "Delete"
+    },
     "closedSnack": "Rental closed",
     "reopenedSnack": "Rental reopened",
     "deletedSnack": "Rental deleted",
@@ -33,7 +40,14 @@
       "cleanup_one": "{{count}} closed rental still holds applicant data",
       "cleanup_other": "{{count}} closed rentals still hold applicant data",
       "cleanupAction": "Review"
-    }
+    },
+    "emptyOpen": {
+      "title": "No open rentals",
+      "body": "Add a rental, or reopen one from Closed."
+    },
+    "addA11y": "New rental",
+    "filterA11y": "Show rentals",
+    "swipeHint": "Swipe left for more actions"
   },
   "status": {
     "open": "Open",
@@ -86,7 +100,8 @@
       "deposit": "Security deposit",
       "fee": "Application fee",
       "feeNote": "Some states cap or ban fees",
-      "notes": "Notes"
+      "notes": "Notes",
+      "statePlaceholder": "Choose"
     },
     "reviewMode": "Review mode",
     "next": "Next: criteria",
@@ -110,7 +125,10 @@
       "toCompare_other": "You already have {{count}} applicants. Running first-come timers stop. The change is recorded in the decision file.",
       "confirm": "Change mode",
       "historyReason": "Review mode changed: {{from}} → {{to}}"
-    }
+    },
+    "pickA11y": "{{label}}: {{value}}. Double tap to change.",
+    "progress": "Step {{n}} of 3",
+    "saved": "Rental saved"
   },
   "s04": {
     "title": "Criteria",
@@ -192,7 +210,17 @@
     },
     "preview": "Preview published criteria",
     "saved": "Criteria saved",
-    "savedRecorded": "Criteria saved. The change is recorded."
+    "savedRecorded": "Criteria saved. The change is recorded.",
+    "setupStep": "Step 2 of 3",
+    "save": "Save",
+    "customCode": "Yes/No",
+    "customApplicant": "The applicant answers yes or no.",
+    "customLandlord": "You check it and mark yes or no.",
+    "customA11yRemove": "Remove {{title}}",
+    "stepperA11y": "{{label}}, {{value}}",
+    "toggleA11y": "{{code}} {{title}}",
+    "invalid": "Fix the highlighted criteria before saving.",
+    "empty": "No criteria yet."
   },
   "s05": {
     "title": "Published criteria",
@@ -202,7 +230,10 @@
     "copyText": "Copy as text",
     "copied": "Copied — paste it into your listing",
     "done": "Go to rental",
-    "pdfError": "Couldn't create the PDF. Try again."
+    "pdfError": "Couldn't create the PDF. Try again.",
+    "setupStep": "Step 3 of 3",
+    "sharedNoSheet": "PDF saved. Sharing isn't available on this device.",
+    "copyFailed": "Couldn't copy. Select the text in the preview instead."
   },
   "s06": {
     "title": "Rental hub",
@@ -243,7 +274,10 @@
       "body": "It moves to Closed. You can reopen it any time.",
       "confirm": "Close rental"
     },
-    "notFound": "This rental no longer exists."
+    "notFound": "This rental no longer exists.",
+    "menuA11y": "More actions",
+    "addApplicantA11y": "Add applicant",
+    "openApplicant": "Open {{name}}"
   },
   "published": {
     "title": "Rental criteria",
