@@ -33,8 +33,8 @@
 - [x] 2E Logic onboarding, khoá, sao lưu mã hoá, dọn / xoá dữ liệu, thông báo, giao nhà + PDF (F-01, F-16 – F-19)
 - Màn theo mockup v2 (sau 1D, cùng phiên 2A–2E):
 - [ ] F-01 Onboarding (S-01)
-- [ ] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
-- [ ] F-03 Criteria builder + published criteria PDF (S-04, S-05)
+- [x] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
+- [x] F-03 Criteria builder + published criteria PDF (S-04, S-05)
 - [ ] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
 - [ ] F-05 Applicant mode (S-08a, S-08b)
 - [ ] F-06 Blank application PDF
