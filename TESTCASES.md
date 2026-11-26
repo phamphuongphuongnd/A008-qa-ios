@@ -215,21 +215,21 @@
 | **B5** | | **Hệ thống: khoá, sao lưu, Guide, About** | | | |
 | TC-178 | F-19 S-23 | Bật App lock (vân tay), Lock after = 1 min; ra Home 30 s / 70 s | 30 s không khoá; 70 s khoá, vân tay mở; huỷ → vẫn khoá | M | ✅ |
 | TC-179 | F-19 S-23 | Đang mở Share sheet / bộ chọn file lâu > Lock after | Không bị khoá khi quay về (withLockSuspended) | M | ✅ |
-| TC-180 | F-18 S-22 | "Back up now" lần đầu: mật khẩu 2 lần khác nhau → đúng | Bắt nhập lại; cảnh báo "If you forget it…"; share sheet; "Last backup: … · x MB"; ghi thời gian deriveKey trên A13 | M | ❌ B-70 |
+| TC-180 | F-18 S-22 | "Back up now" lần đầu: mật khẩu 2 lần khác nhau → đúng | Bắt nhập lại; cảnh báo "If you forget it…"; share sheet; "Last backup: … · x MB"; ghi thời gian deriveKey trên A13 | M | ❌ B-67 |
 | TC-181 | F-18 S-22 | Automatic backup Weekly → chọn thư mục Drive (SAF) → chạy job | File mới trong thư mục; giữ tối đa 3 file | M | ✅ |
 | TC-182 | F-18 S-22 | Restore: file ảnh JPG; sai mật khẩu; đúng mật khẩu → [Cancel] → [Replace] | Báo "not a backup" trước khi hỏi mật khẩu; sai mật khẩu → dữ liệu giữ nguyên; Replace → dữ liệu giống lúc sao lưu, đồng hồ lên lịch lại | M | ✅ |
 | TC-183 | F-18 | Restore file bị cắt dở (copy nửa file) | Báo file hỏng, không đổi dữ liệu | M | ✅ |
 | TC-184 | F-19 S-25 | Guide: tìm "fake"; mở bài; link từ S-13 / S-15 / S-24 | Kết quả đúng; bài có Sources + Not legal advice; link ngữ cảnh mở đúng bài | M | ❌ B-48 |
-| TC-185 | F-19 About | Settings → About → Licenses; Legal & privacy | "Version 1.0.0 (n) · No account · No servers"; Licenses mở; S-26 có nguồn FTC / HUD / Seattle | M | ❌ B-76 |
+| TC-185 | F-19 About | Settings → About → Licenses; Legal & privacy | "Version 1.0.0 (n) · No account · No servers"; Licenses mở; S-26 có nguồn FTC / HUD / Seattle | M | ❌ B-73 |
 | TC-186 | Offline | Toàn bộ B1–B5 làm khi bật máy bay | Không màn nào báo lỗi mạng / quay vòng chờ; chỉ link ngoài cần mạng | M | ✅ |
 | **B6** | | **Giao diện & trợ năng** | | | |
 | TC-187 | Sáng / tối | Appearance: System / Light / Dark; tối ở S-02, S-09, S-17, S-20, sheet S-15 | Màu đúng token v2; thanh trạng thái + điều hướng đổi màu (`dumpsys` apr=); không chữ đen trên nền tối | M | ✅ |
-| TC-188 | 320 dp | `wm density 540` → S-02, S-08, S-09, S-15, S-17, S-20 | Không tràn chữ / cắt nút; vùng chạm ≥ 48 | M | ❌ B-77 |
-| TC-189 | Chữ 130 % | font_scale 1.3 → S-17 | Compare thành thẻ dọc mỗi Applicant; chạm thẻ vẫn mở chứng cứ | M | ❌ B-72 |
-| TC-190 | Chữ 200 % | font_scale 2.0 → S-01, S-03, S-08, S-09, S-16 | Đọc được, cuộn được, nút không chồng | M | ❌ B-77 |
-| TC-191 | TalkBack | Bật TalkBack: S-09 dòng C1, S-18 dòng đồng hồ, huy hiệu S-17 | Đọc như bảng mockup ("Income, met, verified: 3.24 times rent"; "Missing info, 41 hours left"); Undo snackbar lâu hơn | M | ❌ B-73 |
+| TC-188 | 320 dp | `wm density 540` → S-02, S-08, S-09, S-15, S-17, S-20 | Không tràn chữ / cắt nút; vùng chạm ≥ 48 | M | ❌ B-74 |
+| TC-189 | Chữ 130 % | font_scale 1.3 → S-17 | Compare thành thẻ dọc mỗi Applicant; chạm thẻ vẫn mở chứng cứ | M | ❌ B-69 |
+| TC-190 | Chữ 200 % | font_scale 2.0 → S-01, S-03, S-08, S-09, S-16 | Đọc được, cuộn được, nút không chồng | M | ❌ B-74 |
+| TC-191 | TalkBack | Bật TalkBack: S-09 dòng C1, S-18 dòng đồng hồ, huy hiệu S-17 | Đọc như bảng mockup ("Income, met, verified: 3.24 times rent"; "Missing info, 41 hours left"); Undo snackbar lâu hơn | M | ❌ B-70 |
 | TC-192 | Tablet / xoay | `wm size 1200x1920` (rộng ≥ 600 dp) | Nội dung tối đa 600, căn giữa | M | ❌ B-48 |
-| TC-193 | Hiệu năng | Rental có 15+ Applicant (nạp mẫu + thêm) → S-17 / S-06 | Cuộn mượt, mở màn < 1 s | M | ⏭ máy ảo không đại diện → đo A13 (B-74) |
+| TC-193 | Hiệu năng | Rental có 15+ Applicant (nạp mẫu + thêm) → S-17 / S-06 | Cuộn mượt, mở màn < 1 s | M | ⏭ máy ảo không đại diện → đo A13 (B-71) |
 | **B7** | | **Cài đè & xoá hết** | | | |
 | TC-194 | Cài đè | `adb install -r` cùng APK (hoặc bản build mới hơn) khi đang có dữ liệu | Dữ liệu + cài đặt + backup còn nguyên; không chạy lại onboarding | M | ✅ |
 | TC-195 | §10 | `adb backup` / Auto Backup: kiểm `allowBackup=false` trong manifest đã cài (`dumpsys package`) | Không cho sao lưu hệ thống | M | ✅ |
