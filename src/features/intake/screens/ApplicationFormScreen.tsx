@@ -233,9 +233,14 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
         </View>
       }
       footer={
-        <ButtonBar row>
-          {footer.showBack ? <Button variant="secondary" label={t('common:actions.back')} onPress={f.step === 1 ? () => router.back() : f.back} /> : null}
-          <Button label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
+        <ButtonBar>
+          {/* Mockup S-08: narrow Back, the primary button fills the rest (alone on applicant part 1 → whole row) — B-63. */}
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {footer.showBack ? (
+              <Button variant="secondary" block label={t('common:actions.back')} onPress={f.step === 1 ? () => router.back() : f.back} />
+            ) : null}
+            <Button block style={{ flex: 1 }} label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
+          </View>
         </ButtonBar>
       }
     >
