@@ -92,7 +92,10 @@ export function clearBackupCache(): void {
   }
 }
 
-/** "Back up now" without a folder: the share sheet (Drive, Files, email…). */
+/**
+ * "Back up now" without a folder: the share sheet (Drive, Files, email…). true = the sheet was shown and closed —
+ * NOT that the file was saved: expo-sharing resolves the same way when the landlord cancels (B-68), so S-22 asks.
+ */
 export async function shareBackupFile(uri: string, dialogTitle: string): Promise<boolean> {
   if (!(await Sharing.isAvailableAsync())) return false;
   await withLockSuspended(() => Sharing.shareAsync(uri, { mimeType: BACKUP_MIME, dialogTitle }));

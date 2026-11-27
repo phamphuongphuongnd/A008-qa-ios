@@ -1,6 +1,6 @@
 /**
  * S-22 buttons as one object per environment: `makeBackupActions(env)` — the phone's instance is `backupActions`
- * in ./index.ts, tests pass fakes. Every action updates "Last backup" and re-plans the reminders.
+ * in ./index.ts, tests pass fakes. Every action that surely saved a file updates "Last backup" and re-plans the reminders.
  */
 import { getSettings, updateSettings } from '@/db/repos/settings';
 import type { AppDb } from '@/db/types';
@@ -39,6 +39,10 @@ export interface BackupEnv {
   afterRestore?: () => Promise<void>;
 }
 
+/**
+ * 'folder' = written and recorded. 'shared' = the share sheet closed, but Android / iOS don't say whether the file
+ * was saved anywhere or the sheet was cancelled (B-68) → nothing recorded yet: S-22 asks, then `confirmShared(made)`.
+ */
 export type BackUpResult = { where: 'folder' | 'shared'; made: MadeBackup } | { where: 'not_shared' };
 
 export function makeBackupActions(env: BackupEnv) {
@@ -60,9 +64,13 @@ export function makeBackupActions(env: BackupEnv) {
       }
       const uri = env.writeCache(made.fileName, made.bytes);
       if (!(await env.share(uri))) return { where: 'not_shared' };
+      return { where: 'shared', made };
+    },
+
+    /** The landlord said the shared file was saved (Drive, Files, email…): now it counts as "Last backup". */
+    async confirmShared(made: Pick<MadeBackup, 'createdAt' | 'bytes'>): Promise<void> {
       recordBackup(env.db, made);
       await env.refreshReminders();
-      return { where: 'shared', made };
     },
 
     /** "Automatic backup: Weekly" (picks the folder first when none) / "Off". Weekly runs one backup right away. */

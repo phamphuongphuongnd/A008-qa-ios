@@ -41,7 +41,7 @@ export const backupActions = makeBackupActions({
 
 export { backupErrorText, autoBackupDue, AUTO_KEEP, REMIND_AFTER_DAYS } from './auto';
 export { BackupError, validateBackupPassword, MIN_PASSWORD_LENGTH, BACKUP_KDF } from './format';
-export { formatBytes, type OpenedBackup, type BackupStep } from './service';
+export { formatBytes, type MadeBackup, type OpenedBackup, type BackupStep } from './service';
 
 export interface BackupStatus {
   hasPassword: boolean;

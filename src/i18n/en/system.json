@@ -235,7 +235,11 @@
     "setPasswordTitle": "Set a backup password",
     "setPassword": "Save and back up",
     "openBackup": "Open backup",
-    "restoreHelp": "Nothing on this phone changes until you confirm."
+    "restoreHelp": "Nothing on this phone changes until you confirm.",
+    "sharedTitle": "Did you save the backup?",
+    "sharedBody": "Your phone doesn't tell Evenlease whether the file was saved. Tap Saved only if it's in Drive, Files or an email.",
+    "sharedNo": "Not saved",
+    "sharedYes": "Saved"
   },
   "s23": {
     "title": "App lock",
