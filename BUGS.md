@@ -2,14 +2,14 @@
 
 > Bước 4 chỉ ghi, bước 5 sửa từ nặng tới nhẹ. Sửa xong + test hồi quy → tick `[x]` và ghi commit.
 > Mức: 🔴 chặn/sai dữ liệu · 🟠 sai chức năng · 🟡 giao diện/chữ.
-> Dải số: **B-01…B-39** phần tự động (T) · **B-40…B-52** QA-1 · **B-53…B-66** QA-2 · **B-67…B-76** QA-3 · **B-80…B-99** iOS.
+> Dải số: **B-01…B-39** phần tự động (T) · **B-40…B-52** QA-1 · **B-53…B-66** QA-2 · **B-67…B-76** QA-3 · **B-80…B-99** iOS · **B-100…B-119** A13 (2026-11-27).
 > Chi tiết (tái hiện, nguyên nhân nghi, ảnh) ở `qa/runs/2026-11-26-qa1|qa2|qa3|ios.md`; dưới đây mỗi lỗi 1 dòng.
 > Lượt thử máy 2026-11-26: 3 máy ảo Android 17 (dev client x86_64, đóng băng `6b1fea8`) song song + iOS simulator (GitHub Actions).
 
 <!-- Phần T (124 case, 702 test jest): chưa tìm thấy lỗi. -->
 
 **Gộp / trùng (không sửa riêng):** B-54 → B-47 · B-74(b) → B-41 · B-66, B-77…B-79 bỏ trống (QA-3 tự gộp trùng vào B-40 / B-47 / B-48 rồi đánh lại số).
-**Tổng:** 37 lỗi — 🔴 4 · 🟠 12 · 🟡 21 (Android 35 + iOS 2; B-40 cũng xảy ra trên iOS).
+**Tổng:** 42 lỗi — 🔴 6 · 🟠 12 · 🟡 24 (Android 35 + iOS 2 + A13 5). Lượt sửa 1 (6 nhánh fix/*) đã gộp vào `dev` dd5997a — **chưa tick: chờ thử máy lại**.
 
 ## 🔴 Chặn
 - [ ] B-40 🔴 [TC-127, TC-196] S-01 — Cài mới / `pm clear` → mở thẳng S-03 "New rental", không bao giờ qua onboarding (cả launcher, cả iOS); Back chết; sau Delete all về S-02 rỗng chứ không về S-01 · nghi `app/_layout.tsx` `initialRouteName: '(tabs)'` trong `Stack.Protected guard={onboarded}` (3 làn + iOS cùng gặp)
@@ -53,6 +53,14 @@
 - [ ] B-76 🟡 [TC-178, 181, 192] Lặt vặt — Unlock dạt trái màn rộng; App lock theo đồng hồ tường; "Folder: primary:Documents"; job sao lưu tuần cần mạng (máy bay không chạy); huy hiệu S-17 bị cắt
 - [ ] B-80 🟡 [TC-129, iOS] S-01 trang 3 — iPhone SE chữ mặc định: ô tick "not legal advice" bị thanh chân che; mockup: ô tick ngay trên Get started, "Explore…" là link chữ (app: nút tonal to)
 - [ ] B-81 🟡 [TC-200, iOS] S-03 — chữ AX-XL: ô chọn "State" gãy "Choos/e" (cùng họ B-74(a))
+
+## A13 bản release (2026-11-27, `qa/runs/2026-11-27-a13.md`)
+- [ ] B-100 🔴 [TC-125, 127] Build release — APK có R8 (mặc định) crash khi mở: R8 xoá `WorkDatabase_Impl.<init>` (work-runtime 2.10.5 / room 2.6.1) → .aab store sẽ crash · cần keep rule qua config plugin
+- [ ] B-101 🔴 [TC-180, 182] S-22 — deriveKey PBKDF2 310 000 vòng = **847 s (14 phút)** trên A13 release (~350 vòng/s, JS) → PBKDF2 native (module nhỏ trong `modules/`, Phương để điều phối chọn 2026-11-27)
+- [ ] B-102 🟡 [TC-181] S-22 — thư mục Google Drive hiện id SAF thô "acc=6;doc=encoded=…" thay vì tên thư mục
+- [ ] B-103 🟡 [TC-178] S-23 — máy có cả mặt + vân tay: app ghi "Require Face unlock" nhưng hệ thống hỏi vân tay (`lockNative.ts:31`)
+- [ ] B-104 🟡 [TC-195] Quyền release còn `FOREGROUND_SERVICE` + `WRITE_EXTERNAL_STORAGE` (maxSdk 28) → gỡ ở `plugins/withReleasePermissions.js` hoặc ghi lý do
+- Số đo A13 release: khởi động lạnh 2,2–3,1 s · S-06 (20 Applicant) 1,2–1,7 s, cuộn ổn · **S-17 4,5–4,9 s, cuộn 45 % khung trễ → B-71 xác nhận** · Drive SAF ghi/đọc ✅ · rung ✅ · vân tay ✅.
 
 ## Cần thử / đo trên Galaxy A13 (máy ảo không đại diện)
 - deriveKey PBKDF2 310 000 vòng: máy ảo dev **14–16 phút/lần** → đo A13 bản release, chốt `BACKUP_KDF` (`src/backup/format.ts:27`); nếu vẫn lâu → thành lỗi 🔴.
