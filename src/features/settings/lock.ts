@@ -93,6 +93,25 @@ export function isLockVisible(onboarded: boolean, locked: boolean, applicantMode
   return onboarded && locked && !applicantModeActive;
 }
 
+/**
+ * Lock screen padding (B-140): with the keyboard up (app PIN), the bottom padding is the part of the screen under the
+ * keyboard, so the PIN field and Unlock sit right above it (they are pinned to the bottom); the top gap shrinks too.
+ */
+export function lockScreenPadding(keyboardOverlap: number, insets: { top: number; bottom: number }): { top: number; bottom: number } {
+  return keyboardOverlap > 0
+    ? { top: insets.top + 16, bottom: keyboardOverlap + 16 }
+    : { top: insets.top + 48, bottom: insets.bottom + 24 };
+}
+
+/**
+ * S-23: turning App lock off on a phone that uses the app PIN asks for the PIN first (B-145) — whoever holds an
+ * unlocked phone must not be able to switch the lock off silently. No PIN stored (can't happen with the lock on) →
+ * nothing to ask.
+ */
+export function turnOffNeedsPin(usesAppPin: boolean, appPinHash: string | null): boolean {
+  return usesAppPin && !!appPinHash;
+}
+
 /** The props LockShield (components/LockScreen.tsx) puts around the app's screens: hidden from screen readers while locked (B-70). */
 export function lockShieldA11y(hidden: boolean) {
   return {
