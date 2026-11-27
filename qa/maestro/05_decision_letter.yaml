@@ -30,9 +30,13 @@ name: 05_decision_letter
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: ${LANE}_05a2_deny_selected
+# run 45959965804: the reason list sat under the sheet footer (iPad card, AX-XL) and the tap missed → "Fix 1 item to save".
+# Scroll the sheet body (screen centre is inside the sheet on every device) until the reason is really on screen.
+- scroll
 - scrollUntilVisible:
     element:
       text: ".*unpaid balance.*"
+    centerElement: true
     timeout: 10000
 - tapOn: ".*unpaid balance.*"
 - scrollUntilVisible:
