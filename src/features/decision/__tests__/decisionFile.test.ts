@@ -3,7 +3,7 @@ import * as C from '@/db/repos/criteria';
 import * as Dec from '@/db/repos/decisions';
 import { makeTestFiles } from '@/db/testing/testDb';
 import { decisionFileHtml } from '@/pdf/decisionFile';
-import { PDF_FOOTER, type PdfAdapter } from '@/pdf/shell';
+import { fileDate, PDF_FOOTER, type PdfAdapter } from '@/pdf/shell';
 
 import { loadDecisionContext, saveDecisionAction } from '../decision';
 import { buildDecisionFile, exportDecisionFile, stampText } from '../decisionFile';
@@ -104,7 +104,8 @@ describe('S-19 decision file', () => {
       share: async () => undefined,
     };
     const res = await exportDecisionFile({ db, now: () => new Date('2026-12-20T15:00:00Z'), pdf }, rentalId);
-    expect(res).toEqual({ ok: true, uri: 'file:///cache/Decision file - 1428 Maple St Unit B.pdf', shared: false, pages: 3 });
+    // B-49: type + rental id + date, never the address.
+    expect(res).toEqual({ ok: true, uri: `file:///cache/Decision file - rental ${rentalId} - ${fileDate(new Date('2026-12-20T15:00:00Z'))}.pdf`, shared: false, pages: 3 });
     expect(printed[0]).toContain('Decision file');
     expect(await exportDecisionFile({ db, now: () => new Date(), pdf }, 999)).toEqual({ ok: false, error: 'not_found' });
   });

@@ -141,6 +141,6 @@ export async function exportDecisionFile(
 ): Promise<{ ok: true; uri: string; shared: boolean; pages: number | null } | { ok: false; error: 'not_found' }> {
   const data = await buildDecisionFile(deps.db, rentalId, deps.now(), opts);
   if (!data) return { ok: false, error: 'not_found' };
-  const res = await printToPdfAndShare(decisionFileHtml(data), decisionFileName(data.rentalShortAddress), { adapter: deps.pdf });
+  const res = await printToPdfAndShare(decisionFileHtml(data), decisionFileName(rentalId, deps.now()), { adapter: deps.pdf });
   return { ok: true, uri: res.uri, shared: res.shared, pages: res.numberOfPages };
 }

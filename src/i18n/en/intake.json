@@ -230,7 +230,6 @@
   },
   "pdf": {
     "title": "Rental application",
-    "fileName": "Rental application - {{address}}",
     "rentLine": "{{rent}}/mo",
     "intro": "Please print clearly. Every applicant 18 or older fills in their own application.",
     "noSsn": "Do not write your Social Security number or date of birth on this form. If a screening report is needed, the screening company collects that directly.",

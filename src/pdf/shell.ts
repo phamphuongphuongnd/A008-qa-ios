@@ -251,6 +251,19 @@ export interface PdfAdapter {
   share(uri: string, options: { mimeType: string; UTI: string; dialogTitle?: string }): Promise<void>;
 }
 
+/** Local calendar date of `at` → "2026-11-27" (file names). */
+export function fileDate(at: Date = new Date()): string {
+  return `${at.getFullYear()}-${pad2(at.getMonth() + 1)}-${pad2(at.getDate())}`;
+}
+
+/**
+ * Shared-file name (before `safeFileName`): type + record id + date — "Decision file - rental 3 - 2026-11-27". Never a
+ * person's name or the address: file names show in share sheets, mail attachments and other apps (TC-123, B-49).
+ */
+export function refFileName(type: string, ref: { kind: 'rental' | 'letter'; id: number }, at: Date = new Date()): string {
+  return `${type} - ${ref.kind} ${ref.id} - ${fileDate(at)}`;
+}
+
 /** "Adverse action — Priya Raman" → "Adverse action - Priya Raman.pdf" (safe characters, ≤ 80 chars). */
 export function safeFileName(name: string): string {
   const base = name

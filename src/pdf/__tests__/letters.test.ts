@@ -114,6 +114,7 @@ describe('letters PDF', () => {
       opening: "We're glad to approve your application for 1 Main St.",
       closing: 'Please let us know if you accept.',
     });
-    expect(letterFileName('adverse_action', 'Priya Raman')).toBe('Adverse action notice - Priya Raman');
+    // B-49: letter id + date, never the applicant's name.
+    expect(letterFileName('adverse_action', 12, new Date(2026, 10, 27))).toBe('Adverse action notice - letter 12 - 2026-11-27');
   });
 });

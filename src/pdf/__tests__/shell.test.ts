@@ -5,6 +5,7 @@ import path from 'path';
 import {
   dateTime,
   escapeHtml,
+  fileDate,
   html,
   multiline,
   PDF_CSS,
@@ -13,6 +14,7 @@ import {
   pdfDocument,
   printToPdfAndShare,
   raw,
+  refFileName,
   safeFileName,
   section,
   table,
@@ -122,6 +124,16 @@ describe('pdfDocument', () => {
   });
   it('escapes the title', () => {
     expect(pdfDocument({ title: 'A & B', body: html`` })).toContain('<title>A &amp; B</title>');
+  });
+});
+
+describe('refFileName (B-49)', () => {
+  it('type + record id + local date, nothing about the person', () => {
+    expect(refFileName('Decision file', { kind: 'rental', id: 3 }, new Date(2026, 10, 27, 23, 59))).toBe('Decision file - rental 3 - 2026-11-27');
+    expect(safeFileName(refFileName('Adverse action notice', { kind: 'letter', id: 12 }, new Date(2027, 0, 5)))).toBe(
+      'Adverse action notice - letter 12 - 2027-01-05.pdf',
+    );
+    expect(fileDate(new Date(2026, 0, 2))).toBe('2026-01-02');
   });
 });
 

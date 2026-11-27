@@ -3,7 +3,7 @@ import * as R from '@/db/repos/rentals';
 import * as Set from '@/db/repos/settings';
 import * as V from '@/db/repos/verify';
 import { FCRA_REQUIRED_LINES } from '@/engine';
-import type { PdfAdapter } from '@/pdf/shell';
+import { fileDate, type PdfAdapter } from '@/pdf/shell';
 
 import { loadDecisionContext, saveDecisionAction } from '../decision';
 import { decodeLetterBody, encodeLetterBody, exportLetter, letterDocument, letterText, loadLetterContext, markSent } from '../letters';
@@ -95,8 +95,11 @@ describe('S-16 letter service', () => {
     const ctx = loadLetterContext(db, id('Priya'), decisionId)!;
     const body = { ...letterText(ctx, 'adverse_action'), closing: 'Call me with questions.' };
     const res = await exportLetter(deps, { applicantId: id('Priya'), decisionId, kind: 'adverse_action', body });
-    expect(res).toMatchObject({ ok: true, uri: 'file:///cache/pdf/Adverse action notice - Priya Raman.pdf', shared: true });
+    expect(res).toMatchObject({ ok: true, shared: true });
     if (!res.ok) return;
+    // B-49: type + letter id + date, never the applicant's name.
+    expect(res.uri).toBe(`file:///cache/pdf/Adverse action notice - letter ${res.letterId} - ${fileDate(new Date('2026-12-06T20:30:00Z'))}.pdf`);
+    expect(res.uri).not.toContain('Priya');
     expect(pdf.printed[0]).toContain('Call me with questions.');
     expect(f.saved).toEqual([{ owner: { applicantId: id('Priya') }, kind: 'letter', sourceUri: res.uri, mime: 'application/pdf', id: res.letterId }]);
     expect(Dec.getLetter(db, res.letterId)).toMatchObject({ kind: 'adverse_action', pdfPath: `applicants/x/letter-${res.letterId}.pdf` });

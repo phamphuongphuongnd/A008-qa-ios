@@ -104,8 +104,7 @@
       "photoCount_other": "{{count}} photos",
       "reading": "Reading",
       "signedOn": "Signed {{date}}",
-      "intro": "Condition of the home on the move-in date, agreed by the landlord and the tenant.",
-      "fileName": "Move-in checklist - {{address}}"
+      "intro": "Condition of the home on the move-in date, agreed by the landlord and the tenant."
     },
     "notFound": "This rental doesn't exist.",
     "renameRoom": "Rename room",
