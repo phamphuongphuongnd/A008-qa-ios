@@ -1,10 +1,11 @@
 /** S-06 Rental hub — product.md §5 S-06, mockup v2 "Rental hub" (Compare / First-come, empty). */
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { ClipboardCheck, Columns2, FileQuestion, ListOrdered, MoreHorizontal, Share2, UserPlus, Users } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 
 import { parseId, routes } from '@/routes';
+import { router } from '@/services/router';
 import { t } from '@/i18n';
 import {
   AppBar,
