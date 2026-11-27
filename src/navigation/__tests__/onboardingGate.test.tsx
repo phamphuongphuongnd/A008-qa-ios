@@ -3,8 +3,12 @@
  * - fresh install / `pm clear` → S-01 alone (Back leaves the app), never S-03;
  * - finishing S-01 → Rentals; "Explore with a sample rental" → [Rentals, S-06];
  * - S-27 Delete all → S-01 alone, whichever comes first (the store update or the navigation);
- * - onboarded: launcher → Rentals; a deep link keeps the tabs underneath.
+ * - onboarded: launcher → Rentals; a deep link keeps the tabs underneath; `evenlease://onboarding` → one Rentals;
+ * - not onboarded: a deep link to any landlord screen → S-01 (round 2); every app/ route is gated or listed as open.
  */
+import { readdirSync, statSync } from 'fs';
+import { join, relative, sep } from 'path';
+
 import { router } from 'expo-router';
 import { useSyncExternalStore } from 'react';
 
@@ -12,7 +16,7 @@ import { routes } from '@/routes';
 
 import TabsLayout from '../../../app/(tabs)/_layout';
 import { landAfterOnboarding } from '../onboardingLanding';
-import { ROOT_STACK_SETTINGS, RootNavigator } from '../RootNavigator';
+import { GATED_SCREENS, OnboardingRoute, ROOT_STACK_SETTINGS, RootNavigator, UNGATED_ROUTES } from '../RootNavigator';
 import { renderApp, stackShape, step, unmountApp } from '../testing/routerHarness';
 
 jest.mock('lucide-react-native', () => new Proxy({}, { get: () => () => null }));
@@ -36,23 +40,26 @@ function RootLayout() {
 }
 
 const Null = () => null;
+/** app/onboarding/index.tsx with the screen left out. */
+const Onboarding = () => (
+  <OnboardingRoute>
+    <Null />
+  </OnboardingRoute>
+);
 const files = {
   _layout: { default: RootLayout, unstable_settings: ROOT_STACK_SETTINGS },
   '(tabs)/_layout': TabsLayout,
   '(tabs)/index': Null,
   '(tabs)/guide': Null,
   '(tabs)/settings': Null,
-  'onboarding/index': Null,
-  'units/new': Null,
-  'units/[id]/index': Null,
-  'settings/delete-all': Null,
+  ...Object.fromEntries(GATED_SCREENS.map((name) => [name, Null])),
   'applicants/add': Null,
   'review/applicant/[id]/decision': Null,
   'applicants/mode/start/[rentalId]': Null,
   'applicants/mode/form/[id]': Null,
   'applicants/mode/done/[id]': Null,
-  'dev/gallery': Null,
   '+not-found': Null,
+  'onboarding/index': Onboarding,
 };
 
 const TABS_ON = (tab: string) => ['(tabs)', [tab]];
@@ -114,5 +121,47 @@ describe('onboarding gate (B-40)', () => {
     await unmountApp();
     await renderApp(files, '/units/1');
     expect(stackShape()).toEqual([TABS_ON('index'), 'units/[id]/index']);
+  });
+
+  it('onboarded: `evenlease://onboarding` → back to one Rentals', async () => {
+    setOnboarded(true);
+    await renderApp(files, '/onboarding');
+    expect(stackShape()).toEqual([TABS_ON('index')]);
+    expect(router.canGoBack()).toBe(false);
+  });
+
+  it.each(['/units/1', '/units/new', '/review/rental/1/queue', '/settings/backup', '/guide/fake-references'])(
+    'not onboarded: a deep link to %s opens S-01 instead',
+    async (url) => {
+      setOnboarded(false);
+      await renderApp(files, url);
+      expect(stackShape()).toEqual(['onboarding/index']);
+      expect(router.canGoBack()).toBe(false);
+    },
+  );
+
+  it('opened at `evenlease://onboarding`, "Explore" → S-06 above Rentals, ‹ → Rentals (A13 round 1)', async () => {
+    setOnboarded(false);
+    await renderApp(files, '/onboarding');
+    expect(stackShape()).toEqual(['onboarding/index']);
+    landAfterOnboarding(routes.rentalHub(1));
+    await step(() => setOnboarded(true));
+    expect(stackShape()).toEqual([TABS_ON('index'), 'units/[id]/index']);
+    expect(router.canGoBack()).toBe(true);
+    await step(() => router.back());
+    expect(stackShape()).toEqual([TABS_ON('index')]);
+  });
+});
+
+describe('every route under app/ is gated or listed as open', () => {
+  it('matches the app folder', () => {
+    const app = join(__dirname, '../../../app');
+    const walk = (dir: string): string[] =>
+      readdirSync(dir).flatMap((f) => (statSync(join(dir, f)).isDirectory() ? walk(join(dir, f)) : [join(dir, f)]));
+    const roots = walk(app)
+      .map((f) => relative(app, f).split(sep).join('/').replace(/\.tsx?$/, ''))
+      .filter((r) => !r.startsWith('(tabs)/') && !r.endsWith('_layout'));
+    const declared = [...GATED_SCREENS, 'applicants/add', 'review/applicant/[id]/decision', ...UNGATED_ROUTES];
+    expect([...roots].sort()).toEqual([...declared].sort());
   });
 });
