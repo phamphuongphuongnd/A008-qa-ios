@@ -3,6 +3,9 @@
 - `format.ts` — envelope: header (magic "EVLBAK", version, PBKDF2-SHA256 cost, salt, nonce, key check, header checksum) +
   AES-256-GCM (`@noble/ciphers`). Errors: `not_backup` · `newer_version` · `wrong_password` · `corrupt` · `no_password`.
   `BACKUP_KDF.iterations` is written into each file — tune it after timing on the A13 without breaking old files.
+- `kdf.ts` — PBKDF2-HMAC-SHA256 (B-101): native `modules/evenlease-crypto` (Android HMAC loop on the password bytes,
+  iOS CommonCrypto) once it reproduces fixed vectors in this app run, else `@noble/hashes` (Jest, web, old builds).
+  Same bytes → same key, so files from either path open with the other; header / format unchanged.
 - `pack.ts` — zip (fflate): `manifest.json` (schema version = drizzle migrations count, SHA-256 per file) + `data.json`
   (1C `dumpAll`) + `files/<applicants|rentals>/…`. Unpack checks everything before any write.
 - `service.ts` — `buildBackup`, `recordBackup`, `openBackup` (decrypt + verify, no change), `restoreBackup` (files to

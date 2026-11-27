@@ -58,7 +58,12 @@ export default function DecisionScreen() {
   return <DecisionSheet ctx={ctx} preset={parseDecisionKind(p.kind)} />;
 }
 
-function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: DecisionKind | null }) {
+function DecisionSheet({ ctx: live, preset }: { ctx: DecisionContext; preset: DecisionKind | null }) {
+  // Once saved, the live context moves on (new status, no options left) while the sheet is still on screen (notice
+  // dialog, closing animation): checking the form against it flashed "This decision is not available…" + "Fix 1 item
+  // to save". Keep the context the decision was saved with until the sheet leaves.
+  const [savedWith, setSavedWith] = useState<DecisionContext | null>(null);
+  const ctx = savedWith ?? live;
   const id = ctx.review.bundle.applicant.id;
   const name = ctx.review.bundle.applicant.fullName;
   const [initial] = useState(() => initialDecisionForm(ctx, preset));
@@ -90,9 +95,12 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
       haptics.error();
       return;
     }
+    // The DB changes while saving: freeze the context from here (released again if the save fails).
+    setSavedWith(ctx);
     setSaving(true);
     const r = await saveDecisionAction(decisionDeps, id, input);
     if (!r.ok) {
+      setSavedWith(null);
       setSaving(false);
       setTried(true);
       haptics.error();

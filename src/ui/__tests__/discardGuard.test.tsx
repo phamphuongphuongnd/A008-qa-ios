@@ -47,7 +47,7 @@ afterEach(unmountApp);
 describe('useDiscardGuard (B-47)', () => {
   it('Back on a dirty form asks first; Keep editing stays; Discard leaves at once', async () => {
     await renderApp(files);
-    await step(() => router.push('/form'));
+    await step(() => router.push('/form' as never));
     expect(stackShape()).toEqual(['index', 'form']);
 
     await step(() => router.back());
@@ -66,7 +66,7 @@ describe('useDiscardGuard (B-47)', () => {
 
   it('Save that clears dirty and goes back in the same handler leaves without asking', async () => {
     await renderApp(files);
-    await step(() => router.push('/form'));
+    await step(() => router.push('/form' as never));
     await step(() => saveAndLeave!());
     expect(dialog?.visible).toBe(false);
     expect(stackShape()).toEqual(['index']);
@@ -75,7 +75,7 @@ describe('useDiscardGuard (B-47)', () => {
   it('a clean form leaves without asking', async () => {
     dirty = false;
     await renderApp(files);
-    await step(() => router.push('/form'));
+    await step(() => router.push('/form' as never));
     await step(() => router.back());
     expect(stackShape()).toEqual(['index']);
   });

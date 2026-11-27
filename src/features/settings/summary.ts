@@ -41,7 +41,9 @@ export function appLockRowValue(s: Pick<AppSettings, 'appLock' | 'appPinHash'>, 
 export function biometricLabel(kind: BiometricKind, ios: boolean): string {
   if (kind === 'face') return t(ios ? 'system:lock.method.faceId' : 'system:lock.method.face');
   if (kind === 'fingerprint') return t(ios ? 'system:lock.method.touchId' : 'system:lock.method.fingerprint');
-  return t('system:lock.method.iris');
+  if (kind === 'iris') return t('system:lock.method.iris');
+  if (kind === 'faceOrFingerprint') return t('system:lock.method.faceOrFingerprint');
+  return t('system:lock.method.biometric');
 }
 
 /** S-21 "Data cleanup" value: "None" or "2 rentals" (closed rentals still holding not-selected applicants' data). */

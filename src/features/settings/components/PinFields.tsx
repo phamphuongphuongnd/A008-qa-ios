@@ -17,14 +17,31 @@ export function pinErrorText(e: PinError | null): string | null {
   return null;
 }
 
-/** Unlock with the app PIN. `error` / `blockedSeconds` come from the caller (unlockWithPin). */
-export function PinUnlock({ onSubmit, error, blockedSeconds }: { onSubmit: (pin: string) => void; error?: string | null; blockedSeconds?: number }) {
+/**
+ * Unlock with the app PIN. `error` / `blockedSeconds` come from the caller (unlockWithPin). Checking takes a moment
+ * (PBKDF2, B-105): the button shows it and a second submit waits.
+ */
+export function PinUnlock({
+  onSubmit,
+  error,
+  blockedSeconds,
+}: {
+  onSubmit: (pin: string) => Promise<void> | void;
+  error?: string | null;
+  blockedSeconds?: number;
+}) {
   const [pin, setPin] = useState('');
+  const [checking, setChecking] = useState(false);
   const blocked = (blockedSeconds ?? 0) > 0;
-  const submit = () => {
-    if (pin.length < 4 || blocked) return;
-    onSubmit(pin);
-    setPin('');
+  const submit = async () => {
+    if (pin.length < 4 || blocked || checking) return;
+    setChecking(true);
+    try {
+      await onSubmit(pin);
+    } finally {
+      setChecking(false);
+      setPin('');
+    }
   };
   return (
     <View style={{ gap: 12, alignSelf: 'stretch' }}>
@@ -39,19 +56,28 @@ export function PinUnlock({ onSubmit, error, blockedSeconds }: { onSubmit: (pin:
         onSubmitEditing={submit}
         error={blocked ? t('system:lock.blocked', { seconds: blockedSeconds }) : error}
       />
-      <Button label={t('system:lock.unlock')} onPress={submit} disabled={pin.length < 4 || blocked} block />
+      <Button label={t('system:lock.unlock')} onPress={submit} disabled={pin.length < 4 || blocked} loading={checking} block />
     </View>
   );
 }
 
-/** Set / change the app PIN: typed twice. `onSave` returns the error (null = saved). */
-export function PinSetup({ onSave, saveLabel }: { onSave: (pin: string, again: string) => PinError | null; saveLabel?: string }) {
+/** Set / change the app PIN: typed twice. `onSave` resolves the error (null = saved); hashing takes a moment (B-105). */
+export function PinSetup({ onSave, saveLabel }: { onSave: (pin: string, again: string) => Promise<PinError | null>; saveLabel?: string }) {
   const [pin, setPin] = useState('');
   const [again, setAgain] = useState('');
   const [error, setError] = useState<PinError | null>(null);
-  const save = () => {
-    const e = validateNewPin(pin, again) ?? onSave(pin, again);
-    setError(e);
+  const [saving, setSaving] = useState(false);
+  const save = async () => {
+    if (saving) return;
+    const e = validateNewPin(pin, again);
+    if (e) return setError(e);
+    setError(null);
+    setSaving(true);
+    try {
+      setError(await onSave(pin, again));
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <View style={{ gap: 12 }}>
@@ -74,7 +100,7 @@ export function PinSetup({ onSave, saveLabel }: { onSave: (pin: string, again: s
         onSubmitEditing={save}
         error={error === 'mismatch' ? pinErrorText(error) : null}
       />
-      <Button label={saveLabel ?? t('common:actions.save')} onPress={save} disabled={pin.length < 4 || again.length < 4} block />
+      <Button label={saveLabel ?? t('common:actions.save')} onPress={save} disabled={pin.length < 4 || again.length < 4} loading={saving} block />
     </View>
   );
 }

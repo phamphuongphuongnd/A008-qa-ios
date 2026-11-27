@@ -6,13 +6,14 @@
  */
 import { useLocalSearchParams, type Href } from 'expo-router';
 import { Columns2, EyeOff } from 'lucide-react-native';
-import { useState } from 'react';
-import { View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
+import { useTheme } from '@/theme';
 import { router } from '@/services/router';
 import { AppBar, CompareTable, EmptyState, ListGroup, ListRow, Screen, SwitchRow, useCompareAsCards } from '@/ui';
 
@@ -21,12 +22,35 @@ import { compareCellTap, compareView } from '../viewModel';
 import { Hint, idParam, NotFoundScreen } from '../components/DecisionParts';
 import { EvidenceSheet } from '../components/EvidenceSheet';
 
+/**
+ * true from the frame after the first one. S-17 first paints its frame (app bar, "Not a ranking" line) so the push
+ * from S-06 is immediate, then loads and lays out the table (B-71: 20 applicants held S-06 for ~4.7 s on an A13).
+ */
+function useAfterFirstFrame(): boolean {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return ready;
+}
+
 export default function CompareScreen() {
   const p = useLocalSearchParams<{ id: string }>();
   const [hide, setHide] = useState(false);
   const [open, setOpen] = useState<{ row: string; col: string } | null>(null);
-  const data = useCompare(idParam(p.id), hide);
+  const ready = useAfterFirstFrame();
+  const data = useCompare(ready ? idParam(p.id) : null, hide);
   const cards = useCompareAsCards();
+  const { colors } = useTheme();
+  if (!ready) {
+    return (
+      <Screen header={<AppBar title={t('decision:s17.title')} />}>
+        <Hint>{t('decision:s17.notRanking')}</Hint>
+        <ActivityIndicator accessibilityLabel={t('decision:s17.loading')} color={colors.accent} style={{ marginTop: 24 }} />
+      </Screen>
+    );
+  }
   if (!data) return <NotFoundScreen title={t('decision:s17.title')} />;
   const view = compareView(data);
   const tap = open ? compareCellTap(data, open.row, open.col) : null;

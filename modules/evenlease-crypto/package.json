@@ -1,0 +1,6 @@
+{
+  "name": "evenlease-crypto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PBKDF2-HMAC-SHA256 in native code for the backup password (B-101): ~1 s instead of ~14 min in JS on a Galaxy A13."
+}

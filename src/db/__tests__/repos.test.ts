@@ -257,6 +257,37 @@ describe('decisions, letters, timers', () => {
   });
 });
 
+describe('bundles for a whole rental (B-71)', () => {
+  it('listApplicantBundles: one query per table, same rows and order as one bundle at a time', () => {
+    const db = makeTestDb();
+    const r = S.loadSampleRental(db);
+    const rows = A.listApplicants(db, r);
+    // Rows other applicants do not have: decisions with letters and a timer on one, interleaved ids.
+    const d1 = Dec.saveDecision(db, { applicantId: rows[1].id, kind: 'deny', reasons: [], at: '2026-12-06T10:00:00Z', noticeRequired: true });
+    Dec.createLetter(db, { decisionId: d1, kind: 'adverse_action', pdfPath: 'x.pdf' });
+    Dec.saveDecision(db, { applicantId: rows[3].id, kind: 'approve', reasons: [], at: '2026-12-07T10:00:00Z', noticeRequired: false });
+    Dec.startTimer(db, { applicantId: rows[2].id, kind: 'missing_info', startedAt: '2026-12-02T10:00:00Z', endsAt: '2026-12-05T10:00:00Z' });
+
+    const all = A.listApplicantBundles(db, rows);
+    expect(all.map((b) => b.applicant.id)).toEqual(rows.map((a) => a.id));
+    all.forEach((b, i) => expect(b).toEqual(A.getApplicantBundle(db, rows[i].id)));
+    // Nothing leaks between applicants.
+    for (const b of all) {
+      const id = b.applicant.id;
+      for (const list of [b.residences, b.incomes, b.documents, b.references, b.decisions, b.timers]) {
+        expect((list as { applicantId: number }[]).every((x) => x.applicantId === id)).toBe(true);
+      }
+      expect(b.references.every((ref) => ref.attempts.every((a) => a.referenceId === ref.id))).toBe(true);
+      expect(b.decisions.every((d) => d.letters.every((l) => l.decisionId === d.id))).toBe(true);
+    }
+    expect(all[1].decisions[0].letters).toHaveLength(1);
+    expect(all[2].timers).toHaveLength(1);
+    expect(all.some((b) => b.references.some((ref) => ref.attempts.length > 0))).toBe(true);
+    expect(all.filter((b) => b.report).length).toBeGreaterThan(0);
+    expect(A.listApplicantBundles(db, [])).toEqual([]);
+  });
+});
+
 describe('move-in + settings', () => {
   it('move-in checklist saves in parts', () => {
     const db = makeTestDb();

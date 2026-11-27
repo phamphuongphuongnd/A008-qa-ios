@@ -1,0 +1,6 @@
+{
+  "name": "android-folders",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Android only: the display name of a folder picked with the system folder picker (SAF), e.g. a Google Drive folder (B-102)."
+}

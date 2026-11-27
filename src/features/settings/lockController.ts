@@ -71,14 +71,14 @@ export async function unlockLandlord(
 export type PinOutcome = 'success' | 'wrong' | 'blocked';
 
 /** PIN pad submit. Wrong PINs in a row block entry for a while (`pinBlockedUntil`, shown as a countdown). */
-export function unlockWithPin(
+export async function unlockWithPin(
   pin: string,
   settings: Pick<AppSettings, 'appPinHash'>,
   now: number = Date.now(),
   store: LockStore = lockStore,
-): PinOutcome {
+): Promise<PinOutcome> {
   if (store.get().pinBlockedUntil > now) return 'blocked';
-  if (verifyPin(pin, settings.appPinHash)) {
+  if (await verifyPin(pin, settings.appPinHash)) {
     store.dispatch({ type: 'unlocked' });
     return 'success';
   }

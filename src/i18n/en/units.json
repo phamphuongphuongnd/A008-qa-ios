@@ -18,6 +18,10 @@
     },
     "count": {
       "none": "No applicants yet",
+      "allDeleted_one": "Applicant data deleted (1 applicant)",
+      "allDeleted_other": "Applicant data deleted ({{count}} applicants)",
+      "someDeleted_one": "{{count}} deleted",
+      "someDeleted_other": "{{count}} deleted",
       "applicants_one": "{{count}} applicant",
       "applicants_other": "{{count}} applicants",
       "ready": "{{count}} ready to decide",
@@ -260,7 +264,10 @@
       "title": "No applicants yet",
       "body": "Share your published criteria, then add applicants as they come in.",
       "share": "Share criteria",
-      "add": "Add applicant"
+      "add": "Add applicant",
+      "deletedTitle": "Applicant data deleted",
+      "deletedBody_one": "The data of 1 applicant was deleted. The Decision file keeps an anonymous line.",
+      "deletedBody_other": "The data of {{count}} applicants was deleted. The Decision file keeps an anonymous line for each."
     },
     "deleteDialog": {
       "title": "Delete this rental?",

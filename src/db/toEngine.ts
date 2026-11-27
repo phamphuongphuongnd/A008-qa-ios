@@ -16,7 +16,7 @@ import {
   type Timer as EngineTimer,
 } from '@/engine';
 
-import { getApplicantBundle, listApplicants, type ApplicantBundle } from './repos/applicants';
+import { listApplicantBundles, listApplicants, type ApplicantBundle } from './repos/applicants';
 import { listCriteria } from './repos/criteria';
 import { getRental } from './repos/rentals';
 import type { AppDb, Criterion, Decision, Rental, Timer } from './types';
@@ -150,8 +150,7 @@ export function toQueueApplicant(b: Pick<ApplicantBundle, 'applicant' | 'timers'
 export function loadRentalForEngine(db: AppDb, rentalId: number): { rental: RentalInput; criteria: EngineCriterion[]; applicants: ApplicantInput[]; bundles: ApplicantBundle[] } | null {
   const r = getRental(db, rentalId);
   if (!r) return null;
-  const bundles = listApplicants(db, rentalId)
-    .map((a) => getApplicantBundle(db, a.id))
-    .filter((x): x is ApplicantBundle => x !== null);
+  // One query per table for the whole rental, not ~12 per applicant (B-71).
+  const bundles = listApplicantBundles(db, listApplicants(db, rentalId));
   return { rental: toEngineRental(r), criteria: toEngineCriteria(listCriteria(db, rentalId)), applicants: bundles.map(toEngineApplicant), bundles };
 }
