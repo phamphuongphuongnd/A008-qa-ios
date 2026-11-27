@@ -75,8 +75,8 @@ export default function AppLockScreen() {
         <Txt color="inkMuted">{t('system:s23.pinHint')}</Txt>
         <PinSetup
           saveLabel={pinSheet === 'enable' ? t('system:s23.pinAndLock') : undefined}
-          onSave={(pin, again) => {
-            const e = settingsActions.setAppPin(pin, again, pinSheet === 'enable');
+          onSave={async (pin, again) => {
+            const e = await settingsActions.setAppPin(pin, again, pinSheet === 'enable');
             if (!e) {
               setPinSheet(null);
               showSnackbar({ message: t('system:s23.pinSaved') });

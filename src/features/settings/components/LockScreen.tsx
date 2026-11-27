@@ -89,8 +89,8 @@ export function LockScreen({ pinBlockedUntil }: { pinBlockedUntil: number }) {
           <PinUnlock
             blockedSeconds={blockedSeconds}
             error={message}
-            onSubmit={(pin) => {
-              const r = unlockWithPin(pin, settings);
+            onSubmit={async (pin) => {
+              const r = await unlockWithPin(pin, settings);
               setNow(Date.now());
               setMessage(r === 'wrong' ? t('system:lock.wrongPin') : null);
             }}

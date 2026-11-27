@@ -20,7 +20,7 @@ describe('settings actions', () => {
     expect(getSettings(db)).toMatchObject({ landlordName: 'Alex Morgan', landlordPhone: '(614) 555-0142' });
   });
 
-  it('App lock: on with Face ID; a phone with no lock needs a PIN first; off forgets the PIN', () => {
+  it('App lock: on with Face ID; a phone with no lock needs a PIN first; off forgets the PIN', async () => {
     const db = makeTestDb();
     expect(setAppLock(db, true, face)).toBe('ok');
     expect(getSettings(db).appLock).toBe(true);
@@ -28,12 +28,12 @@ describe('settings actions', () => {
 
     expect(setAppLock(db, true, noLock)).toBe('needs_pin');
     expect(getSettings(db).appLock).toBe(false);
-    expect(setAppPin(db, '12', '12', rng)).toBe('format');
-    expect(setAppPin(db, '1234', '4321', rng)).toBe('mismatch');
-    expect(setAppPin(db, '2580', '2580', rng, { enableLock: true })).toBeNull();
+    expect(await setAppPin(db, '12', '12', rng)).toBe('format');
+    expect(await setAppPin(db, '1234', '4321', rng)).toBe('mismatch');
+    expect(await setAppPin(db, '2580', '2580', rng, { enableLock: true })).toBeNull();
     const s = getSettings(db);
     expect(s.appLock).toBe(true);
-    expect(verifyPin('2580', s.appPinHash)).toBe(true);
+    expect(await verifyPin('2580', s.appPinHash)).toBe(true);
     expect(setAppLock(db, true, noLock)).toBe('ok');
     setAppLock(db, false, noLock);
     expect(getSettings(db)).toMatchObject({ appLock: false, appPinHash: null });
