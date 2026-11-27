@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ComponentType, type ReactNode } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -13,6 +13,12 @@ import { font, useTheme, withAlpha, type Theme } from '@/theme';
 
 import { TOUCH_MIN } from './touch';
 import { Txt } from './Txt';
+
+/**
+ * Inside `<ButtonBar row>` every Button fills its cell (as if `block`): the cell grows, an inline button inside it
+ * didn't, leaving the bar half empty (B-63 / fix-intake). Set by ButtonBar only.
+ */
+export const ButtonFillContext = createContext(false);
 
 /** Any icon component taking color + size (lucide-react-native icons fit). */
 export type IconComponent = ComponentType<{ color?: string; size?: number; strokeWidth?: number }>;
@@ -97,6 +103,7 @@ export function Button({
   style,
 }: ButtonProps) {
   const t = useTheme();
+  const fill = useContext(ButtonFillContext);
   const [focused, setFocused] = useState(false);
   const isLoading = loading || state === 'loading';
   const isDisabled = disabled || state === 'disabled';
@@ -107,7 +114,7 @@ export function Button({
   const frame = Math.max(minHeight, TOUCH_MIN);
 
   return (
-    <View style={[block ? styles.block : styles.inline, style]}>
+    <View style={[block || fill ? styles.block : styles.inline, style]}>
       <FocusRing visible={focused || state === 'focused'} radius={radius}>
         <Pressable
           onPress={onPress}

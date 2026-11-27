@@ -17,7 +17,7 @@ import { t } from '@/i18n';
 import { router } from '@/services/router';
 import { font, useTheme } from '@/theme';
 
-import { IconButton } from './Button';
+import { ButtonFillContext, IconButton } from './Button';
 import { Glyph } from './Glyph';
 import { TOUCH_MIN, appBarSideWidth } from './touch';
 import { Txt } from './Txt';
@@ -170,7 +170,10 @@ export function ButtonBar({ children, hint, row }: { children: ReactNode; hint?:
       <View style={{ width: '100%', maxWidth: size.contentMax, alignSelf: 'center', gap: 8 }}>
         {row ? (
           <View style={styles.btnrow}>
-            {Children.map(children, (c) => (c ? <View style={styles.btnCell}>{c}</View> : null))}
+            {/* Buttons fill their cell (ButtonFillContext); cells share the row, wrap under 120 each. */}
+            <ButtonFillContext value={true}>
+              {Children.map(children, (c) => (c ? <View style={styles.btnCell}>{c}</View> : null))}
+            </ButtonFillContext>
           </View>
         ) : (
           children

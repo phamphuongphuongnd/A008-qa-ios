@@ -1,10 +1,11 @@
 import { Children, Fragment, isValidElement, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 
 import { font, useTheme, withAlpha } from '@/theme';
 
 import type { IconComponent } from './Button';
+import { keyValueStacked } from './textLayout';
 import { TOUCH_MIN } from './touch';
 import { Txt } from './Txt';
 
@@ -204,13 +205,18 @@ export function SectionHeader({
   );
 }
 
-/** Label … value line (summaries, report details). Value is tabular. */
+/**
+ * Label … value line (summaries, report details). Value is tabular. The value keeps its own width (≤ 60 %) and the
+ * label wraps; from 150 % text the value goes under the label — a short value never breaks mid-word (B-74a "N/o").
+ */
 export function KeyValue({ label, value }: { label: string; value: string }) {
   const { colors } = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const stacked = keyValueStacked(fontScale);
   return (
-    <View style={styles.kv} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Txt style={[font(400, 14, 20), { color: colors.inkMuted, flexShrink: 1 }]}>{label}</Txt>
-      <Txt tabular style={[font(500, 14, 20), { textAlign: 'right', flexShrink: 1 }]}>
+    <View style={stacked ? styles.kvStacked : styles.kv} accessible accessibilityLabel={`${label}: ${value}`}>
+      <Txt style={[font(400, 14, 20), { color: colors.inkMuted }, !stacked && styles.kvLabel]}>{label}</Txt>
+      <Txt tabular style={[font(500, 14, 20), !stacked && styles.kvValue]}>
         {value}
       </Txt>
     </View>
@@ -226,4 +232,7 @@ const styles = StyleSheet.create({
   section: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 4, marginTop: 4, paddingBottom: 8 },
   sectionAction: { minHeight: TOUCH_MIN, justifyContent: 'center' },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 4 },
+  kvLabel: { flex: 1, flexShrink: 1 },
+  kvValue: { textAlign: 'right', flexShrink: 0, maxWidth: '60%' },
+  kvStacked: { gap: 2, paddingVertical: 4 },
 });
