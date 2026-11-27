@@ -6,11 +6,12 @@
 import { inArray } from 'drizzle-orm';
 
 import { purgeApplicants } from '@/db/repos/applicants';
-import { deleteAllData } from '@/db/repos/data';
+import { deleteAllData, TABLE_NAMES } from '@/db/repos/data';
 import { listCleanupCandidates } from '@/db/repos/rentals';
 import { timers } from '@/db/schema';
 import type { AppDb } from '@/db/types';
 import type { FileStore } from '@/db/files';
+import { markTablesChanged } from '@/db/useLive';
 import { t } from '@/i18n';
 import type { NotificationAdapter } from '@/notifications/adapter';
 
@@ -102,4 +103,8 @@ export async function deleteEverything(db: AppDb, files: FileStore, notification
     }
   }
   deleteAllData(db, files);
+  // B-120: `DELETE FROM t` without WHERE is SQLite's truncate optimization — no update-hook event per row, so
+  // expo-sqlite's change listener reported nothing: `useOnboarded()` stayed true and the app sat on an empty S-02 with
+  // its tabs until a restart. Announce every table by hand (the root stack's guard then shows S-01).
+  markTablesChanged(TABLE_NAMES);
 }

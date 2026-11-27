@@ -262,7 +262,9 @@
     "requireDevice": "Require your phone passcode to open",
     "requirePin": "Require an app PIN to open",
     "pinAndLock": "Save PIN and turn on",
-    "pinSaved": "App PIN saved."
+    "pinSaved": "App PIN saved.",
+    "turnOffTitle": "Turn off App lock?",
+    "turnOffHint": "Enter your app PIN to turn the lock off."
   },
   "lock": {
     "title": "Evenlease is locked",
@@ -284,6 +286,15 @@
       "biometric": "Biometrics",
       "device": "Phone passcode",
       "pin": "App PIN"
+    },
+    "methodInSentence": {
+      "faceId": "Face ID",
+      "touchId": "Touch ID",
+      "face": "face unlock",
+      "fingerprint": "fingerprint",
+      "iris": "iris",
+      "faceOrFingerprint": "fingerprint or face",
+      "biometric": "biometrics"
     },
     "errors": {
       "pinFormat": "Use 4 to 6 digits.",

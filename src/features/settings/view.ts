@@ -137,7 +137,7 @@ export function appLockView(s: Pick<AppSettings, 'appLock' | 'appPinHash'>, cap:
   const method = landlordUnlockMethod(cap, s);
   return {
     switchTitle: cap.biometric
-      ? t('system:s23.requireMethod', { method: biometricLabel(cap.biometric, ios) })
+      ? t('system:s23.requireMethod', { method: biometricLabel(cap.biometric, ios, true) })
       : cap.deviceSecure
         ? t('system:s23.requireDevice')
         : t('system:s23.requirePin'),

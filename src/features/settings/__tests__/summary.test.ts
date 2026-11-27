@@ -80,7 +80,7 @@ describe('B-103 biometric label', () => {
     expect(k).toBe('faceOrFingerprint');
     expect(biometricLabel(k!, false)).toBe('Fingerprint or face');
     expect(appLockView({ appLock: true, appPinHash: null }, { biometric: k, deviceSecure: true }, false).switchTitle).toBe(
-      'Require Fingerprint or face to open',
+      'Require fingerprint or face to open',
     );
   });
 
@@ -96,5 +96,23 @@ describe('B-103 biometric label', () => {
   it('iOS has one (Face ID or Touch ID) and the prompt uses it', () => {
     expect(biometricLabel(biometricKind(true, types(true, false), true)!, true)).toBe('Face ID');
     expect(biometricLabel(biometricKind(true, types(false, true), true)!, true)).toBe('Touch ID');
+  });
+});
+
+describe('B-150 method inside "Require … to open"', () => {
+  const view = (biometric: Parameters<typeof biometricLabel>[0], ios: boolean) =>
+    appLockView({ appLock: true, appPinHash: null }, { biometric, deviceSecure: true }, ios).switchTitle;
+
+  it('Android: lower case mid-sentence; the S-21 row value keeps its capital', () => {
+    expect(view('faceOrFingerprint', false)).toBe('Require fingerprint or face to open');
+    expect(view('fingerprint', false)).toBe('Require fingerprint to open');
+    expect(view('face', false)).toBe('Require face unlock to open');
+    expect(view('biometric', false)).toBe('Require biometrics to open');
+    expect(appLockRowValue({ appLock: true, appPinHash: null }, 'faceOrFingerprint', false)).toBe('Fingerprint or face');
+  });
+
+  it('iOS keeps the names Face ID / Touch ID', () => {
+    expect(view('face', true)).toBe('Require Face ID to open');
+    expect(view('fingerprint', true)).toBe('Require Touch ID to open');
   });
 });

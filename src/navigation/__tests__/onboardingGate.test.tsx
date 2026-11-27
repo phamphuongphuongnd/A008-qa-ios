@@ -140,6 +140,21 @@ describe('onboarding gate (B-40)', () => {
     },
   );
 
+  it.each(['/', '/onboarding'])(
+    'not onboarded, app in the background on S-01 (opened at %s): a deep link keeps ONE S-01 (B-121)',
+    async (start) => {
+      setOnboarded(false);
+      await renderApp(files, start);
+      expect(stackShape()).toEqual(['onboarding/index']);
+      // What expo-router does with a link that arrives while the app is running.
+      await step(() => router.navigate(routes.rentalHub(1)));
+      expect(stackShape()).toEqual(['onboarding/index']);
+      expect(router.canGoBack()).toBe(false);
+      await step(() => router.navigate(routes.settings()));
+      expect(stackShape()).toEqual(['onboarding/index']);
+    },
+  );
+
   it('opened at `evenlease://onboarding`, "Explore" → S-06 above Rentals, ‹ → Rentals (A13 round 1)', async () => {
     setOnboarded(false);
     await renderApp(files, '/onboarding');

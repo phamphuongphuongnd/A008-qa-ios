@@ -6,7 +6,7 @@
 import { usePreventRemove, useLocalSearchParams, useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { db, getApplicant } from '@/db';
 import { files } from '@/files';
@@ -22,6 +22,7 @@ import {
   EmptyState,
   FormProgress,
   haptics,
+  keyValueStacked,
   Screen,
   showSnackbar,
   Txt,
@@ -30,6 +31,7 @@ import {
 import { submitInApplicantMode } from '../applicantMode/actions';
 import { canAccessApplicant } from '../applicantMode/guard';
 import { dispatchApplicantMode, getApplicantMode, useApplicantMode } from '../applicantMode/store';
+import { FileSheet, Thumb } from '../components/DocumentParts';
 import { ApplicantModeBar } from '../components/LandlordLock';
 import {
   AboutSection,
@@ -67,6 +69,9 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
   const rental = useIntakeRental(db, rentalId);
   const paperPhotos = usePaperPhotos(db, mode === 'landlord' ? applicantId : null);
   const picker = usePickFile();
+  // From 150 % text the footer stacks (same threshold as the kit's KeyValue): side by side at 320 dp, "Save applicant"
+  // broke mid-word (B-143).
+  const stackFooter = keyValueStacked(useWindowDimensions().fontScale);
 
   const f = useApplicationForm({
     db,
@@ -85,6 +90,8 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
   });
   const [submitting, setSubmitting] = useState(false);
   const [askDiscard, setAskDiscard] = useState<null | (() => void)>(null);
+  // Paper-form photo opened in the viewer (B-160); looked up live so a deleted file closes its sheet.
+  const [openPaperId, setOpenPaperId] = useState<number | null>(null);
 
   // Keep the applicant-mode machine on the same part (the guard routes by it).
   useEffect(() => {
@@ -162,7 +169,7 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
         </Txt>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {paperPhotos.map((p, i) => (
-            <DocThumb key={p.id} label={thumbLabel(t('intake:fields.paperForm'), i, paperPhotos.length, false)} />
+            <Thumb key={p.id} doc={p} label={thumbLabel(t('intake:fields.paperForm'), i, paperPhotos.length, false)} onPress={() => setOpenPaperId(p.id)} />
           ))}
           <DocThumb
             add
@@ -235,17 +242,23 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
       footer={
         <ButtonBar>
           {/* Mockup S-08: narrow Back, the primary button fills the rest (alone on applicant part 1 → whole row) — B-63. */}
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={stackFooter ? { flexDirection: 'column-reverse', gap: 8 } : { flexDirection: 'row', gap: 12 }}>
             {footer.showBack ? (
               <Button variant="secondary" block label={t('common:actions.back')} onPress={f.step === 1 ? () => router.back() : f.back} />
             ) : null}
-            <Button block style={{ flex: 1 }} label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
+            <Button block style={stackFooter ? undefined : { flex: 1 }} label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
           </View>
         </ButtonBar>
       }
     >
       {body}
       {picker.ui}
+      <FileSheet
+        doc={paperPhotos.find((p) => p.id === openPaperId) ?? null}
+        title={t('intake:fields.paperForm')}
+        markable={false}
+        onClose={() => setOpenPaperId(null)}
+      />
       <ConfirmDialog
         visible={askDiscard != null}
         title={t('intake:s08.discardTitle')}

@@ -3,7 +3,7 @@
  * Native parts (files, picker, share sheet, folder) come in through `AppFileIO` / native.ts so Jest runs all of it.
  * Never logs data or file contents.
  */
-import { countDump, dumpAll, replaceAllData, type DataDump } from '@/db/repos/data';
+import { TABLE_NAMES, countDump, dumpAll, replaceAllData, type DataDump } from '@/db/repos/data';
 import { getSettings, updateSettings } from '@/db/repos/settings';
 import type { AppDb } from '@/db/types';
 import { FILE_ROOTS } from '@/files/paths';
@@ -30,6 +30,12 @@ export interface BackupDeps {
   rng: Rng;
   now?: () => Date;
   appVersion?: string | null;
+  /**
+   * Tell open screens which tables changed (the phone passes @/db `markTablesChanged`). Restore empties tables with
+   * DELETE without WHERE — SQLite's truncate shortcut sends no change event, so useLive screens kept showing the old
+   * data (B-120 family, as Delete all).
+   */
+  tablesChanged?: (tables: readonly string[]) => void;
 }
 
 export type BackupStep = 'deriving' | 'packing' | 'encrypting' | 'reading' | 'checking' | 'restoring';
@@ -176,11 +182,16 @@ export async function restoreBackup(deps: BackupDeps, opened: OpenedBackup, onSt
     await io.deleteDir(RESTORE_STAGING);
     throw e;
   }
-  for (const root of FILE_ROOTS) {
-    await io.deleteDir(root);
-    await io.moveDir(`${RESTORE_STAGING}/${root}`, root);
+  try {
+    for (const root of FILE_ROOTS) {
+      await io.deleteDir(root);
+      await io.moveDir(`${RESTORE_STAGING}/${root}`, root);
+    }
+    await io.deleteDir(RESTORE_STAGING);
+  } finally {
+    // Every table was replaced: announce all of them (after the files are in place, even if a move failed).
+    deps.tablesChanged?.(TABLE_NAMES);
   }
-  await io.deleteDir(RESTORE_STAGING);
 }
 
 /** Last backup line for S-22, or null ("No backup yet"). */

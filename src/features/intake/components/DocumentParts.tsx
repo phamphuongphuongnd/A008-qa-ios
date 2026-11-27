@@ -34,7 +34,7 @@ import { incomeCheckFor, markChecked, PAY_FREQUENCIES, removeDocument, setIncome
 import { checkedLine, incomeKindLabel, slotChip, slotHint, thumbLabel, tx } from '../screenModels';
 import { ZoomViewer } from './ZoomViewer';
 
-function Thumb({ doc, label, onPress }: { doc: DocumentRow; label: string; onPress: () => void }) {
+export function Thumb({ doc, label, onPress }: { doc: DocumentRow; label: string; onPress: () => void }) {
   const { colors } = useTheme();
   const image = isImageMime(doc.mime) && !doc.filePath.startsWith('sample/');
   return (
@@ -186,7 +186,18 @@ export function IncomeCheck({ doc, incomes, title }: { doc: DocumentRow; incomes
  * One file: preview, "View full screen" (pinch / drag / double-tap zoom, Android + iOS) or "Open PDF" (system print
  * preview, no copy), Mark as checked / Unmark, Delete (B-43).
  */
-export function FileSheet({ doc, title, onClose }: { doc: DocumentRow | null; title: string; onClose: () => void }) {
+export function FileSheet({
+  doc,
+  title,
+  onClose,
+  markable = true,
+}: {
+  doc: DocumentRow | null;
+  title: string;
+  onClose: () => void;
+  /** "Mark as checked" (S-10 documents). Off for the paper-form photos of S-08 (they are not C6 documents). */
+  markable?: boolean;
+}) {
   const { colors } = useTheme();
   const [askDelete, setAskDelete] = useState(false);
   const [full, setFull] = useState(false);
@@ -205,7 +216,7 @@ export function FileSheet({ doc, title, onClose }: { doc: DocumentRow | null; ti
         title={title}
         footer={
           <View style={{ gap: 8 }}>
-            {doc.checkedAt ? (
+            {!markable ? null : doc.checkedAt ? (
               <Button variant="secondary" block label={t('intake:s10.unmark')} onPress={() => markChecked(db, doc.id, false)} />
             ) : (
               <Button block icon={Check} label={t('intake:s10.markChecked')} onPress={() => markChecked(db, doc.id, true)} />

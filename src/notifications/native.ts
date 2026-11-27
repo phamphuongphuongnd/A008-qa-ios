@@ -3,11 +3,10 @@
  */
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
-import { Alert, Platform } from 'react-native';
-
-import { t } from '@/i18n';
+import { Platform } from 'react-native';
 
 import type { NotificationAdapter, PermissionState } from './adapter';
+import { askExactAlarmPrompt } from './exactAlarmPrompt';
 import type { ExactAlarmAdapter } from './exactAlarms';
 
 const toState = (p: Notifications.NotificationPermissionsStatus): PermissionState =>
@@ -50,18 +49,8 @@ export const expoExactAlarms: ExactAlarmAdapter = {
   async granted() {
     return (await Notifications.getExactAlarmPermissionsAsync()).granted;
   },
-  explain: () =>
-    new Promise<boolean>((resolve) => {
-      Alert.alert(
-        t('system:notifications.exactTitle'),
-        t('system:notifications.exactBody'),
-        [
-          { text: t('system:notifications.exactLater'), style: 'cancel', onPress: () => resolve(false) },
-          { text: t('system:notifications.exactAllow'), onPress: () => resolve(true) },
-        ],
-        { cancelable: true, onDismiss: () => resolve(false) },
-      );
-    }),
+  // B-151: the app's own confirm dialog (Not now left, Allow right), not the system Alert.
+  explain: askExactAlarmPrompt,
   async request() {
     return (await Notifications.requestExactAlarmPermissionsAsync()).granted;
   },

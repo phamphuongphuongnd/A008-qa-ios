@@ -1,11 +1,12 @@
 /** S-05 Published criteria — product.md §5 S-05, mockup v2 "Published criteria · share to Zillow / Facebook". */
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { Copy, FileDown, FileQuestion } from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { t } from '@/i18n';
 import { parseId, routes } from '@/routes';
+import { router } from '@/services/router';
 import { font, useTheme } from '@/theme';
 import { AppBar, Button, ButtonBar, EmptyState, FormProgress, LegalFooter, Screen, TextButton, Txt, showSnackbar } from '@/ui';
 

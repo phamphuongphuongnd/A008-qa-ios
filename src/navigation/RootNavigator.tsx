@@ -9,8 +9,10 @@
  *   +not-found stay open.
  * - Onboarded: S-01 leaves itself (`OnboardingRoute`) with `dismissTo('/')`: back down to the tabs already in the stack
  *   (a deep link `evenlease://onboarding` → one Rentals, not two), or the tabs in S-01's place (S-01 just finished).
+ * - Never two S-01 in the stack (B-121, `useSingleOnboarding`).
  */
-import { Stack, useFocusEffect, useRouter } from 'expo-router';
+import { Stack, useFocusEffect, useNavigation, useRouter } from 'expo-router';
+import { StackActions } from 'expo-router/react-navigation';
 import { createContext, use, useCallback, type ReactNode } from 'react';
 import type { ViewStyle } from 'react-native';
 
@@ -87,7 +89,26 @@ export function RootNavigator({ onboarded, contentStyle }: { onboarded: boolean;
 
 /** app/onboarding/index.tsx: S-01 until onboarded, then back to the tabs (see the header). */
 export function OnboardingRoute({ children }: { children: ReactNode }) {
-  return use(OnboardedContext) ? <LeaveOnboarding /> : children;
+  const onboarded = use(OnboardedContext);
+  useSingleOnboarding(!onboarded);
+  return onboarded ? <LeaveOnboarding /> : children;
+}
+
+/**
+ * B-121: app in the background on S-01, a link arrives (`evenlease://units/1`) → expo-router pushes S-06, the gate
+ * replaces it with a second S-01. Back down to the first one (its page and tick kept).
+ */
+function useSingleOnboarding(active: boolean) {
+  const navigation = useNavigation();
+  useFocusEffect(
+    useCallback(() => {
+      if (!active) return;
+      const state = navigation.getState();
+      if (!state) return;
+      const first = state.routes.findIndex((r) => r.name === 'onboarding/index');
+      if (first >= 0 && first < state.index) navigation.dispatch(StackActions.pop(state.index - first));
+    }, [active, navigation]),
+  );
 }
 
 function LeaveOnboarding() {

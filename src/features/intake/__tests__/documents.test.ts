@@ -19,6 +19,7 @@ import {
   toDocumentInput,
   type AttachmentFiles,
 } from '../documents/service';
+import { createDraft, loadApplication, saveDraft } from '../form/service';
 import { loadIntakeRental } from '../rental';
 
 const NOW = new Date(2026, 11, 5, 10, 0);
@@ -117,6 +118,27 @@ describe('documents (S-10)', () => {
     // An "Other" file with the required label fills that slot (case-insensitive).
     await addPickedDocument(db, files, { applicantId: priya.id, type: 'other', label: 'pet RECORDS', picked }, NOW);
     expect(documentSlots([{ type: 'other', label: 'Pet records' }], listDocuments(db, priya.id)).slots[0].state).toBe('provided');
+  });
+
+  // B-160: a paper-form photo attached to a new application can be removed again (row + file), draft or saved.
+  it('deleting a paper-form photo removes its row and file; the others and the saved application stay', async () => {
+    const files = fakeFiles();
+    const store = makeTestFiles();
+    const draft = createDraft(db, { rentalId, mode: 'landlord', now: NOW });
+    const id1 = await addPickedDocument(db, files, { applicantId: draft, type: 'paper_form', picked }, NOW);
+    await addPickedDocument(db, files, { applicantId: draft, type: 'paper_form', picked }, NOW);
+    // Back to the draft later: both photos are still there.
+    expect(paperFormPhotos(listDocuments(db, draft))).toHaveLength(2);
+    const path1 = listDocuments(db, draft).find((d) => d.id === id1)!.filePath;
+    store.files.add(path1);
+    removeDocument(db, store, id1);
+    expect(store.files.has(path1)).toBe(false);
+    expect(paperFormPhotos(listDocuments(db, draft)).map((d) => d.id)).not.toContain(id1);
+    expect(paperFormPhotos(listDocuments(db, draft))).toHaveLength(1);
+    // Autosave / Save never bring it back (the form only writes the application, not the files).
+    saveDraft(db, draft, { ...loadApplication(db, draft)!.form, fullName: 'Paper Person' }, 7, NOW);
+    expect(paperFormPhotos(listDocuments(db, draft))).toHaveLength(1);
+    expect(listDocuments(db, draft).some((d) => d.id === id1)).toBe(false);
   });
 
   it('a failed save adds no row; a failed insert removes the file', async () => {

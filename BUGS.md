@@ -61,6 +61,7 @@
 - [ ] B-103 🟡 [TC-178] S-23 — máy có cả mặt + vân tay: app ghi "Require Face unlock" nhưng hệ thống hỏi vân tay (`lockNative.ts:31`)
 - [ ] B-104 🟡 [TC-195] Quyền release còn `FOREGROUND_SERVICE` + `WRITE_EXTERNAL_STORAGE` (maxSdk 28) → gỡ ở `plugins/withReleasePermissions.js` hoặc ghi lý do
 - Số đo A13 release: khởi động lạnh 2,2–3,1 s · S-06 (20 Applicant) 1,2–1,7 s, cuộn ổn · **S-17 4,5–4,9 s, cuộn 45 % khung trễ → B-71 xác nhận** · Drive SAF ghi/đọc ✅ · rung ✅ · vân tay ✅.
+- [ ] B-160 🟠 [S-08, Phương thử A13 27/11] Form đơn mới (chủ nhà nhập đơn) — ảnh / file đã chọn ở "Attach photos of the paper form" (camera / ảnh / PDF) **không xoá được** và **không xem được** (mong đợi giống Documents S-10: thumbnail + chạm xem toàn màn, phóng to / PDF mở được, xoá có xác nhận)
 
 ## Cần thử / đo trên Galaxy A13 (máy ảo không đại diện)
 - deriveKey PBKDF2 310 000 vòng: máy ảo dev **14–16 phút/lần** → đo A13 bản release, chốt `BACKUP_KDF` (`src/backup/format.ts:27`); nếu vẫn lâu → thành lỗi 🔴.

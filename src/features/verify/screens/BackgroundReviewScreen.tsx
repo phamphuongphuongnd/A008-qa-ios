@@ -53,7 +53,7 @@ export default function BackgroundReviewScreen() {
 export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: BackgroundSheet; now?: Date }) {
   const { applicant } = sheet;
   const today = localDate(now);
-  const { form, errors, dirty, edit, commit } = useSheetForm<BackgroundForm>(sheet.form, String(applicant.id), (f) => {
+  const { form, errors, dirty, edit, commit, savedThen } = useSheetForm<BackgroundForm>(sheet.form, String(applicant.id), (f) => {
     const r = verifyActions.saveBackground(applicant.id, f);
     return r.ok ? r : { ok: false, errors: r.errors as FieldError[] };
   });
@@ -87,12 +87,15 @@ export function BackgroundSheetView({ sheet, now = new Date() }: { sheet: Backgr
       return;
     }
     haptics.success();
+    // B-122: the outcome saved the form too — mark it saved and navigate once the discard guard is off.
     const next = backgroundNext(outcome, applicant.id);
-    if (next.kind === 'push') router.push(next.href);
-    else {
-      showSnackbar({ message: t('verify:background.continued') });
-      router.back();
-    }
+    savedThen(() => {
+      if (next.kind === 'push') router.push(next.href);
+      else {
+        showSnackbar({ message: t('verify:background.continued') });
+        router.back();
+      }
+    });
   };
 
   return (
