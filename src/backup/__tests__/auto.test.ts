@@ -106,6 +106,7 @@ describe('S-22 actions', () => {
         return true;
       },
       refreshReminders: refresh,
+      tablesChanged: () => {},
       ...over,
     };
     return { ...s, actions: makeBackupActions(e), shared, refresh };

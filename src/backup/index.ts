@@ -4,7 +4,7 @@
  */
 import Constants from 'expo-constants';
 
-import { db, useLive } from '@/db';
+import { db, markTablesChanged, useLive } from '@/db';
 import { getSettings } from '@/db/repos/settings';
 import { excludeAppDataFromBackup } from '@/files/cloudBackup';
 import { cloudBackupPort } from '@/files/cloudBackupNative';
@@ -37,6 +37,7 @@ export const backupActions = makeBackupActions({
   },
   share: (uri) => shareBackupFile(uri, t('system:s22.backUpNow')),
   refreshReminders,
+  tablesChanged: markTablesChanged,
   afterRestore: () => {
     // G-05 (iOS): the restored applicants/ and rentals/ folders are new folders — flag them again.
     excludeAppDataFromBackup(cloudBackupPort);
