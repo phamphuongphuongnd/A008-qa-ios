@@ -13,3 +13,12 @@ export const atLeastScale = (fontScale: number, min: number) => fontScale >= min
 export function keyValueStacked(fontScale: number): boolean {
   return atLeastScale(fontScale, 1.5);
 }
+
+/**
+ * Side-by-side form cells (S-03 City / State / ZIP, Rent / Deposit…): the width a cell asks for before wrapping to its
+ * own row grows with the text size. A fixed 140 left one word ("Choose") wider than the cell at iOS AX-XL, so it broke
+ * mid-word ("Choos / e", B-81).
+ */
+export function formCellBasis(fontScale: number, base = 140): number {
+  return Math.round(base * Math.max(1, fontScale));
+}
