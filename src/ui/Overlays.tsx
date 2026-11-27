@@ -1,6 +1,6 @@
 import { usePreventRemove, useFocusEffect } from 'expo-router';
 import { X } from 'lucide-react-native';
-import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ComponentRef, type ReactNode } from 'react';
 import {
   AccessibilityInfo,
   Animated,
@@ -23,6 +23,7 @@ import { font, useTheme } from '@/theme';
 
 import { Button, IconButton, type IconComponent } from './Button';
 import { Glyph, type GlyphName } from './Glyph';
+import { sheetRoom, useKeyboardOverlap } from './keyboard';
 import { Txt } from './Txt';
 
 // ---------------------------------------------------------------- Confirm dialog
@@ -223,7 +224,8 @@ export function SheetSurface({
 
 /**
  * Bottom sheet over the current screen: drag the handle down, tap the scrim, Cancel / back closes it. With `dirty`
- * any of those first asks "Discard changes?". Content scrolls; the keyboard pushes it up (Android too).
+ * any of those first asks "Discard changes?". Content scrolls; the keyboard pushes it up (Android too) — measured, not
+ * KeyboardAvoidingView, and when little room is left the footer scrolls with the fields (B-72d, ./keyboard.ts).
  * Max width 600 on tablets.
  */
 export function Sheet({
@@ -248,6 +250,9 @@ export function Sheet({
   const { height } = useWindowDimensions();
   const [drag] = useState(() => new Animated.Value(height));
   const [asking, setAsking] = useState(false);
+  const root = useRef<ComponentRef<typeof View>>(null);
+  const keyboard = useKeyboardOverlap(root);
+  const room = sheetRoom(height, keyboard.overlap, insets);
 
   useEffect(() => {
     if (visible) {
@@ -277,7 +282,7 @@ export function Sheet({
   return (
     <Modal visible={visible} transparent animationType="none" statusBarTranslucent navigationBarTranslucent onRequestClose={requestClose}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.bottom}>
+        <View ref={root} onLayout={keyboard.onLayout} style={[styles.bottom, { paddingBottom: room.keyboardSpace }]}>
           <Animated.View
             style={[
               StyleSheet.absoluteFill,
@@ -286,11 +291,11 @@ export function Sheet({
           >
             <Pressable style={StyleSheet.absoluteFill} onPress={requestClose} accessible={false} importantForAccessibility="no" />
           </Animated.View>
-          <Animated.View style={[styles.sheetWrap, { transform: [{ translateY: drag }] }]}>
+          <Animated.View style={[styles.sheetWrap, { maxHeight: room.maxHeight, transform: [{ translateY: drag }] }]}>
             <SheetSurface
               title={title}
               onClose={requestClose}
-              style={{ paddingBottom: Math.max(insets.bottom, 8) + 20 }}
+              style={{ paddingBottom: room.paddingBottom }}
               grab={
                 <GestureDetector gesture={pan}>
                   <View
@@ -305,10 +310,11 @@ export function Sheet({
                   </View>
                 </GestureDetector>
               }
-              footer={footer}
+              footer={room.compact ? undefined : footer}
             >
               <ScrollView bounces={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ gap: 14 }} style={{ flexGrow: 0 }}>
                 {children}
+                {room.compact ? footer : null}
               </ScrollView>
             </SheetSurface>
           </Animated.View>
@@ -330,7 +336,7 @@ export function Sheet({
               </DialogLayer>
             </View>
           ) : null}
-        </KeyboardAvoidingView>
+        </View>
       </GestureHandlerRootView>
     </Modal>
   );
@@ -492,7 +498,7 @@ const styles = StyleSheet.create({
   btnrow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginTop: 8 },
   btnFlex: { flexGrow: 1, flexBasis: 100 },
   bottom: { flex: 1, justifyContent: 'flex-end' },
-  sheetWrap: { width: '100%', maxWidth: 600, alignSelf: 'center', maxHeight: '92%' },
+  sheetWrap: { width: '100%', maxWidth: 600, alignSelf: 'center' },
   sheet: { paddingTop: 8, paddingHorizontal: 20, paddingBottom: 28, gap: 14, flexShrink: 1 },
   grabArea: { alignSelf: 'stretch', alignItems: 'center', paddingVertical: 6, marginTop: -8, marginBottom: -4 },
   grab: { width: 40, height: 5, borderRadius: 3, opacity: 0.6, alignSelf: 'center' },
