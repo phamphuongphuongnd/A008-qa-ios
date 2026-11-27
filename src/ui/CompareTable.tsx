@@ -7,7 +7,7 @@ import { font, useTheme, withAlpha } from '@/theme';
 
 import { BadgeRow, EvidenceTag, StatusBadge, evidenceLabel, outcomeLabel } from './Badges';
 import { useCardStyle } from './Card';
-import { COMPARE_HEADER_HEIGHT, COMPARE_PIN_WIDTH, COMPARE_ROW_HEIGHT, COMPARE_WINDOW, compareColumnWidth } from './compareLayout';
+import { COMPARE_HEADER_HEIGHT, COMPARE_ROW_HEIGHT, COMPARE_WINDOW, compareColumnWidth, comparePinWidth } from './compareLayout';
 import { COMPARE_CARDS_FONT_SCALE, fontScaleAtLeast } from './fontScale';
 import { Txt } from './Txt';
 
@@ -58,7 +58,9 @@ export function CompareTable({
   onCellPress?: (rowKey: string, columnKey: string) => void;
 }) {
   const auto = useCompareAsCards();
-  const colWidth = compareColumnWidth(useWindowDimensions().fontScale);
+  const { fontScale } = useWindowDimensions();
+  const colWidth = compareColumnWidth(fontScale);
+  const pinWidth = comparePinWidth(fontScale);
   const { colors, radius } = useTheme();
   const card = useCardStyle();
   if (cards ?? auto) {
@@ -93,7 +95,7 @@ export function CompareTable({
     <View style={[styles.table, { backgroundColor: colors.surface1, borderColor: colors.line, borderRadius: radius.lg }]}>
       <View style={{ flexDirection: 'row' }}>
         {/* Pinned criteria column */}
-        <View style={{ width: COMPARE_PIN_WIDTH, borderRightWidth: 1, borderRightColor: colors.line }}>
+        <View style={{ width: pinWidth, borderRightWidth: 1, borderRightColor: colors.line }}>
           <View style={[styles.hd, styles.pinCell, { backgroundColor: colors.surface2 }]}>
             <Txt style={font(600, 14, 18)}>{cornerLabel}</Txt>
           </View>
