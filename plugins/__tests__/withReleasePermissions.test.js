@@ -27,4 +27,12 @@ describe('withReleasePermissions', () => {
     }
     expect(releaseManifest()).toContain('android:name="android.hardware.camera" android:required="false"');
   });
+
+  it('B-104: no foreground service permission; storage write only up to Android 9 (camera)', () => {
+    expect(REMOVE).toContain('android.permission.FOREGROUND_SERVICE');
+    expect(releaseManifest()).toContain('<uses-permission android:name="android.permission.FOREGROUND_SERVICE" tools:node="remove"/>');
+    expect(releaseManifest()).toContain(
+      '<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" tools:replace="android:maxSdkVersion"/>',
+    );
+  });
 });

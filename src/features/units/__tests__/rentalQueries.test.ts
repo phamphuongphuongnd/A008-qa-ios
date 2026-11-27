@@ -3,7 +3,7 @@ import * as Dec from '@/db/repos/decisions';
 import * as R from '@/db/repos/rentals';
 import { loadSampleRental } from '@/db/repos/sample';
 import * as Set from '@/db/repos/settings';
-import { makeTestDb } from '@/db/testing/testDb';
+import { makeTestDb, makeTestFiles } from '@/db/testing/testDb';
 
 import { loadCleanupReminderCount, loadRentalCards, loadRentalHub } from '../rentalQueries';
 import { deriveRentalStatus, initials } from '../rentalSummary';
@@ -129,6 +129,28 @@ describe('S-02 cleanup card', () => {
     expect(loadCleanupReminderCount(db, NOW)).toBe(0);
     Set.updateSettings(db, { reminders: { backup: true, cleanup: true, timers: true } });
     expect(loadCleanupReminderCount(db, NOW)).toBe(1);
+  });
+
+  it('B-62: after deleting applicant data the card and hub say so, not "No applicants yet"', () => {
+    const db = makeTestDb();
+    const id = realRental(db);
+    const ids = ['Sam Lee', 'Ana Ruiz', 'Bo Chen'].map((fullName, i) =>
+      A.createApplicant(db, { rentalId: id, receivedAt: `2026-09-0${i + 1}T09:00:00-04:00`, fullName, occupants: 1 }),
+    );
+    // A draft never counts (it was never received).
+    const draft = A.createApplicant(db, { rentalId: id, receivedAt: '2026-09-05T09:00:00-04:00', fullName: '', occupants: 1 });
+    A.updateApplicant(db, draft, { draft: true });
+    closeRental(db, id, '2026-09-15T12:00:00Z');
+    const files = makeTestFiles([]);
+    A.purgeApplicant(db, files, ids[1], { at: '2026-11-20T10:00:00Z' });
+    A.purgeApplicant(db, files, ids[2], { at: '2026-11-20T10:00:00Z' });
+    expect(loadRentalCards(db, 'closed')[0].summary.fullText).toBe('1 applicant · 2 deleted');
+    expect(loadRentalHub(db, id)).toMatchObject({ applicantCount: 1, deletedCount: 2 });
+
+    A.purgeApplicant(db, files, ids[0], { at: '2026-11-20T10:00:00Z' });
+    A.purgeApplicant(db, files, draft, { at: '2026-11-20T10:00:00Z' });
+    expect(loadRentalCards(db, 'closed')[0].summary.fullText).toBe('Applicant data deleted (3 applicants)');
+    expect(loadRentalHub(db, id)).toMatchObject({ applicantCount: 0, deletedCount: 3 });
   });
 
   it('never counts the sample rental', () => {

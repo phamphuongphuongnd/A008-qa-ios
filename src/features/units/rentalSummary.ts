@@ -49,17 +49,22 @@ export function summarizeRental(input: {
   rental: RentalInput;
   criteria: readonly Criterion[];
   applicants: readonly ApplicantInput[];
+  /** Received applicants whose data was deleted (S-24 / Delete applicant): only an anonymous record is left. */
+  deletedCount?: number;
 }): RentalCardSummary {
   const { applicants } = input;
+  const deleted = input.deletedCount ?? 0;
   const status = deriveRentalStatus(input.stored, applicants.map((a) => a.status));
   const readyCount = applicants.filter(
     (a) => AWAITING.has(a.status) && evaluateApplicant(input.rental, input.criteria, a).summary.ready,
   ).length;
   if (applicants.length === 0) {
-    const none = t('units:s02.count.none');
+    // B-62: after S-24 the rental had applicants — say their data was deleted, not "No applicants yet".
+    const none = deleted > 0 ? t('units:s02.count.allDeleted', { count: deleted }) : t('units:s02.count.none');
     return { applicantCount: 0, readyCount: 0, status, countText: none, detailText: null, fullText: none };
   }
-  const countText = t('units:s02.count.applicants', { count: applicants.length });
+  const applicantsText = t('units:s02.count.applicants', { count: applicants.length });
+  const countText = deleted > 0 ? `${applicantsText} · ${t('units:s02.count.someDeleted', { count: deleted })}` : applicantsText;
   const detailText =
     status === 'leased'
       ? t('units:s02.count.decisionMade')
