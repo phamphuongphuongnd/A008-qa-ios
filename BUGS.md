@@ -9,7 +9,7 @@
 <!-- Phần T (124 case, 702 test jest): chưa tìm thấy lỗi. -->
 
 **Gộp / trùng (không sửa riêng):** B-54 → B-47 · B-74(b) → B-41 · B-66, B-77…B-79 bỏ trống (QA-3 tự gộp trùng vào B-40 / B-47 / B-48 rồi đánh lại số).
-**Tổng (Android):** 35 lỗi — 🔴 4 · 🟠 12 · 🟡 19.
+**Tổng:** 37 lỗi — 🔴 4 · 🟠 12 · 🟡 21 (Android 35 + iOS 2; B-40 cũng xảy ra trên iOS).
 
 ## 🔴 Chặn
 - [ ] B-40 🔴 [TC-127, TC-196] S-01 — Cài mới / `pm clear` → mở thẳng S-03 "New rental", không bao giờ qua onboarding (cả launcher, cả iOS); Back chết; sau Delete all về S-02 rỗng chứ không về S-01 · nghi `app/_layout.tsx` `initialRouteName: '(tabs)'` trong `Stack.Protected guard={onboarded}` (3 làn + iOS cùng gặp)
@@ -51,6 +51,8 @@
 - [ ] B-74 🟡 [TC-188, 190] S-08 "No" gãy "N/o" (320 dp, 200 %); S-20 tiêu đề 2 dòng mất ngày; đổi cỡ chữ khi đang mở → chữ cắt tới khi mở lại
 - [ ] B-75 🟡 [TC-188] Vùng chạm < 48 dp: ‹ / + / More 44, segmented 42, chip S-20 40, nút Issues S-09 36
 - [ ] B-76 🟡 [TC-178, 181, 192] Lặt vặt — Unlock dạt trái màn rộng; App lock theo đồng hồ tường; "Folder: primary:Documents"; job sao lưu tuần cần mạng (máy bay không chạy); huy hiệu S-17 bị cắt
+- [ ] B-80 🟡 [TC-129, iOS] S-01 trang 3 — iPhone SE chữ mặc định: ô tick "not legal advice" bị thanh chân che; mockup: ô tick ngay trên Get started, "Explore…" là link chữ (app: nút tonal to)
+- [ ] B-81 🟡 [TC-200, iOS] S-03 — chữ AX-XL: ô chọn "State" gãy "Choos/e" (cùng họ B-74(a))
 
 ## Cần thử / đo trên Galaxy A13 (máy ảo không đại diện)
 - deriveKey PBKDF2 310 000 vòng: máy ảo dev **14–16 phút/lần** → đo A13 bản release, chốt `BACKUP_KDF` (`src/backup/format.ts:27`); nếu vẫn lâu → thành lỗi 🔴.

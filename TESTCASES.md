@@ -8,7 +8,7 @@
 > Lỗi → `BUGS.md` (dải B-01…B-39 cho phần T; phiên thử máy dùng tiếp B-40…).
 > **Tổng: 200 case** — T 124 (✅ 124 · ❌ 0) · M 76 (72 Android + 4 iOS). Jest: 67 suite / 702 test xanh (29 test mới trong 5 file, đánh dấu `(mới)`).
 > **Phần B Android đã chạy 2026-11-26** trên 3 máy ảo Android 17 song song (dev client x86_64, đóng băng `6b1fea8`, chi tiết `qa/runs/2026-11-26-qa1|qa2|qa3.md`):
-> **✅ 50** (5 ✅* dữ liệu chèn tay vì B-53) · **❌ 19** · **⏭ 3** → 35 lỗi trong `BUGS.md` (🔴 4 · 🟠 12 · 🟡 19). iOS (TC-197…200): chờ làn QA-iOS.
+> **✅ 50** (5 ✅* dữ liệu chèn tay vì B-53) · **❌ 19** · **⏭ 3** → 35 lỗi trong `BUGS.md` (🔴 4 · 🟠 12 · 🟡 19). iOS (TC-197…200, GitHub Actions simulator, `qa/runs/2026-11-26-ios.md`): ✅ 1 · ⏭ 3 (16/16 luồng Maestro kẹt ở B-40) · TC-127 ❌ B-40 cả trên iOS.
 > Ước tính một lượt máy: B1 15′ · B2 70′ · B3 75′ · B4 30′ · B5 45′ · B6 40′ · B7 15′ ≈ **4,5 – 5 giờ**.
 
 ## A. Tự động (T)
@@ -235,7 +235,7 @@
 | TC-195 | §10 | `adb backup` / Auto Backup: kiểm `allowBackup=false` trong manifest đã cài (`dumpsys package`) | Không cho sao lưu hệ thống | M | ✅ |
 | TC-196 | F-19 S-27 | Delete all data: gõ "delete" (thường) rồi "DELETE" | Sai chữ → nút khoá; đúng → về S-01, thư mục files trống, không còn thông báo hẹn | M | ❌ B-40 |
 | **B8** | | **iOS** | | | |
-| TC-197 | iOS | Face ID thoát Applicant mode; khoá app | Như Android | M | ⏭ iOS — EAS/Appetize sau |
-| TC-198 | iOS (G-05) | File Applicant không vào iCloud backup | `isExcludedFromBackup` trên documentDirectory/applicants | M | ⏭ iOS — EAS/Appetize sau |
-| TC-199 | iOS (G-06) | Tự sao lưu tuần vào iCloud Drive sau khi khởi động lại app | Vẫn ghi được (bookmark thư mục) | M | ⏭ iOS — EAS/Appetize sau |
-| TC-200 | iOS | Sheet S-07 / S-15 (formSheet), bộ chọn ngày, share sheet, PDF expo-print | Đúng kiểu iOS | M | ⏭ iOS — EAS/Appetize sau |
+| TC-197 | iOS | Face ID thoát Applicant mode; khoá app | Như Android | M | ⏭ iOS: luồng không tới được (B-40); Face ID không có trên simulator |
+| TC-198 | iOS (G-05) | File Applicant không vào iCloud backup | `isExcludedFromBackup` trên documentDirectory/applicants | M | ✅ iOS G-05 EXCLUDED (3 run × 2 làn) |
+| TC-199 | iOS (G-06) | Tự sao lưu tuần vào iCloud Drive sau khi khởi động lại app | Vẫn ghi được (bookmark thư mục) | M | ⏭ iOS: luồng không tới được (B-40); iCloud Drive không có trên simulator |
+| TC-200 | iOS | Sheet S-07 / S-15 (formSheet), bộ chọn ngày, share sheet, PDF expo-print | Đúng kiểu iOS | M | ⏭ iOS: luồng 03–05 không tới được (B-40); S-01/S-03 đã xem, B-80/B-81 |
