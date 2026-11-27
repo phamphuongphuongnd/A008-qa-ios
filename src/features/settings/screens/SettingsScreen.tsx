@@ -101,7 +101,7 @@ export default function SettingsScreen() {
   return (
     <Screen header={<LargeTitle title={t('system:s21.title')} />} bottomInset={false}>
       {sections.map((s, i) => (
-        <View key={s.title ?? `s${i}`} style={{ gap: 16 }}>
+        <View key={s.title ?? `s${i}`} style={s.title ? undefined : { gap: 16 }}>
           {s.title ? <SectionHeader title={s.title} /> : null}
           <ListGroup>
             {s.rows.map((r) => (

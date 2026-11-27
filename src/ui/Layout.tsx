@@ -1,5 +1,5 @@
 import { ChevronLeft } from 'lucide-react-native';
-import { Children, type ReactNode } from 'react';
+import { Children, useState, type ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -19,6 +19,7 @@ import { font, useTheme } from '@/theme';
 
 import { IconButton } from './Button';
 import { Glyph } from './Glyph';
+import { TOUCH_MIN, appBarSideWidth } from './touch';
 import { Txt } from './Txt';
 
 /** Content column: full width on phones, max 600 centred on tablets (design size.content-max). */
@@ -95,9 +96,14 @@ export function AppBar({
   right?: ReactNode;
   align?: 'center' | 'left';
 }) {
+  // B-74: both sides as wide as the wider one really is (back button 48, right actions measured) so a centred title
+  // stays centred without the old fixed 88 + 88 that left a 320 dp phone ~96 dp for "Move-in checklist".
+  const [rightW, setRightW] = useState(0);
+  const sideW = appBarSideWidth(back, right ? rightW : 0);
+  const centred = align === 'center';
   return (
     <View style={styles.appbar}>
-      <View style={[styles.side, align === 'left' && styles.sideLeft]}>
+      <View style={[styles.side, centred ? { width: sideW } : styles.sideLeft]}>
         {back ? (
           <IconButton icon={ChevronLeft} accessibilityLabel={t('common:actions.back')} onPress={onBack ?? (() => router.back())} />
         ) : null}
@@ -109,12 +115,19 @@ export function AppBar({
           </Txt>
         ) : null}
         {subtitle ? (
-          <Txt numberOfLines={1} variant="caption" color="inkMuted" style={[font(400, 12, 16), { textAlign: align }]}>
+          // 2 lines: on a narrow phone the end of "Jordan Ellis · Jan 1, 2027" (the date) must not be cut off.
+          <Txt numberOfLines={2} variant="caption" color="inkMuted" style={[font(400, 12, 16), { textAlign: align }]}>
             {subtitle}
           </Txt>
         ) : null}
       </View>
-      <View style={[styles.side, styles.sideRight, align === 'left' && styles.sideLeft]}>{right}</View>
+      <View style={[styles.side, styles.sideRight, centred ? { width: sideW } : styles.sideLeft]}>
+        {right ? (
+          <View style={styles.rightContent} onLayout={(e) => setRightW(Math.ceil(e.nativeEvent.layout.width))}>
+            {right}
+          </View>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -181,13 +194,16 @@ export function ModeBar({ title, actionLabel, onAction }: { title: string; actio
       <Txt style={[font(600, 14, 20), { color: colors.onAccent, flex: 1 }]}>{title}</Txt>
       <Pressable
         onPress={onAction}
-        hitSlop={8}
         accessibilityRole="button"
         accessibilityLabel={actionLabel}
-        style={({ pressed }) => [styles.lock, { backgroundColor: pressed ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.16)' }]}
+        style={styles.lockFrame}
       >
-        <Glyph name="lock" size={16} color={colors.onAccent} strokeWidth={2} />
-        <Txt style={[font(600, 13, 18), { color: colors.onAccent }]}>{actionLabel}</Txt>
+        {({ pressed }) => (
+          <View style={[styles.lock, { backgroundColor: pressed ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.16)' }]}>
+            <Glyph name="lock" size={16} color={colors.onAccent} strokeWidth={2} />
+            <Txt style={[font(600, 13, 18), { color: colors.onAccent }]}>{actionLabel}</Txt>
+          </View>
+        )}
       </Pressable>
     </View>
   );
@@ -197,15 +213,17 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   body: { width: '100%', alignSelf: 'center', paddingTop: 4, paddingHorizontal: 16, gap: 16 },
   appbar: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: 52, paddingTop: 4, paddingBottom: 8, paddingHorizontal: 16 },
-  side: { minWidth: 44, flexDirection: 'row', alignItems: 'center', flexBasis: 88, flexShrink: 0 },
+  side: { flexDirection: 'row', alignItems: 'center', flexShrink: 0 },
   sideRight: { justifyContent: 'flex-end' },
-  sideLeft: { flexBasis: 'auto' },
+  sideLeft: { minWidth: TOUCH_MIN },
+  rightContent: { flexDirection: 'row', alignItems: 'center', flexShrink: 0 },
   titleBox: { flex: 1, minWidth: 0 },
   large: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 12, paddingHorizontal: 16, paddingBottom: 4 },
   heroRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, alignItems: 'center' },
   btnbar: { paddingTop: 12, paddingHorizontal: 16, borderTopWidth: 1 },
   btnrow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   btnCell: { flexGrow: 1, flexBasis: 120 },
-  modebar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingBottom: 6, paddingLeft: 16, paddingRight: 12 },
+  modebar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingBottom: 2, paddingLeft: 16, paddingRight: 12 },
+  lockFrame: { minHeight: TOUCH_MIN, justifyContent: 'center' }, // B-75: 48 frame around the 34 pill
   lock: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 34, paddingHorizontal: 12, borderRadius: 17 },
 });

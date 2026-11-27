@@ -5,6 +5,7 @@ import { font, useTheme, withAlpha } from '@/theme';
 
 import { Glyph } from './Glyph';
 import { haptics } from './haptics';
+import { TOUCH_MIN } from './touch';
 import { Txt } from './Txt';
 
 export interface Choice<T extends string> {
@@ -36,9 +37,10 @@ export function Segmented<T extends string>({
       accessibilityLabel={accessibilityLabel}
       style={[styles.seg, { backgroundColor: colors.surface2, borderRadius: radius.md }, style]}
     >
-      {options.map((o) => {
+      {options.map((o, i) => {
         const on = o.value === value;
         return (
+          // B-75: each option's frame is the full 48 track height; the 42 pill is drawn inside it (track padding 3).
           <Pressable
             key={o.value}
             onPress={() => {
@@ -50,19 +52,23 @@ export function Segmented<T extends string>({
             accessibilityRole="radio"
             accessibilityLabel={o.accessibilityLabel ?? o.label}
             accessibilityState={{ checked: on, selected: on }}
-            style={[
-              styles.segItem,
-              on && {
-                backgroundColor: colors.surface1,
-                borderWidth: 1,
-                borderColor: colors.line,
-                boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
-              },
-            ]}
+            style={[styles.segFrame, { paddingLeft: i === 0 ? 3 : 1, paddingRight: i === options.length - 1 ? 3 : 1 }]}
           >
-            <Txt align="center" style={[font(on ? 600 : 500, 14, 20), { color: on ? colors.ink : colors.inkMuted }]}>
-              {o.label}
-            </Txt>
+            <View
+              style={[
+                styles.segItem,
+                on && {
+                  backgroundColor: colors.surface1,
+                  borderWidth: 1,
+                  borderColor: colors.line,
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+                },
+              ]}
+            >
+              <Txt align="center" style={[font(on ? 600 : 500, 14, 20), { color: on ? colors.ink : colors.inkMuted }]}>
+                {o.label}
+              </Txt>
+            </View>
           </Pressable>
         );
       })}
@@ -70,7 +76,7 @@ export function Segmented<T extends string>({
   );
 }
 
-/** Choice pills (40 high): single choice (`value`) or several (`values`). Selected = solid accent. */
+/** Choice pills (40 high, in a 48 touch frame — B-75): single choice (`value`) or several (`values`). Selected = solid accent. */
 export function ChoicePills<T extends string>({
   options,
   value,
@@ -95,7 +101,6 @@ export function ChoicePills<T extends string>({
         return (
           <Pressable
             key={o.value}
-            hitSlop={4}
             onPress={() => {
               haptics.tick();
               if (multi) onToggle?.(o.value, !on);
@@ -104,15 +109,21 @@ export function ChoicePills<T extends string>({
             accessibilityRole={multi ? 'checkbox' : 'radio'}
             accessibilityLabel={o.accessibilityLabel ?? o.label}
             accessibilityState={{ checked: on }}
-            style={({ pressed }) => [
-              styles.pill,
-              on
-                ? { backgroundColor: pressed ? colors.accentPressed : colors.accent }
-                : { backgroundColor: pressed ? colors.surface2 : colors.surface1, borderWidth: 1.5, borderColor: colors.lineStrong },
-            ]}
+            style={styles.pillFrame}
           >
-            {on && multi ? <Glyph name="check" size={16} color={colors.onAccent} strokeWidth={2.4} /> : null}
-            <Txt style={[font(500, 14, 20), { color: on ? colors.onAccent : colors.ink }]}>{o.label}</Txt>
+            {({ pressed }) => (
+              <View
+                style={[
+                  styles.pill,
+                  on
+                    ? { backgroundColor: pressed ? colors.accentPressed : colors.accent }
+                    : { backgroundColor: pressed ? colors.surface2 : colors.surface1, borderWidth: 1.5, borderColor: colors.lineStrong },
+                ]}
+              >
+                {on && multi ? <Glyph name="check" size={16} color={colors.onAccent} strokeWidth={2.4} /> : null}
+                <Txt style={[font(500, 14, 20), { color: on ? colors.onAccent : colors.ink }]}>{o.label}</Txt>
+              </View>
+            )}
           </Pressable>
         );
       })}
@@ -136,11 +147,10 @@ export function Switch({
     <Pressable
       onPress={() => onChange(!value)}
       disabled={disabled}
-      hitSlop={8}
       accessibilityRole="switch"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ checked: value, disabled: !!disabled }}
-      style={{ opacity: disabled ? 0.45 : 1 }}
+      style={[styles.switchFrame, { opacity: disabled ? 0.45 : 1 }]}
     >
       <SwitchTrack on={value} />
     </Pressable>
@@ -328,7 +338,6 @@ export function Stepper({
     <Pressable
       onPress={fn}
       disabled={!on}
-      hitSlop={4}
       importantForAccessibility="no"
       accessibilityElementsHidden
       style={({ pressed }) => [styles.stepBtn, pressed && { backgroundColor: colors.surface2 }]}
@@ -364,15 +373,19 @@ export function Stepper({
 }
 
 const styles = StyleSheet.create({
-  seg: { flexDirection: 'row', padding: 3, gap: 2 },
+  seg: { flexDirection: 'row' },
+  segFrame: { flex: 1, minHeight: TOUCH_MIN, paddingVertical: 3 },
   segItem: { flex: 1, minHeight: 42, paddingVertical: 9, paddingHorizontal: 6, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  pills: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  // Rows of 48 frames around 40 pills: the 8 between rows comes from the frames.
+  pills: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 8 },
+  pillFrame: { minHeight: TOUCH_MIN, justifyContent: 'center' },
   pill: { minHeight: 40, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 6 },
+  switchFrame: { minHeight: TOUCH_MIN, minWidth: TOUCH_MIN, justifyContent: 'center', alignItems: 'center' },
   track: { width: 52, height: 32, borderRadius: 16 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 16, minHeight: 56 },
   check: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, minHeight: 48, paddingVertical: 4 },
   option: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, padding: 14 },
-  stepper: { flexDirection: 'row', alignItems: 'stretch', alignSelf: 'flex-start', minHeight: 40, borderRadius: 10, borderWidth: 1.5, overflow: 'hidden' },
-  stepBtn: { width: 44, alignItems: 'center', justifyContent: 'center' },
+  stepper: { flexDirection: 'row', alignItems: 'stretch', alignSelf: 'flex-start', minHeight: TOUCH_MIN, borderRadius: 10, borderWidth: 1.5, overflow: 'hidden' },
+  stepBtn: { width: TOUCH_MIN, alignItems: 'center', justifyContent: 'center' },
   stepVal: { minWidth: 56, paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center', borderLeftWidth: 1, borderRightWidth: 1 },
 });

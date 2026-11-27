@@ -130,7 +130,7 @@ export default function RentalHubScreen() {
             ) : null}
           </View>
           <View>
-            <SectionHeader title={t('units:s06.applicants')} />
+            <SectionHeader title={t('units:s06.applicants')} meta={t('units:s06.sortedByReceived')} />
             <ListGroup>
               {hub.applicants.map((a) => (
                 <ApplicantRow
