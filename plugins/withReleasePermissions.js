@@ -20,7 +20,10 @@
  *   the landlord in "Alarms & reminders" (src/notifications/exactAlarms.ts); denied = inexact, the app works the same.
  *   Play declaration (Bước 6): see apps/A008-evenlease report fix-decision.
  * - USE_BIOMETRIC, USE_FINGERPRINT — App lock and leaving Applicant mode (expo-local-authentication).
- * TODO(6B): `aapt2 dump permissions` on the release APK before filling in Play Data safety.
+ * - WRITE_EXTERNAL_STORAGE maxSdkVersion 28 — camera document photos on Android 9 and older (see releaseManifest).
+ * Removed in release besides the list below: FOREGROUND_SERVICE (B-104, no foreground service).
+ * A13 release APK (2026-11-27, `aapt2 dump permissions`): ACCESS_LOCAL_NETWORK / CHANGE_WIFI_MULTICAST_STATE are dev-client
+ * only. Re-run `aapt2 dump permissions` on the store build before Play Data safety.
  */
 const fs = require('fs');
 const path = require('path');
@@ -32,6 +35,10 @@ const REMOVE = [
   'android.permission.ACCESS_WIFI_STATE',
   // Dev menu overlay.
   'android.permission.SYSTEM_ALERT_WINDOW',
+  // B-104: WorkManager (work-runtime, via expo-background-task) declares it for SystemForegroundService, used only by
+  // workers that call setForeground(). The weekly backup worker never does, and Evenlease has no foreground service —
+  // without it Play asks no foreground-service type declaration (Android 14+).
+  'android.permission.FOREGROUND_SERVICE',
   // Push (FCM) and Play install referrer — local notifications only, no attribution.
   'com.google.android.c2dm.permission.RECEIVE',
   'com.google.android.finsky.permission.BIND_GET_INSTALL_REFERRER_SERVICE',
@@ -63,7 +70,9 @@ const releaseManifest = () =>
     '<manifest xmlns:android="http://schemas.android.com/apk/res/android"',
     '    xmlns:tools="http://schemas.android.com/tools">',
     ...REMOVE.map((p) => `    <uses-permission android:name="${p}" tools:node="remove"/>`),
-    // A006 QA-100 B-115: on Android 9 and older expo-image-picker's camera also needs WRITE_EXTERNAL_STORAGE.
+    // Kept on purpose (B-104): A006 QA-100 B-115 — on Android 9 and older (still installable) expo-image-picker's camera
+    // writes the photo to shared storage and needs WRITE_EXTERNAL_STORAGE. Capped at maxSdkVersion 28: on Android 10+
+    // the permission is not requested at all.
     '    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" tools:replace="android:maxSdkVersion"/>',
     ...OPTIONAL_FEATURES.map(
       (f) => `    <uses-feature android:name="${f}" android:required="false" tools:replace="android:required"/>`,
