@@ -7,23 +7,17 @@ name: 01_onboarding
 - extendedWaitUntil:
     visible: "(New rental|Pick tenants the same way.*)"
     timeout: 90000
-# Run 45771579639 (B-40, same as Android): a fresh install opened "New rental" instead of S-01 (initialRouteName '(tabs)' is
-# protected). Keep the evidence, then reach S-01 by its link so the iOS checks after it still run.
+# B-40 (runs 1-3: a fresh install opened "New rental" instead of S-01). Fixed in integ/round1: the real path must
+# reach S-01; if "New rental" still shows, keep the evidence and let the next step fail (= B-40 not fixed on iOS).
+# (Workaround if ever needed again: openLink "evenlease://onboarding", then tap "Open" on iOS's 'Open in "Evenlease"?'.)
 - runFlow:
     when:
       visible: "New rental"
     commands:
       - takeScreenshot: ${LANE}_01z_B40_fresh_install_new_rental
-      - openLink: "evenlease://onboarding"
-      # iOS asks 'Open in "Evenlease"?' for a custom-scheme link (run 45791288713).
-      - waitForAnimationToEnd:
-          timeout: 5000
-      - tapOn:
-          text: "Open"
-          optional: true
 - extendedWaitUntil:
     visible: "Pick tenants the same way.*"
-    timeout: 90000
+    timeout: 10000
 - takeScreenshot: ${LANE}_01a_page1
 - tapOn: "Next"
 - extendedWaitUntil:

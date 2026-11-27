@@ -27,6 +27,13 @@ name: 07_backup_folder
 - tapOn:
     text: "Close"
     optional: true
+# B-68 fix: the share sheet closed without saving anywhere → "Did you save the backup?" → Not saved.
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: ${LANE}_07c2_did_you_save
+- tapOn:
+    text: "Not saved"
+    optional: true
 - extendedWaitUntil:
     visible: "Automatic backup"
     timeout: 15000

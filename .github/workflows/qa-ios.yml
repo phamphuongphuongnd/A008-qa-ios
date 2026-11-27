@@ -38,7 +38,7 @@ jobs:
   ios:
     name: iOS Simulator QA
     runs-on: ${{ inputs.runner || 'macos-26' }}
-    timeout-minutes: 120
+    timeout-minutes: 170
     steps:
       - uses: actions/checkout@v4
 
