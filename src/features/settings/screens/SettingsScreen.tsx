@@ -2,7 +2,6 @@
  * S-21 Settings — tab 3 (product.md S-21, mockup v2 "S-21 Settings"). Rows from `settingsSections` (view.ts);
  * name / contact, appearance and reminders open sheets here; the rest push their screens.
  */
-import Constants from 'expo-constants';
 import { Bell, CloudUpload, Eraser, FlaskConical, Lock, SunMoon } from 'lucide-react-native';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
@@ -35,7 +34,7 @@ import {
 import { useAuthCapability, useCleanupCandidates, useSettings, isIos } from '../hooks';
 import { settingsActions } from '../index';
 import type { ContactErrors } from '../summary';
-import { appVersion } from '../about';
+import { currentAppVersion } from '../appVersionNative';
 import { settingsSections, type SettingsRowKey } from '../view';
 
 const ICONS: Partial<Record<SettingsRowKey, IconComponent>> = {
@@ -65,7 +64,7 @@ export default function SettingsScreen() {
     ios: isIos,
     cleanupCount: cleanup.length,
     hasSample,
-    appVersion: appVersion(Constants),
+    appVersion: currentAppVersion(),
   });
 
   const onRow = (key: SettingsRowKey) => {

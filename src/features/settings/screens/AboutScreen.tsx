@@ -2,7 +2,6 @@
  * S-21 About (mockup v2 "S-21 · About"): app icon + wordmark, "Version 1.0 (1) · No account · No servers", Legal & privacy
  * (S-26), Licenses (sheet), Send feedback (mailto — hidden while `FEEDBACK_EMAIL` is empty), "not legal advice" footer.
  */
-import Constants from 'expo-constants';
 import { FileText, Mail, Scale } from 'lucide-react-native';
 import { useState } from 'react';
 import { Linking, View } from 'react-native';
@@ -13,7 +12,8 @@ import { router } from '@/services/router';
 import { font } from '@/theme';
 import { AppBar, LegalFooter, ListGroup, ListRow, LogoMark, Screen, Sheet, Txt, Wordmark } from '@/ui';
 
-import { aboutLine, appVersion, feedbackMailto, licenseGroups } from '../about';
+import { aboutLine, feedbackMailto, licenseGroups } from '../about';
+import { currentAppVersion } from '../appVersionNative';
 import { withLockSuspended } from '../lockController';
 
 export default function AboutScreen() {
@@ -25,7 +25,7 @@ export default function AboutScreen() {
         <LogoMark size={88} />
         <Wordmark height={30} />
         <Txt color="inkMuted" style={[font(400, 14, 20), { textAlign: 'center' }]}>
-          {aboutLine(appVersion(Constants))}
+          {aboutLine(currentAppVersion())}
         </Txt>
       </View>
       <ListGroup>
