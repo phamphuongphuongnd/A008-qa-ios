@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { PixelRatio, Pressable, ScrollView, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Evidence, Outcome } from '@/engine';
 import { t } from '@/i18n';
@@ -7,6 +7,7 @@ import { font, useTheme, withAlpha } from '@/theme';
 
 import { BadgeRow, EvidenceTag, StatusBadge, evidenceLabel, outcomeLabel } from './Badges';
 import { useCardStyle } from './Card';
+import { COMPARE_CARDS_FONT_SCALE, fontScaleAtLeast } from './fontScale';
 import { Txt } from './Txt';
 
 export interface CompareColumn {
@@ -24,16 +25,15 @@ export type CompareCell =
 
 export interface CompareRow {
   key: string;
-  /** Criterion ("Income ≥ 3.0×"). */
+  /** Short criterion label ("Income ≥ 3.0×", `criterionCompareLabel`). */
   label: string;
   bold?: boolean;
   cells: Record<string, CompareCell>;
 }
 
-/** From 130 % text the table becomes one card per applicant (product.md §5.0). */
+/** From 130 % text the table becomes one card per applicant (product.md §5 S-17). Re-renders when the scale changes. */
 export function useCompareAsCards(): boolean {
-  useWindowDimensions(); // re-render when the font scale changes
-  return PixelRatio.getFontScale() >= 1.3;
+  return fontScaleAtLeast(useWindowDimensions().fontScale, COMPARE_CARDS_FONT_SCALE);
 }
 
 /**
@@ -107,7 +107,8 @@ export function CompareTable({
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           {columns.map((col) => (
-            <View key={col.key} style={{ width: COL }}>
+            // minWidth, not width: a column grows to its widest badge ("Needs review") instead of clipping it (B-46).
+            <View key={col.key} style={{ minWidth: COL }}>
               <View style={[styles.hd, { backgroundColor: colors.surface2 }]}>
                 <Txt numberOfLines={1} style={font(600, 14, 18)}>
                   {col.title}

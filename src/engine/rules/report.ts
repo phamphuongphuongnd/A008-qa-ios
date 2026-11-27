@@ -36,7 +36,7 @@ export function evaluateEviction(c: CriterionOf<'C3'>, applicant: ApplicantInput
       reason = 'A case was filed but there was no judgment against the applicant';
     } else {
       outcome = 'met';
-      reason = `No eviction records in the past ${y} years`;
+      reason = report.evictions.length ? `Screening report: no cases in the past ${y} years` : 'Screening report: no cases found';
     }
     const mismatches: string[] = [];
     if (answer) {
@@ -138,7 +138,7 @@ export function evaluateLandlordBalance(c: CriterionOf<'C5'>, applicant: Applica
     evidence: s.evidence,
     source: s.source,
     verifiedOn: s.on,
-    reason: 'No unpaid balance owed to a past landlord',
+    reason: s.source === 'screening_report' ? 'Report: no landlord collections' : 'Landlord says nothing is owed',
   });
 }
 

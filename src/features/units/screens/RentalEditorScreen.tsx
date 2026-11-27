@@ -1,7 +1,7 @@
 /** S-03 Rental editor — product.md §5 S-03, mockup v2 "Rental editor" (create: step 1 of 3; edit: Save). */
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { parseId, routes } from '@/routes';
 import { t } from '@/i18n';
@@ -22,6 +22,7 @@ import {
   Segmented,
   TextField,
   Txt,
+  formCellBasis,
   haptics,
   showSnackbar,
   useDiscardGuard,
@@ -85,6 +86,9 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
   const set = <K extends RentalField>(k: K, v: RentalForm[K]) => setForm((f) => ({ ...f, [k]: v }));
   const blur = (f: RentalField) => () => setTouched((x) => ({ ...x, [f]: true }));
   const hint = rentalModeHint(form);
+  // B-81: cells ask for more width as the text grows, so State / ZIP stack instead of breaking words at AX-XL / 200 %.
+  const { fontScale } = useWindowDimensions();
+  const cell = [styles.cell, { flexBasis: formCellBasis(fontScale) }];
 
   const save = (confirmModeChange = false) => {
     if (firstErrorField(validateRental(form))) {
@@ -146,7 +150,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
       />
       <View style={styles.grid}>
         <TextField
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.unit')}
           value={form.unit}
           onChangeText={(v) => set('unit', v)}
@@ -155,7 +159,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
           maxLength={120}
         />
         <TextField
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.city')}
           value={form.city}
           onChangeText={(v) => set('city', v)}
@@ -166,7 +170,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
         />
       </View>
       <View style={styles.grid}>
-        <View style={styles.cell}>
+        <View style={cell}>
           <SelectField
             label={t('units:s03.fields.state')}
             value={form.state}
@@ -178,7 +182,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
         </View>
         <TextField
           ref={zipRef}
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.zip')}
           value={form.zip}
           onChangeText={(v) => set('zip', v.replace(/[^0-9]/g, '').slice(0, 5))}
@@ -191,7 +195,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
       </View>
       <View style={styles.grid}>
         <MoneyField
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.rent')}
           required
           cents={form.rentCents}
@@ -199,7 +203,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
           onBlur={blur('rentCents')}
           error={errorOf('rentCents')}
         />
-        <View style={styles.cell}>
+        <View style={cell}>
           <SelectField
             label={t('units:s03.fields.bedrooms')}
             value={form.bedrooms}
@@ -210,7 +214,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
         </View>
       </View>
       <View style={styles.grid}>
-        <View style={styles.cell}>
+        <View style={cell}>
           <SelectField
             label={t('units:s03.fields.bathrooms')}
             value={form.bathrooms}
@@ -220,7 +224,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
           />
         </View>
         <DateField
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.availableOn')}
           value={form.availableOn}
           onChange={(v) => set('availableOn', v)}
@@ -229,7 +233,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
       </View>
       <View style={styles.grid}>
         <MoneyField
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.deposit')}
           cents={form.depositCents}
           onChangeCents={(v) => set('depositCents', v)}
@@ -237,7 +241,7 @@ function Editor({ rentalId, initial }: { rentalId: number | null; initial: Renta
           error={errorOf('depositCents')}
         />
         <MoneyField
-          style={styles.cell}
+          style={cell}
           label={t('units:s03.fields.fee')}
           help={t('units:s03.fields.feeNote')}
           cents={form.feeCents}

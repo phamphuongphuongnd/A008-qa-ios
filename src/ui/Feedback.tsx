@@ -7,6 +7,7 @@ import { font, useTheme } from '@/theme';
 
 import { Button, type IconComponent } from './Button';
 import { Glyph } from './Glyph';
+import { TOUCH_MIN } from './touch';
 import { Txt } from './Txt';
 
 export type BannerTone = 'warn' | 'info' | 'accent';
@@ -60,7 +61,7 @@ export function Banner({
         {actions?.length ? (
           <View style={styles.acts}>
             {actions.map((a) => (
-              <Pressable key={a.label} onPress={a.onPress} hitSlop={12} accessibilityRole="button" accessibilityLabel={a.label}>
+              <Pressable key={a.label} onPress={a.onPress} accessibilityRole="button" accessibilityLabel={a.label} style={styles.act}>
                 <Txt style={[font(600, 14, 20), { color: colors.accent }]}>{a.label}</Txt>
               </Pressable>
             ))}
@@ -254,7 +255,9 @@ export function DocThumb({
 
 const styles = StyleSheet.create({
   banner: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, paddingVertical: 12, paddingHorizontal: 14 },
-  acts: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 8 },
+  // B-75: each link is a 48-high frame (it brings its own space above).
+  acts: { flexDirection: 'row', flexWrap: 'wrap', columnGap: 16 },
+  act: { minHeight: TOUCH_MIN, justifyContent: 'center' },
   legal: { flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start', gap: 6, paddingVertical: 4, paddingHorizontal: 12 },
   empty: { alignItems: 'center', gap: 10, paddingTop: 48, paddingHorizontal: 24, paddingBottom: 24 },
   art: { width: 112, height: 112, borderRadius: 56, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },

@@ -3,9 +3,8 @@
  * with `makeTestDb()`), re-running when one of its tables is written. 'use no memo' keeps React Compiler from
  * memoising the query closures (fact react-compiler-use-no-memo).
  */
-import { useEffect, useState } from 'react';
-
 import { db, useLive, type LiveTable } from '@/db';
+import { useClock } from '@/services/clock';
 
 import { loadDecisionContext } from './decision';
 import { decisionFileData } from './decisionFile';
@@ -30,15 +29,13 @@ export const REVIEW_TABLES: readonly LiveTable[] = [
   'timers',
 ];
 
-/** Current time, ticking every `everyMs` (First-come clocks: "41 h left"). Local ISO with offset. */
+/**
+ * Current time, ticking every `everyMs` and when the app returns to the foreground (First-come clocks: "41 h left",
+ * B-59). Local ISO with offset.
+ */
 export function useNow(everyMs = 60_000): string {
   'use no memo';
-  const [now, setNow] = useState(() => localIso());
-  useEffect(() => {
-    const id = setInterval(() => setNow(localIso()), everyMs);
-    return () => clearInterval(id);
-  }, [everyMs]);
-  return now;
+  return localIso(useClock(everyMs));
 }
 
 /** S-09 Applicant detail: live results, issues, sections, place in line, "Make a decision" gate. */

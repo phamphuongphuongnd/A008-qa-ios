@@ -7,7 +7,7 @@
  */
 import { useLocalSearchParams } from 'expo-router';
 import { TriangleAlert } from 'lucide-react-native';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 
 import type { DecisionKind } from '@/engine';
@@ -26,7 +26,6 @@ import {
   LegalFooter,
   MoneyField,
   OptionCard,
-  Screen,
   SectionHeader,
   TextField,
   haptics,
@@ -50,6 +49,7 @@ import {
   type DecisionForm,
 } from '../viewModel';
 import { Hint, idParam, NotFoundScreen } from '../components/DecisionParts';
+import { SheetFrame, type SheetScrollRef } from '../components/SheetFrame';
 
 export default function DecisionScreen() {
   const p = useLocalSearchParams<{ id: string; kind?: string }>();
@@ -71,6 +71,14 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
   const preview = input ? checkDecision(ctx, input) : null;
   const view = decisionFormView(ctx, form, preview);
   const guard = useDiscardGuard(isDecisionDirty(initial, form) && !saving && !notice);
+  // B-48: keep "Explain in your words" in view above the keyboard (y inside the scroll content).
+  const scrollRef = useRef<SheetScrollRef>(null);
+  const reasonsY = useRef(0);
+  const noteY = useRef(0);
+  const noteFocused = useRef(false);
+  const onKeyboard = useCallback((overlap: number) => {
+    if (overlap > 0 && noteFocused.current) scrollRef.current?.scrollTo({ y: Math.max(0, reasonsY.current + noteY.current - 16), animated: true });
+  }, []);
 
   // After a save the status is closed (no options): keep the sheet (and its notice dialog) until it leaves.
   if (!ctx.options.length && !saving) return <NotFoundScreen title={t('decision:s15.title')} message={t('decision:s15.notAvailable')} />;
@@ -101,7 +109,9 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
   };
 
   return (
-    <Screen
+    <SheetFrame
+      scrollRef={scrollRef}
+      onKeyboard={onKeyboard}
       header={<AppBar title={t('decision:s15.title')} subtitle={name} />}
       footer={
         <ButtonBar hint={tried && view.errors > 0 ? t('decision:s15.fixErrors', { count: view.errors }) : (view.noticeHint ?? undefined)}>
@@ -150,7 +160,7 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
       ) : null}
 
       {view.reasons ? (
-        <View style={{ gap: 8 }}>
+        <View style={{ gap: 8 }} onLayout={(e) => (reasonsY.current = e.nativeEvent.layout.y)}>
           <SectionHeader title={t('decision:s15.reasonsTitle')} />
           {view.reasons.items.map((r) => (
             <OptionCard
@@ -163,12 +173,16 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
             />
           ))}
           {tried && view.reasons.error ? <Banner tone="warn">{view.reasons.error}</Banner> : null}
-          <TextField
-            label={t('decision:s15.noteLabel')}
-            value={form.note}
-            multiline
-            onChangeText={(note) => setForm((f) => ({ ...f, note }))}
-          />
+          <View onLayout={(e) => (noteY.current = e.nativeEvent.layout.y)}>
+            <TextField
+              label={t('decision:s15.noteLabel')}
+              value={form.note}
+              multiline
+              onFocus={() => (noteFocused.current = true)}
+              onBlur={() => (noteFocused.current = false)}
+              onChangeText={(note) => setForm((f) => ({ ...f, note }))}
+            />
+          </View>
         </View>
       ) : null}
 
@@ -205,6 +219,6 @@ function DecisionSheet({ ctx, preset }: { ctx: DecisionContext; preset: Decision
           router.replace(routes.letter(id, { decisionId: n.decisionId, kind: 'adverse_action' }));
         }}
       />
-    </Screen>
+    </SheetFrame>
   );
 }

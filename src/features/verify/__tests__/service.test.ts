@@ -198,6 +198,8 @@ describe('S-14 background review service', () => {
     expect(saveBackgroundSheet(db, jordan, form, NOW).ok).toBe(true);
     expect(result(db, rentalId, jordan, 'C10')).toMatchObject({ outcome: 'needs_review', verifiedOn: '2026-12-10' });
     expect(chooseBackgroundOutcome(db, jordan, form, 'withdraw', NOW)).toEqual({ ok: false, errors: [], block: 'assessment_required' });
+    // B-50: "Continue with the offer" also needs the assessment when there is a conviction in the lookback.
+    expect(chooseBackgroundOutcome(db, jordan, form, 'continue', NOW)).toEqual({ ok: false, errors: [], block: 'assessment_required' });
     expect(getBackground(db, jordan)!.outcome).toBeNull();
     const assessed = { ...form, seriousness: 'Shoplifting, single offense.', rehabilitation: 'Six years clean', other: 'Explained it' };
     expect(chooseBackgroundOutcome(db, jordan, assessed, 'withdraw', NOW).ok).toBe(true);

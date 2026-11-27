@@ -3,7 +3,7 @@
 > Brief tĩnh của app. **≤ 60 dòng, không ghi lịch sử** (lịch sử ở git + `memory/sessions/`).
 > Tiến độ: `CHECKLIST.md` · Tính năng: `product.md` · Kế hoạch phase: `PLAN.md` · Khảo sát: `research.md` · Ý tưởng gốc: `y-tuong.md`.
 
-**Đang ở:** Bước 3 — Phase 2 code xong (2026-11-26, `dev`, 648 test); chờ Phương cho thử Galaxy A13 (Phase 3). Mockup v2 Indigo: https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (`design/v2-indigo/`)
+**Đang ở:** Bước 4 — dev 6b1fea8 đóng băng, TESTCASES 200 case (124 T ✅, 76 M chưa chạy); iOS run Actions (repo A008-qa-ios) chờ đọc kết quả; Android máy ảo kẹt prebuild, chưa chạy (2026-11-26). Mockup v2 Indigo: https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (`design/v2-indigo/`)
 
 ## Brief
 - **Mã app / thư mục:** `A008-evenlease` → `apps/A008-evenlease/`

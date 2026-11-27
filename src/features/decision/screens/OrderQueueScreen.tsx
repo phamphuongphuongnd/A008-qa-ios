@@ -4,7 +4,7 @@
  * offer leaves only "Offer expired — move to next". Opening the screen syncs the queue (front applicant → In review).
  */
 import { useLocalSearchParams } from 'expo-router';
-import { Columns2 } from 'lucide-react-native';
+import { Columns2, FileText, ListOrdered, Timer } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
@@ -12,15 +12,20 @@ import { db } from '@/db';
 import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
+import { syncTimers } from '@/notifications';
 import { routes } from '@/routes';
+import { useTheme } from '@/theme';
 import { router } from '@/services/router';
 import {
   AppBar,
+  Banner,
   Button,
   Card,
   ChoicePills,
   ConfirmDialog,
   EmptyState,
+  ListGroup,
+  ListRow,
   QueueNumber,
   Screen,
   SectionHeader,
@@ -46,8 +51,11 @@ export default function OrderQueueScreen() {
   const rentalId = idParam(p.id);
   useEffect(() => {
     if (rentalId != null) syncQueueStatus(db, rentalId, localIso());
+    // B-58: clocks started while notifications were off get them as soon as they are allowed.
+    void syncTimers();
   }, [rentalId]);
   const data = useOrderQueue(rentalId);
+  const { colors } = useTheme();
   const [missingFor, setMissingFor] = useState<QueueRow | null>(null);
   const [method, setMethod] = useState<MissingInfoMethod | null>(null);
   const [confirm, setConfirm] = useState<Confirm>(null);
@@ -98,13 +106,17 @@ export default function OrderQueueScreen() {
 
   return (
     <Screen header={header}>
-      <Hint>{t('decision:s18.intro')}</Hint>
+      {/* B-65: mockup S-18 banner (accent box with the queue icon), not plain text. */}
+      <Banner tone="accent" icon={ListOrdered}>
+        {t('decision:s18.intro')}
+      </Banner>
       <GuideLink slug={GUIDE.firstCome} />
       {data.rows.length === 0 ? <EmptyState icon={Columns2} title={t('decision:s18.empty')} /> : null}
       {data.rows.map((row) => {
         const v = queueRowView(row, data.currentId);
         return (
-          <Card key={v.key} onPress={() => router.push(routes.applicant(v.rowId))} accessibilityLabel={v.a11y}>
+          // B-65: the applicant whose turn it is stands out (mockup: accent-soft row, active #n).
+          <Card key={v.key} variant={v.active ? 'tint' : 'default'} onPress={() => router.push(routes.applicant(v.rowId))} accessibilityLabel={v.a11y}>
             <View style={{ flexDirection: 'row', gap: 12, alignItems: 'flex-start' }}>
               <QueueNumber n={v.n} active={v.active} />
               <View style={{ flex: 1, minWidth: 0, gap: 6 }}>
@@ -116,7 +128,14 @@ export default function OrderQueueScreen() {
                 {v.buttons.length ? (
                   <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
                     {v.buttons.map((b) => (
-                      <Button key={b.action} size="sm" label={b.label} variant={b.variant} onPress={() => onAction(row, b.action)} />
+                      <Button
+                        key={b.action}
+                        size="sm"
+                        label={b.label}
+                        variant={b.variant}
+                        disabled={b.disabled}
+                        onPress={() => onAction(row, b.action)}
+                      />
                     ))}
                   </View>
                 ) : null}
@@ -153,17 +172,23 @@ export default function OrderQueueScreen() {
         }
       >
         {sheet ? (
-          <View style={{ gap: 12 }}>
-            <View>
-              <Txt variant="bodyStrong">{t('decision:s18.hours')}</Txt>
-              <Txt color="inkMuted">{sheet.endsText}</Txt>
-            </View>
+          <View style={{ gap: 14 }}>
+            {/* B-65: mockup "Request missing info" — a tinted 72 hours card with the clock icon, Missing as a list. */}
+            <Card variant="tint" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Timer color={colors.accent} size={24} strokeWidth={1.8} />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <Txt variant="title2">{t('decision:s18.hours')}</Txt>
+                <Txt color="inkMuted">{sheet.endsText}</Txt>
+              </View>
+            </Card>
             {sheet.missing.length ? (
-              <View>
+              <View style={{ gap: 8 }}>
                 <SectionHeader title={t('decision:s18.missing')} />
-                {sheet.missing.map((m) => (
-                  <Txt key={m}>• {m}</Txt>
-                ))}
+                <ListGroup>
+                  {sheet.missing.map((m) => (
+                    <ListRow key={m} title={m} icon={FileText} />
+                  ))}
+                </ListGroup>
               </View>
             ) : null}
             <SectionHeader title={t('decision:s18.howTold')} />

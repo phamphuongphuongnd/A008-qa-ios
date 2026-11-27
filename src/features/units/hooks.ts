@@ -8,7 +8,7 @@ import { db } from '@/db/client';
 import { countRentals, getRental } from '@/db/repos/rentals';
 import { useLive } from '@/db/useLive';
 import { fileStore } from '@/files';
-import { askNotificationPermission, refreshReminders } from '@/notifications';
+import { askFirstComePermissions, refreshReminders, syncTimers } from '@/notifications';
 import { cancelStoppedTimers } from '@/notifications/queueTimers';
 import { expoQueueNotifier } from '@/notifications/queueTimersNative';
 
@@ -16,6 +16,7 @@ import { emptyRentalForm, rentalToForm, type RentalForm } from './rentalForm';
 import { loadCleanupReminderCount, loadRentalCards, loadRentalHub, RENTAL_LIVE_TABLES } from './rentalQueries';
 import {
   closeRental,
+  closeRentalWarning,
   createRentalFromForm,
   deleteRentalAndData,
   deleteRentalMessage,
@@ -25,6 +26,7 @@ import {
   updateRentalFromForm,
 } from './rentalService';
 import type { ReviewMode } from '@/db/schema';
+import type { Timer } from '@/db/types';
 
 /** S-02 cards of a segment + counts of both segments (to pick the empty state). */
 export function useRentals(filter: 'open' | 'closed') {
@@ -36,9 +38,11 @@ export function useRentals(filter: 'open' | 'closed') {
 
 /** S-02 cleanup card ("2 closed rentals still hold applicant data"); "Later" hides it for this app session. The backup
  * card is 2E's `useBackupReminder()` (@/backup). */
-export function useCleanupReminder() {
+export function useCleanupReminder(now: Date = new Date()) {
   'use no memo';
-  const count = useLive(() => loadCleanupReminderCount(db), [], ['settings', 'rentals', 'applicants']);
+  // Re-counted each minute / on return to the foreground (`now` from useClock, B-59), not only when the data changes.
+  const minute = now.toISOString().slice(0, 16);
+  const count = useLive(() => loadCleanupReminderCount(db, now), [minute], ['settings', 'rentals', 'applicants']);
   const [hidden, setHidden] = useState(false);
   return { count: hidden ? 0 : count, later: () => setHidden(true) };
 }
@@ -66,10 +70,10 @@ export function useRentalForm(rentalId: number | null): RentalForm | null {
 /** Rental actions bound to the app database / file store. */
 export function useRentalActions() {
   return {
-    /** Also asks the notification permission the first time First-come is on (§6, 2E asks at most once). */
+    /** Also asks the notification permission (+ exact alarms) the first time First-come is on (§6, asked at most once). */
     create: useCallback((form: RentalForm) => {
       const r = createRentalFromForm(db, form);
-      if (r.ok && r.askNotifications) void askNotificationPermission();
+      if (r.ok && r.askNotifications) void askFirstComePermissions();
       return r;
     }, []),
     /** Also cancels the notifications of first-come timers stopped by a switch to Compare (2D). */
@@ -77,23 +81,31 @@ export function useRentalActions() {
       const r = updateRentalFromForm(db, id, form, { confirmModeChange });
       if (r.ok) {
         if (r.stoppedTimers.length) void cancelStoppedTimers(expoQueueNotifier, r.stoppedTimers);
-        if (r.askNotifications) void askNotificationPermission();
+        if (r.askNotifications) void askFirstComePermissions();
       }
       return r;
     }, []),
     planModeChange: useCallback((id: number, to: ReviewMode) => planReviewModeChange(db, id, to), []),
+    /** Ask before closing when an offer is out / a First-come clock runs (B-61); null = close right away. */
+    closeWarning: useCallback((id: number) => closeRentalWarning(db, id), []),
     // Closing / reopening / deleting changes what the 2E cleanup reminder counts.
+    /** Stops the rental's clocks and cancels their notifications (B-61); returns them for Undo. */
     close: useCallback((id: number) => {
-      closeRental(db, id);
+      const stopped = closeRental(db, id);
+      if (stopped.length) void cancelStoppedTimers(expoQueueNotifier, stopped);
       void refreshReminders();
+      return stopped;
     }, []),
-    reopen: useCallback((id: number) => {
-      reopenRental(db, id);
+    /** Undo of a close passes the clocks it stopped: they run again with their notifications. */
+    reopen: useCallback((id: number, restoreTimers: readonly Timer[] = []) => {
+      reopenRental(db, id, restoreTimers);
+      if (restoreTimers.length) void syncTimers();
       void refreshReminders();
     }, []),
     deleteMessage: useCallback((id: number) => deleteRentalMessage(db, id), []),
     remove: useCallback((id: number) => {
-      deleteRentalAndData(db, fileStore, id);
+      const stopped = deleteRentalAndData(db, fileStore, id);
+      if (stopped.length) void cancelStoppedTimers(expoQueueNotifier, stopped);
       void refreshReminders();
     }, []),
     openSample: useCallback(() => openSampleRental(db), []),

@@ -1,6 +1,6 @@
 /**
- * S-01 screen state: pages + tick (reducer) and the two finish buttons. On finish the screen does
- * `router.replace(result.next)`.
+ * S-01 screen state: pages + tick (reducer) and the two finish buttons. On finish the root stack's guard leaves S-01;
+ * the screen only passes `result.next` to `landAfterOnboarding` (B-40).
  */
 import { useReducer, useState } from 'react';
 

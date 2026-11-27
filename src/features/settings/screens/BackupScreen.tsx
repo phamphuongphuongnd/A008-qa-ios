@@ -1,13 +1,15 @@
 /**
  * S-22 Backup & restore (product.md S-22, mockup v2 "S-22 Backup & restore"): last backup card · "Back up now" ·
  * Automatic backup Off / Weekly · "Restore from backup" · forget-password warning.
- * First backup asks for the backup password twice. Restore: pick file → password → "Replace all data?" → restore.
+ * First backup asks for the backup password twice, then carries on with what was tapped (B-67). A backup through the
+ * share sheet asks "Did you save it?" before it counts as "Last backup": the sheet can't tell saved from cancelled
+ * (B-68). Restore: pick file → password → "Replace all data?" → restore.
  */
 import { CloudUpload, FolderOpen } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { backupActions, backupErrorText, formatBytes, useBackupStatus, validateBackupPassword, MIN_PASSWORD_LENGTH, type BackupStep, type OpenedBackup } from '@/backup';
+import { backupActions, backupErrorText, formatBytes, useBackupStatus, validateBackupPassword, MIN_PASSWORD_LENGTH, type BackupStep, type MadeBackup, type OpenedBackup } from '@/backup';
 import { formatDate } from '@/engine';
 import { t } from '@/i18n';
 import { font } from '@/theme';
@@ -17,6 +19,8 @@ import { isIos } from '../hooks';
 import { backupView } from '../view';
 
 type Busy = null | 'backup' | 'auto' | 'restore';
+/** What the landlord tapped before the password sheet came up — it runs once the password is saved (B-67). */
+type AfterPassword = 'backup' | 'weekly';
 
 export default function BackupScreen() {
   'use no memo';
@@ -24,20 +28,26 @@ export default function BackupScreen() {
   const view = backupView(status, isIos, formatBytes);
   const [busy, setBusy] = useState<Busy>(null);
   const [step, setStep] = useState<BackupStep | null>(null);
-  const [passwordSheet, setPasswordSheet] = useState(false);
+  /** Password sheet open, and what runs once the password is saved. */
+  const [passwordFor, setPasswordFor] = useState<AfterPassword | null>(null);
+  /** Share sheet closed: ask whether the file was saved before it counts as "Last backup" (B-68). */
+  const [sharedMade, setSharedMade] = useState<MadeBackup | null>(null);
   const [restoreFile, setRestoreFile] = useState<Uint8Array | null>(null);
   const [opened, setOpened] = useState<OpenedBackup | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const stepLabel = step ? t(`system:s22.progress.${step}`) : undefined;
 
-  const backUp = async () => {
-    if (view.needsPassword) return setPasswordSheet(true);
+  const backUp = () => (view.needsPassword ? setPasswordFor('backup') : runBackup());
+
+  /** No password check here: right after the sheet saved it, this render's `view` still says "needs password" (B-67). */
+  const runBackup = async () => {
     setBusy('backup');
     setError(null);
     try {
       const r = await backupActions.backUpNow(setStep);
-      if (r.where !== 'not_shared') showSnackbar({ message: t('system:s22.done') });
+      if (r.where === 'folder') showSnackbar({ message: t('system:s22.done') });
+      else if (r.where === 'shared') setSharedMade(r.made);
     } catch (e) {
       setError(backupErrorText(e));
     } finally {
@@ -46,8 +56,9 @@ export default function BackupScreen() {
     }
   };
 
-  const setAuto = async (mode: 'off' | 'weekly') => {
-    if (mode === 'weekly' && view.needsPassword) return setPasswordSheet(true);
+  const setAuto = (mode: 'off' | 'weekly') => (mode === 'weekly' && view.needsPassword ? setPasswordFor('weekly') : runSetAuto(mode));
+
+  const runSetAuto = async (mode: 'off' | 'weekly') => {
     setBusy('auto');
     setError(null);
     try {
@@ -149,11 +160,28 @@ export default function BackupScreen() {
       <Banner tone="info">{t('system:s22.forgetWarning')}</Banner>
 
       <NewPasswordSheet
-        visible={passwordSheet}
-        onClose={() => setPasswordSheet(false)}
+        visible={passwordFor != null}
+        onClose={() => setPasswordFor(null)}
         onSaved={() => {
-          setPasswordSheet(false);
-          backUp();
+          const next = passwordFor;
+          setPasswordFor(null);
+          if (next === 'weekly') runSetAuto('weekly');
+          else runBackup();
+        }}
+      />
+      <ConfirmDialog
+        visible={!!sharedMade}
+        title={t('system:s22.sharedTitle')}
+        body={t('system:s22.sharedBody')}
+        cancelLabel={t('system:s22.sharedNo')}
+        confirmLabel={t('system:s22.sharedYes')}
+        onCancel={() => setSharedMade(null)}
+        onConfirm={async () => {
+          const made = sharedMade;
+          setSharedMade(null);
+          if (!made) return;
+          await backupActions.confirmShared(made);
+          showSnackbar({ message: t('system:s22.done') });
         }}
       />
       <RestorePasswordSheet
@@ -192,15 +220,21 @@ function NewPasswordSheet({ visible, onClose, onSaved }: { visible: boolean; onC
   const [again, setAgain] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  // B-72: nothing typed (nor its error) survives Discard / close — the sheet opens empty every time.
+  const reset = () => {
+    setPw('');
+    setAgain('');
+    setErr(null);
+  };
   const save = async () => {
+    if (saving) return;
     const e = validateBackupPassword(pw, again);
     if (e) return setErr(e === 'short' ? t('system:s22.errors.passwordShort', { min: MIN_PASSWORD_LENGTH }) : t('system:s22.errors.passwordMismatch'));
+    setErr(null); // B-72: an old "don't match" must not sit under "Preparing encryption…"
     setSaving(true);
     try {
       await backupActions.setPassword(pw);
-      setPw('');
-      setAgain('');
-      setErr(null);
+      reset();
       onSaved();
     } catch (x) {
       setErr(backupErrorText(x));
@@ -208,17 +242,35 @@ function NewPasswordSheet({ visible, onClose, onSaved }: { visible: boolean; onC
       setSaving(false);
     }
   };
+  // Typing in either field clears the error; Save checks again.
+  const edit = (set: (v: string) => void) => (v: string) => {
+    set(v);
+    if (err) setErr(null);
+  };
   return (
     <Sheet
       visible={visible}
-      onClose={onClose}
+      onClose={() => {
+        if (saving) return; // deriving the key: closing now would drop the backup the landlord asked for
+        reset();
+        onClose();
+      }}
       title={t('system:s22.setPasswordTitle')}
-      dirty={!!(pw || again)}
+      dirty={!saving && !!(pw || again)}
       footer={<Button label={t('system:s22.setPassword')} onPress={save} loading={saving} loadingLabel={t('system:s22.progress.deriving')} block />}
     >
       <Banner tone="warn">{t('system:s22.forgetWarning')}</Banner>
-      <TextField label={t('system:s22.password')} value={pw} onChangeText={setPw} secureTextEntry autoComplete="new-password" />
-      <TextField label={t('system:s22.passwordAgain')} value={again} onChangeText={setAgain} secureTextEntry autoComplete="new-password" error={err} onSubmitEditing={save} />
+      <TextField label={t('system:s22.password')} value={pw} onChangeText={edit(setPw)} secureTextEntry autoComplete="new-password" disabled={saving} />
+      <TextField
+        label={t('system:s22.passwordAgain')}
+        value={again}
+        onChangeText={edit(setAgain)}
+        secureTextEntry
+        autoComplete="new-password"
+        disabled={saving}
+        error={err}
+        onSubmitEditing={save}
+      />
     </Sheet>
   );
 }
@@ -252,7 +304,18 @@ function RestorePasswordSheet({ file, onClose, onOpened }: { file: Uint8Array | 
       title={t('system:s22.restore')}
       footer={<Button label={t('system:s22.openBackup')} onPress={open} disabled={!pw} loading={opening} loadingLabel={t('system:s22.progress.checking')} block />}
     >
-      <TextField label={t('system:s22.enterPassword')} value={pw} onChangeText={setPw} secureTextEntry autoComplete="current-password" error={err} onSubmitEditing={open} />
+      <TextField
+        label={t('system:s22.enterPassword')}
+        value={pw}
+        onChangeText={(v) => {
+          setPw(v);
+          if (err) setErr(null);
+        }}
+        secureTextEntry
+        autoComplete="current-password"
+        error={err}
+        onSubmitEditing={open}
+      />
       <Txt color="inkMuted">{t('system:s22.restoreHelp')}</Txt>
     </Sheet>
   );

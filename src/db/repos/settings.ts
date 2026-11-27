@@ -30,6 +30,8 @@ export interface AppSettings {
   reminders: { backup: boolean; cleanup: boolean; timers: boolean };
   /** The notification permission was asked once (first-come on / reminder on). */
   notificationsAsked: boolean;
+  /** Android 12+ "Alarms & reminders" (exact alarms for the First-come clocks) was asked once. */
+  exactAlarmsAsked: boolean;
   /** S-08a: the Applicant mode session that is on (survives an app restart), null when off. */
   applicantMode: ModeState | null;
 }
@@ -51,6 +53,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   cleanupAfterDays: 60,
   reminders: { backup: true, cleanup: true, timers: true },
   notificationsAsked: false,
+  exactAlarmsAsked: false,
   applicantMode: null,
 };
 

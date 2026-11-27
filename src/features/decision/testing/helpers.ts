@@ -12,6 +12,9 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
   const scheduled = new Map<string, { title: string; at: Date; data: { url: string; key: string } }>();
   const cancelled: string[] = [];
   let asked = 0;
+  let priv = false;
+  let exact = true;
+  let exactAsked = 0;
   const notifier: QueueNotifier = {
     async schedule(x) {
       const id = `n${++n}`;
@@ -30,8 +33,34 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
       perm = 'granted';
       return perm;
     },
+    isPrivate: () => priv,
+    async exactAlarms() {
+      return exact;
+    },
+    async ensureExactAlarms() {
+      exactAsked += 1;
+      return exact;
+    },
   };
-  return { notifier, scheduled, cancelled, askedCount: () => asked };
+  return {
+    notifier,
+    scheduled,
+    cancelled,
+    askedCount: () => asked,
+    /** The landlord changes the permission in the system settings. */
+    setPermission: (p: PermissionState) => {
+      perm = p;
+    },
+    /** Applicant mode on / off. */
+    setPrivate: (on: boolean) => {
+      priv = on;
+    },
+    /** Android "Alarms & reminders" allowed (exact alarms) or not. */
+    setExact: (on: boolean) => {
+      exact = on;
+    },
+    exactAskedCount: () => exactAsked,
+  };
 }
 
 /** Sample rental (§8) in a fresh DB, with row ids by first name. */

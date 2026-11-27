@@ -9,6 +9,7 @@ import { useEffect } from 'react';
 import { BackHandler } from 'react-native';
 
 import { t } from '@/i18n';
+import { routes } from '@/routes';
 
 import { unlockLandlord, type LocalAuthAdapter, type UnlockResult } from './auth';
 import { guardRedirect } from './guard';
@@ -45,7 +46,14 @@ export interface LandlordExit {
 
 export function useLandlordExit(adapter: LocalAuthAdapter): LandlordExit {
   const router = useRouter();
-  const leave = (prev: ModeState) => router.replace(exitRoute(prev));
+  // B-55: back to the tabs first, then S-06 above them → Back from S-06 goes to Rentals. `replace` left S-06 as the
+  // root of the stack (no tabs, "GO_BACK not handled") when the session was restored after a restart, and a second
+  // S-06 under it otherwise. dismissTo pops to the tabs, or swaps the mode screen for them when they are not there.
+  const leave = (prev: ModeState) => {
+    const hub = exitRoute(prev);
+    router.dismissTo(routes.rentals());
+    if (hub !== routes.rentals()) router.push(hub);
+  };
   return {
     async request() {
       const prev = getApplicantMode();

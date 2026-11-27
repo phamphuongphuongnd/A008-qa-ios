@@ -5,6 +5,7 @@
 import {
   byReceived,
   evaluateApplicant,
+  FINAL_STATUSES,
   type ApplicantInput,
   type ApplicantStatus,
   type Criterion,
@@ -105,6 +106,10 @@ export function hubApplicantRows(
   criteria: readonly Criterion[],
   applicants: readonly ApplicantInput[],
 ): HubApplicantRow[] {
+  const firstCome = rental.reviewMode === 'first_come';
+  // §3.14: in First-come the first applicant without a final result is In review — the same rule as the S-18 queue
+  // (engine buildQueue), not only once S-18 has been opened (B-65: hub "New" vs queue "In review").
+  const front = firstCome ? byReceived(applicants).find((a) => !FINAL_STATUSES.has(a.status)) : undefined;
   return byReceived(applicants).map((a, i) => {
     const { summary } = evaluateApplicant(rental, criteria, a);
     return {
@@ -112,11 +117,11 @@ export function hubApplicantRows(
       fullName: a.fullName,
       initials: initials(a.fullName),
       receivedAt: a.receivedAt,
-      status: a.status,
+      status: a === front && a.status === 'new' ? 'in_review' : a.status,
       ready: summary.ready,
       missingCount: summary.missingCount,
       summaryText: summary.text,
-      queueNumber: rental.reviewMode === 'first_come' ? i + 1 : null,
+      queueNumber: firstCome ? i + 1 : null,
     };
   });
 }

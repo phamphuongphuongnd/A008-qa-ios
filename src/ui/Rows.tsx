@@ -10,6 +10,7 @@ import { Avatar, BadgeRow, Chip, EvidenceTag, QueueNumber, StatusBadge, evidence
 import { type IconComponent } from './Button';
 import { Card, useCardStyle } from './Card';
 import { Glyph } from './Glyph';
+import { TOUCH_MIN } from './touch';
 import { Txt } from './Txt';
 
 /** Bold ink run inside a muted reason line: <Txt>…<B>$5,351.67/mo</B> is <B>3.24×</B> rent</Txt>. */
@@ -251,14 +252,13 @@ export function IssueItem({
         {detail ? <Txt variant="caption" color="inkMuted">{detail}</Txt> : null}
       </View>
       {action ? (
-        <Pressable
-          onPress={action.onPress}
-          hitSlop={6}
-          accessibilityRole="button"
-          accessibilityLabel={action.label}
-          style={({ pressed }) => [styles.act, { backgroundColor: colors.surface1, opacity: pressed ? 0.7 : 1 }]}
-        >
-          <Txt style={[font(600, 14, 20), { color: colors.accent }]}>{action.label}</Txt>
+        // B-75: 48 touch / accessibility frame around the 36 button.
+        <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.label} style={styles.actFrame}>
+          {({ pressed }) => (
+            <View style={[styles.act, { backgroundColor: colors.surface1, opacity: pressed ? 0.7 : 1 }]}>
+              <Txt style={[font(600, 14, 20), { color: colors.accent }]}>{action.label}</Txt>
+            </View>
+          )}
         </Pressable>
       ) : null}
     </View>
@@ -280,5 +280,6 @@ const styles = StyleSheet.create({
   issues: { paddingVertical: 14, paddingHorizontal: 16, gap: 10 },
   issuesH: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   issue: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  actFrame: { minHeight: TOUCH_MIN, justifyContent: 'center' },
   act: { minHeight: 36, paddingHorizontal: 12, borderRadius: 10, justifyContent: 'center' },
 });

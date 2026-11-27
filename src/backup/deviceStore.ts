@@ -34,6 +34,7 @@ export const DEVICE_LOCAL_SETTINGS: readonly (keyof AppSettings)[] = [
   'autoBackup',
   'backupFolderUri',
   'notificationsAsked',
+  'exactAlarmsAsked',
 ];
 
 export const isDeviceRow = (key: string) => key.startsWith(DEVICE_PREFIX) || (DEVICE_LOCAL_SETTINGS as readonly string[]).includes(key);

@@ -6,7 +6,7 @@
 import { formatUsd } from '@/engine';
 import { t } from '@/i18n';
 
-import { html, pdfDocument, raw, section, table, type SafeHtml } from './shell';
+import { html, pdfDocument, raw, refFileName, section, table, type SafeHtml } from './shell';
 
 export interface BlankApplicationInput {
   /** "1428 Maple St, Unit B". */
@@ -108,7 +108,7 @@ ${section(
   });
 }
 
-/** "Rental application - 1428 Maple St Unit B" (commas dropped: safeFileName would turn them into "-"; it adds .pdf). */
-export function blankApplicationFileName(address: string): string {
-  return t('intake:pdf.fileName', { address: address.replace(/\s*,\s*/g, ' ') });
+/** "Rental application - rental 3 - 2026-11-27" (safeFileName adds .pdf): type + id + date, like every shared file (B-49). */
+export function blankApplicationFileName(rentalId: number, at?: Date): string {
+  return refFileName(t('intake:pdf.title'), { kind: 'rental', id: rentalId }, at);
 }

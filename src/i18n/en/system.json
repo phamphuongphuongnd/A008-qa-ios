@@ -104,8 +104,7 @@
       "photoCount_other": "{{count}} photos",
       "reading": "Reading",
       "signedOn": "Signed {{date}}",
-      "intro": "Condition of the home on the move-in date, agreed by the landlord and the tenant.",
-      "fileName": "Move-in checklist - {{address}}"
+      "intro": "Condition of the home on the move-in date, agreed by the landlord and the tenant."
     },
     "notFound": "This rental doesn't exist.",
     "renameRoom": "Rename room",
@@ -197,6 +196,7 @@
     "chooseFolder": "Choose folder",
     "changeFolder": "Change folder",
     "folder": "Folder: {{name}}",
+    "internalStorage": "Internal storage",
     "restore": "Restore from backup",
     "forgetWarning": "If you forget the backup password, the backup can't be opened.",
     "password": "Backup password",
@@ -235,7 +235,11 @@
     "setPasswordTitle": "Set a backup password",
     "setPassword": "Save and back up",
     "openBackup": "Open backup",
-    "restoreHelp": "Nothing on this phone changes until you confirm."
+    "restoreHelp": "Nothing on this phone changes until you confirm.",
+    "sharedTitle": "Did you save the backup?",
+    "sharedBody": "Your phone doesn't tell Evenlease whether the file was saved. Tap Saved only if it's in Drive, Files or an email.",
+    "sharedNo": "Not saved",
+    "sharedYes": "Saved"
   },
   "s23": {
     "title": "App lock",
@@ -363,6 +367,10 @@
     "backupNeverBody": "Time to back up — you haven't made a backup yet.",
     "cleanupTitle": "Applicant data to delete",
     "cleanupBody_one": "{{count}} closed rental still holds applicant data.",
-    "cleanupBody_other": "{{count}} closed rentals still hold applicant data."
+    "cleanupBody_other": "{{count}} closed rentals still hold applicant data.",
+    "exactTitle": "Get deadline reminders on time?",
+    "exactBody": "Allow \"Alarms & reminders\" for Evenlease so deadline reminders arrive on time.",
+    "exactAllow": "Allow",
+    "exactLater": "Not now"
   }
 }

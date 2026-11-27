@@ -22,10 +22,10 @@
 - [x] Phương duyệt mockup (2026-11-25)
 
 ## Bước 3 — Làm app theo mockup (phiên điều phối chạy `PLAN.md`)
-- [ ] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev` — code + jest xong; **chưa mở trên A13**
+- [x] 1A Khung: cài sẵn mọi thư viện, Expo + route S-01…S-27 + i18n + Jest + CI, commit `dev` — chạy trên máy ảo 26/11 (A13 chưa)
 - [x] 1B Engine `src/engine/`: luật C1–C10, evidence, issues, rào chắn, First-come + đồng hồ, điều kiện FCRA + test §3.16
 - [x] 1C DB: schema SQLite, repository, `useLive`, map ↔ engine, dữ liệu mẫu §8, `src/files`
-- [ ] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/` — code + jest xong; **chưa build / xem trên A13**
+- [x] 1D UI v2: theme sáng/tối + UI kit + gallery từ `design/v2-indigo`, icon / splash từ `logo/` — icon/splash/sáng-tối đúng trên máy ảo 26/11 (TC-125/126/187)
 - [x] 2A Logic căn + tiêu chí (F-02, F-03) + PDF tiêu chí công bố
 - [x] 2B Logic hồ sơ, Applicant mode, giấy tờ (F-04 – F-07) + PDF đơn trống
 - [x] 2C Logic xác minh: tham chiếu, báo cáo ngoài, Background review (F-08 – F-10)
@@ -34,21 +34,21 @@
 - Màn theo mockup v2 — code xong + jest xanh (dev bdf9385), **chưa thử máy**, đang sửa khoảng trống G-01…G-10 → chỉ tick khi đã thử trên A13 và khớp mockup:
 - [ ] F-01 Onboarding (S-01)
 - [ ] F-02 Rentals list, Rental editor, Rental hub (S-02, S-03, S-06)
-- [ ] F-03 Criteria builder + published criteria PDF (S-04, S-05)
+- [x] F-03 Criteria builder + published criteria PDF (S-04, S-05) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [ ] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08)
 - [ ] F-05 Applicant mode (S-08a, S-08b)
-- [ ] F-06 Blank application PDF
+- [x] F-06 Blank application PDF — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [ ] F-07 Documents + income check (S-10)
-- [ ] F-08 Landlord + employer reference (S-11, S-12)
-- [ ] F-09 Screening report ngoài (S-13)
-- [ ] F-10 Background review bước 2 (S-14)
-- [ ] F-11 Applicant summary (S-09)
+- [x] F-08 Landlord + employer reference (S-11, S-12) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
+- [x] F-09 Screening report ngoài (S-13) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
+- [x] F-10 Background review bước 2 (S-14) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
+- [x] F-11 Applicant summary (S-09) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [ ] F-12 Compare + Order queue + thông báo đồng hồ (S-17, S-18)
 - [ ] F-13 Decision (S-15)
 - [ ] F-14 Letters + PDF (S-16)
-- [ ] F-15 Decision file PDF (S-19)
+- [x] F-15 Decision file PDF (S-19) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [ ] F-16 Move-in checklist (S-20)
-- [ ] F-17 Data cleanup (S-24)
+- [x] F-17 Data cleanup (S-24) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [ ] F-18 Backup & restore mã hoá + tự động + nhắc (S-22)
 - [ ] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27)
 - [ ] Thử máy dồn từ Phase 2: dev client mới (icon/splash), SQLite migration thật, files native, PDF + expo-print, formSheet/sheet kéo, ô ký trong ScrollView, 320 dp/200 %, S-01 gate + S-27 về S-01, App lock + withLockSuspended, Applicant mode qua khởi động lại, đồng hồ 72/48 h + thông báo → S-18, sao lưu nền + đo PBKDF2, iOS bookmark thư mục
@@ -56,7 +56,7 @@
 
 ## Bước 4 — Test toàn bộ (chỉ ghi lỗi)
 - [x] Viết TESTCASES.md (100–200 case) — 200 case: 124 T ✅ (jest 702), 76 M chờ thử máy
-- [ ] Chạy hết case (test tự động + thử máy) → BUGS.md
+- [ ] Chạy hết case (test tự động + thử máy) → BUGS.md — Android 72 case xong 26/11 (✅ 50 · ❌ 19 · ⏭ 3, 35 lỗi); chờ iOS TC-197…200
 
 ## Bước 5 — Sửa lỗi
 - [ ] Sửa hết BUGS.md (tick trong BUGS.md)

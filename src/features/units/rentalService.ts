@@ -5,7 +5,7 @@
  */
 import { defaultCriteria } from '@/engine';
 import { addCriteriaHistory, isCriteriaLocked, saveCriteria } from '@/db/repos/criteria';
-import { listActiveTimers, resolveTimer } from '@/db/repos/decisions';
+import { listActiveTimers, reopenTimers, resolveTimer } from '@/db/repos/decisions';
 import { listApplicants } from '@/db/repos/applicants';
 import { createRental, deleteRental, getRental, getSampleRental, setRentalStatus, updateRental } from '@/db/repos/rentals';
 import { loadSampleRental, removeSampleRental } from '@/db/repos/sample';
@@ -141,22 +141,57 @@ export function updateRentalFromForm(
   };
 }
 
-/** S-02 swipe "Close" / S-06 menu "Close rental" (snackbar Undo = `reopenRental`). */
-export function closeRental(db: AppDb, id: number, at = new Date().toISOString()): void {
-  setRentalStatus(db, id, 'closed', at);
+/**
+ * What closing a Rental stops (B-61): applicants with an offer waiting for a reply and running First-come clocks.
+ * When there is any, S-02 / S-06 ask first with this text; null = close right away (S-02 swipe + Undo).
+ */
+export function closeRentalWarning(db: AppDb, id: number): { title: string; message: string } | null {
+  const offers = listApplicants(db, id).filter((a) => a.status === 'conditional_offer');
+  const clocks = listActiveTimers(db, id).length;
+  if (!offers.length && !clocks) return null;
+  return {
+    title: t('units:s06.closeDialog.title'),
+    message: offers.length
+      ? t('units:s06.closeDialog.bodyOffer', { count: offers.length, name: offers[0].fullName })
+      : t('units:s06.closeDialog.bodyClocks', { count: clocks }),
+  };
 }
 
-/** S-02 swipe "Reopen" / Undo of a close. */
-export function reopenRental(db: AppDb, id: number): void {
-  setRentalStatus(db, id, 'open');
+/**
+ * S-02 swipe "Close" / S-06 menu "Close rental" (snackbar Undo = `reopenRental(db, id, stopped)`). Running First-come
+ * clocks stop with it (B-61); the caller cancels their notifications (`cancelStoppedTimers`).
+ */
+export function closeRental(db: AppDb, id: number, at = new Date().toISOString()): Timer[] {
+  return db.transaction((tx) => {
+    const tdb = tx as unknown as AppDb;
+    setRentalStatus(tdb, id, 'closed', at);
+    const stopped = listActiveTimers(tdb, id);
+    for (const tm of stopped) resolveTimer(tdb, tm.id, at);
+    return stopped;
+  });
+}
+
+/**
+ * S-02 swipe "Reopen" / Undo of a close. Undo passes the clocks the close stopped: they run again (same end), and the
+ * caller schedules their notifications again (`syncTimers`).
+ */
+export function reopenRental(db: AppDb, id: number, restoreTimers: readonly Timer[] = []): void {
+  db.transaction((tx) => {
+    const tdb = tx as unknown as AppDb;
+    setRentalStatus(tdb, id, 'open');
+    reopenTimers(tdb, restoreTimers.map((tm) => tm.id));
+  });
 }
 
 /** S-02 "Delete" / S-06 "Delete rental" (after the confirmation): rows + every file. The sample goes the sample way. */
-export function deleteRentalAndData(db: AppDb, files: FileStore, id: number): void {
+export function deleteRentalAndData(db: AppDb, files: FileStore, id: number): Timer[] {
   const r = getRental(db, id);
-  if (!r) return;
+  if (!r) return [];
+  // Running clocks go with the rows; the caller cancels their notifications (B-61).
+  const stopped = listActiveTimers(db, id);
   if (r.isSample) removeSampleRental(db, files);
   else deleteRental(db, files, id);
+  return stopped;
 }
 
 /** Text of the delete confirmation (S-06). */

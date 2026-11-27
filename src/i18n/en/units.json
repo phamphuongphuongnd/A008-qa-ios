@@ -272,6 +272,10 @@
     "closeDialog": {
       "title": "Close this rental?",
       "body": "It moves to Closed. You can reopen it any time.",
+      "bodyOffer_one": "The offer to {{name}} is still waiting for a reply. Closing stops its clock and reminders. You can reopen the rental any time.",
+      "bodyOffer_other": "{{count}} offers are still waiting for a reply. Closing stops their clocks and reminders. You can reopen the rental any time.",
+      "bodyClocks_one": "A first-come clock is still running. Closing stops it and its reminders. You can reopen the rental any time.",
+      "bodyClocks_other": "{{count}} first-come clocks are still running. Closing stops them and their reminders. You can reopen the rental any time.",
       "confirm": "Close rental"
     },
     "notFound": "This rental no longer exists.",

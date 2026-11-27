@@ -5,11 +5,18 @@
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { Platform } from 'react-native';
 
 import type { PdfAdapter } from './shell';
 
 /** US Letter in points (expo-print default, stated explicitly). */
 const LETTER = { width: 612, height: 792 };
+
+/**
+ * Android prints through Chromium (WebView), which draws `@page` margin boxes → the footer goes in the bottom margin so it
+ * sits at the bottom of the last page too (B-57). iOS (WebKit) has no margin boxes: keeps the repeating <tfoot>.
+ */
+export const PDF_FOOTER_IN_PAGE_MARGIN = Platform.OS === 'android';
 
 export const expoPdfAdapter: PdfAdapter = {
   async printToFile(html) {

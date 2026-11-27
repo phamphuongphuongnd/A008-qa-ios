@@ -5,7 +5,7 @@ import { loadSampleRental } from '@/db/repos/sample';
 import { updateSettings } from '@/db/repos/settings';
 import { makeTestDb } from '@/db/testing/testDb';
 import { moveInHtml, moveInFileName, svgDataUri } from '@/pdf/moveIn';
-import type { PdfAdapter } from '@/pdf/shell';
+import { fileDate, type PdfAdapter } from '@/pdf/shell';
 import { t } from '@/i18n';
 
 import {
@@ -162,6 +162,15 @@ describe('service (sample §8 rental)', () => {
     expect(applyMoveInEdit(db, fs, row.id, row, { type: 'setKeys', keys: 4 }).clearedSignatures).toBe(true);
     expect(getMoveIn(db, rental.id)!.doneAt).toBeNull();
   });
+
+  it('B-52: a signature is stamped in local ISO with the device offset (not UTC "Z")', () => {
+    const { db, rental } = sampleWithTenant();
+    openMoveIn(db, rental.id);
+    signMoveIn(db, { deleteFile: () => {} }, getMoveIn(db, rental.id)!, 'landlord', 'rentals/1/sig-l.svg');
+    const at = draftOf(getMoveIn(db, rental.id)!).signatures.landlord!.at;
+    expect(at).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+    expect(Math.abs(new Date(at).getTime() - Date.now())).toBeLessThan(60_000);
+  });
 });
 
 describe('PDF', () => {
@@ -227,7 +236,7 @@ describe('PDF', () => {
     expect(moveInHtml(input)).not.toContain('file:///');
   });
 
-  it('export needs both signatures; file name has the address, not the tenant', async () => {
+  it('export needs both signatures; file name is type + rental id + date (B-49)', async () => {
     const { db, row } = await signedRow();
     const adapter: PdfAdapter = {
       printToFile: jest.fn(async () => ({ uri: 'file:///tmp/x.pdf', numberOfPages: 2 })),
@@ -236,8 +245,8 @@ describe('PDF', () => {
       share: jest.fn(async () => {}),
     };
     const r = await exportMoveIn(db, row, reader, { includePhotos: false, adapter });
-    expect(r).toEqual({ uri: 'file:///cache/Move-in checklist - 1428 Maple St Unit B.pdf', numberOfPages: 2, shared: true });
-    expect(moveInFileName('1428 Maple St')).not.toContain('Jordan');
+    expect(r).toEqual({ uri: `file:///cache/Move-in checklist - rental ${row.rentalId} - ${fileDate()}.pdf`, numberOfPages: 2, shared: true });
+    expect(moveInFileName(3, new Date(2026, 10, 27))).toBe('Move-in checklist - rental 3 - 2026-11-27');
 
     const unsigned = { ...row, signatures: { landlord: draftOf(row).signatures.landlord } };
     await expect(exportMoveIn(db, unsigned, reader, { includePhotos: false, adapter })).rejects.toThrow();

@@ -372,7 +372,8 @@ export function saveBackgroundSheet(db: AppDb, applicantId: number, form: Backgr
 /**
  * "Continue with the offer" / "Withdraw the offer". Saves the review + its outcome; it never changes the Applicant's
  * status — withdrawing is a Decision the landlord makes next on S-15 (with reasons, and the FCRA rule if a report
- * played a part). Withdraw needs a conviction in the lookback and the individual assessment answered.
+ * played a part). Withdraw needs a conviction in the lookback and the individual assessment answered; with such a
+ * conviction, Continue needs the assessment answered too (product.md S-14, B-50).
  */
 export function chooseBackgroundOutcome(db: AppDb, applicantId: number, form: BackgroundForm, outcome: 'continue' | 'withdraw', now = new Date()): BackgroundSaveResult {
   const sheet = loadBackgroundSheet(db, applicantId);

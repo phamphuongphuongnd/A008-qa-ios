@@ -3,7 +3,7 @@
  * States" / "Applicant Mode". Routes (S-07 creates the draft first): /applicants/[id]/form?section= (landlord) · /applicants/mode/form/[id] (applicant mode: mode bar, no way out
  * without the landlord's lock).
  */
-import { usePreventRemove, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
+import { usePreventRemove, useLocalSearchParams, useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -29,7 +29,7 @@ import {
 
 import { submitInApplicantMode } from '../applicantMode/actions';
 import { canAccessApplicant } from '../applicantMode/guard';
-import { dispatchApplicantMode, useApplicantMode } from '../applicantMode/store';
+import { dispatchApplicantMode, getApplicantMode, useApplicantMode } from '../applicantMode/store';
 import { ApplicantModeBar } from '../components/LandlordLock';
 import {
   AboutSection,
@@ -43,7 +43,7 @@ import {
 } from '../components/FormSections';
 import { usePickFile } from '../components/usePickFile';
 import { clampSection, SECTION_KEYS, type FormMode } from '../form/model';
-import { clearSignature, discardDraft } from '../form/service';
+import { clearSignature, discardBlankDraft, discardDraft } from '../form/service';
 import { useApplicationForm } from '../hooks/useApplicationForm';
 import { useIntakeRental, usePaperPhotos } from '../hooks/useIntakeData';
 import { formFooter, formHeader, thumbLabel, tx } from '../screenModels';
@@ -61,7 +61,6 @@ export default function ApplicationFormScreen({ mode = 'landlord' }: { mode?: Fo
 
 function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId: number | null; section: number | null }) {
   const router = useRouter();
-  const navigation = useNavigation();
   const [modeState] = useApplicantMode();
   const allowed = mode === 'landlord' || canAccessApplicant(modeState, applicantId);
   const rentalId = applicantId != null ? (getApplicant(db, applicantId)?.rentalId ?? null) : null;
@@ -76,6 +75,13 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
     mode,
     initialStep: section != null ? clampSection(section) : null,
     submitFn: mode === 'applicant' ? (d, id, form) => submitInApplicantMode(d, id, form) : undefined,
+    // The landlord ended applicant mode before the applicant typed anything: no empty draft is left behind (B-62).
+    onUnmount:
+      mode === 'applicant'
+        ? (form) => {
+            if (applicantId != null && getApplicantMode().phase === 'off') discardBlankDraft(db, files.fileStore, applicantId, form);
+          }
+        : undefined,
   });
   const [submitting, setSubmitting] = useState(false);
   const [askDiscard, setAskDiscard] = useState<null | (() => void)>(null);
@@ -91,9 +97,15 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
   }, [f.step, f.form, f]);
 
   // Landlord, new application: leaving asks "Discard this application?" (an untouched draft just goes).
+  // Leaving = turn the prevention off first, then repeat the blocked action (`repeat`), or `disablePrevention()` before
+  // navigating elsewhere — dispatching while it is still on re-opens the dialog forever (B-47).
   const isNew = mode === 'landlord' && f.receivedEditable;
-  usePreventRemove(isNew && !submitting, ({ data }) => {
-    const leave = () => navigation.dispatch(data.action);
+  const [leaving, setLeaving] = useState(false);
+  const allowLeave = usePreventRemove(isNew && !submitting && !leaving, ({ repeat }) => {
+    const leave = () => {
+      setLeaving(true);
+      repeat();
+    };
     if (applicantId != null && !f.form?.fullName.trim() && !f.dirty) {
       discardDraft(db, files.fileStore, applicantId);
       leave();
@@ -130,6 +142,8 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
       return;
     }
     haptics.success();
+    // Saved: no "Discard?" on the way out (the `submitting` state is not committed yet when we navigate).
+    allowLeave();
     if (mode === 'applicant') router.replace(routes.applicantModeDone(applicantId!));
     else {
       showSnackbar({ message: t('intake:s08.saved') });
@@ -219,9 +233,14 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
         </View>
       }
       footer={
-        <ButtonBar row>
-          {footer.showBack ? <Button variant="secondary" label={t('common:actions.back')} onPress={f.step === 1 ? () => router.back() : f.back} /> : null}
-          <Button label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
+        <ButtonBar>
+          {/* Mockup S-08: narrow Back, the primary button fills the rest (alone on applicant part 1 → whole row) — B-63. */}
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            {footer.showBack ? (
+              <Button variant="secondary" block label={t('common:actions.back')} onPress={f.step === 1 ? () => router.back() : f.back} />
+            ) : null}
+            <Button block style={{ flex: 1 }} label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
+          </View>
         </ButtonBar>
       }
     >

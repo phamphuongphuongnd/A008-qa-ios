@@ -9,7 +9,7 @@ import { BackHandler, StyleSheet, View } from 'react-native';
 
 import type { Outcome } from '@/engine';
 import { t } from '@/i18n';
-import { router } from '@/services/router';
+import { landAfterOnboarding } from '@/navigation/onboardingLanding';
 import { font, useTheme } from '@/theme';
 import { Button, ButtonBar, Checkbox, PageDots, Screen, StatusBadge, TextButton, Txt } from '@/ui';
 
@@ -36,7 +36,8 @@ export default function OnboardingScreen() {
 
   const finish = (withSample: boolean) => {
     const r = withSample ? f.explore() : f.getStarted();
-    if (r) router.replace(r.next);
+    // B-40: no navigation here — the root stack's onboarding guard swaps S-01 for the tabs once `onboarded` flips.
+    if (r) landAfterOnboarding(r.next);
   };
 
   const footer =
@@ -45,16 +46,15 @@ export default function OnboardingScreen() {
         <Button label={t('system:s01.next')} onPress={() => f.dispatch({ type: 'next' })} block />
       </ButtonBar>
     ) : (
+      // B-80: the required tick sits in the footer right above "Get started" (mockup S-01 p3), so it is on screen on an
+      // iPhone SE / large text too; "Explore with a sample rental" is a text link (a disabled ghost button drew a big
+      // grey block and pushed the tick under the footer).
       <ButtonBar hint={accepted ? undefined : t('system:s01.acceptFirst')}>
+        <Checkbox label={t('system:s01.accept')} value={accepted} onChange={() => f.dispatch({ type: 'toggleAccepted' })} />
         <Button label={t('system:s01.getStarted')} onPress={() => finish(false)} disabled={!f.canFinish} loading={f.busy === 'start'} block />
-        <Button
-          label={t('system:s01.explore')}
-          variant="ghost"
-          onPress={() => finish(true)}
-          disabled={!f.canFinish}
-          loading={f.busy === 'sample'}
-          block
-        />
+        <View style={styles.link}>
+          <TextButton label={t('system:s01.explore')} onPress={() => finish(true)} disabled={!f.canFinish} />
+        </View>
       </ButtonBar>
     );
 
@@ -64,7 +64,7 @@ export default function OnboardingScreen() {
         {f.showsSkip ? <TextButton label={t('system:s01.skip')} onPress={() => f.dispatch({ type: 'skip' })} /> : null}
       </View>
       <View
-        style={[styles.art, { backgroundColor: colors.accentSoft }]}
+        style={[styles.art, page === 2 && styles.artShort, { backgroundColor: colors.accentSoft }]}
         accessibilityElementsHidden
         importantForAccessibility="no-hide-descendants"
       >
@@ -77,7 +77,6 @@ export default function OnboardingScreen() {
         </Txt>
         <Txt style={[font(400, 16, 24), { color: colors.inkMuted }]}>{text.subtitle}</Txt>
       </View>
-      {page === 2 ? <Checkbox label={t('system:s01.accept')} value={accepted} onChange={() => f.dispatch({ type: 'toggleAccepted' })} /> : null}
     </Screen>
   );
 }
@@ -127,7 +126,7 @@ function Art({ page }: { page: OnboardingPage }) {
     );
   }
   return (
-    <View style={styles.fill}>
+    <View style={[styles.fill, styles.artShort]}>
       <View style={[styles.paper, card]}>
         <View style={[styles.line8, { backgroundColor: colors.accent, width: '60%' }]} />
         {['90%', '75%', '85%', '60%'].map((w) => (
@@ -145,6 +144,9 @@ const styles = StyleSheet.create({
   body: { paddingHorizontal: 24, gap: 20 },
   skipRow: { flexDirection: 'row', justifyContent: 'flex-end', minHeight: 44, marginHorizontal: -8 },
   art: { minHeight: 250, borderRadius: 28, overflow: 'hidden' },
+  // Page 3 (mockup: 170) leaves room for the tick + two finish actions in the footer.
+  artShort: { minHeight: 170 },
+  link: { alignItems: 'center' },
   text: { gap: 10 },
   rows: { paddingHorizontal: 28, paddingTop: 36, paddingBottom: 24, gap: 10 },
   critRow: {

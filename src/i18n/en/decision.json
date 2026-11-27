@@ -115,7 +115,7 @@
     "intro": "First-come order: review one at a time, in the order received.",
     "review": "Review",
     "requestMissing": "Request missing info",
-    "moveNextIncomplete": "Move to next",
+    "moveNextIncomplete": "Move to next (incomplete)",
     "offerExpiredMoveNext": "Offer expired — move to next",
     "ends": "Ends {{when}}",
     "hours": "72 hours",
