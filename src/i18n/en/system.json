@@ -367,6 +367,10 @@
     "backupNeverBody": "Time to back up — you haven't made a backup yet.",
     "cleanupTitle": "Applicant data to delete",
     "cleanupBody_one": "{{count}} closed rental still holds applicant data.",
-    "cleanupBody_other": "{{count}} closed rentals still hold applicant data."
+    "cleanupBody_other": "{{count}} closed rentals still hold applicant data.",
+    "exactTitle": "Get deadline reminders on time?",
+    "exactBody": "Allow \"Alarms & reminders\" for Evenlease so deadline reminders arrive on time.",
+    "exactAllow": "Allow",
+    "exactLater": "Not now"
   }
 }

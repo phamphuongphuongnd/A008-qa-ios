@@ -2,7 +2,9 @@ import * as A from '@/db/repos/applicants';
 import * as R from '@/db/repos/rentals';
 import * as V from '@/db/repos/verify';
 
-import { checkDecision, loadDecisionContext, saveDecisionAction, syncQueueStatus } from '../decision';
+import { loadRentalHub } from '@/features/units/rentalQueries';
+
+import { checkDecision, loadDecisionContext, requestMissingInfo, saveDecisionAction, syncQueueStatus } from '../decision';
 import { decisionFileData } from '../decisionFile';
 import { buildLetterInput, letterText, loadLetterContext } from '../letters';
 import { evidenceDetail, loadApplicantReview, loadCompare, loadQueue } from '../review';
@@ -331,6 +333,41 @@ describe('S-18 order queue', () => {
     expect(expired.buttons.map((b) => b.label)).toEqual(['Offer expired — move to next']);
     expect(expired.timer).toEqual({ label: 'Offer expired', calm: false });
     expect(expired.a11y).toMatch(/^Number 1 in order received, Jordan Ellis/);
+  });
+
+  it('B-65: the front applicant reads In review everywhere before S-18 is opened', () => {
+    const { db, rentalId, id } = sampleDb();
+    R.updateRental(db, rentalId, { reviewMode: 'first_come' });
+    // No syncQueueStatus: Jordan is still stored as "new".
+    expect(A.getApplicantBundle(db, id('Jordan'))!.applicant.status).toBe('new');
+    expect(loadRentalHub(db, rentalId)!.applicants.map((a) => a.status)).toEqual(['in_review', 'new', 'new', 'new']);
+    const q = loadQueue(db, rentalId, NOW)!;
+    expect(queueRowView(q.rows[0], q.currentId).line).toBe('Dec 2, 9:14 AM · In review');
+    const review = loadApplicantReview(db, id('Jordan'), NOW)!;
+    expect(statusChip(review.applicant.status, review.queueEntry?.state)).toEqual({ label: 'In review', tone: 'accent' });
+    // Compare mode keeps the stored status.
+    R.updateRental(db, rentalId, { reviewMode: 'compare' });
+    expect(loadRentalHub(db, rentalId)!.applicants[0].status).toBe('new');
+  });
+
+  it('B-65: "Move to next (incomplete)" shows disabled while the 72 h clock runs, usable once it ends', async () => {
+    const { db, rentalId, id } = sampleDb();
+    R.updateRental(db, rentalId, { reviewMode: 'first_come' });
+    A.setApplicantStatus(db, id('Jordan'), 'denied'); // Priya (2 items missing) is next
+    const { deps, clock } = makeDeps(db, NOW);
+    expect(await requestMissingInfo(deps, id('Priya'), 'email')).toMatchObject({ ok: true });
+    let q = loadQueue(db, rentalId, clock.now().toISOString())!;
+    const running = queueRowView(q.rows[1], q.currentId);
+    expect(running.buttons.map((b) => [b.label, !!b.disabled])).toEqual([
+      ['Review', false],
+      ['Move to next (incomplete)', true],
+    ]);
+    clock.advanceHours(73);
+    q = loadQueue(db, rentalId, clock.now().toISOString())!;
+    expect(queueRowView(q.rows[1], q.currentId).buttons.map((b) => [b.label, !!b.disabled])).toEqual([
+      ['Review', false],
+      ['Move to next (incomplete)', false],
+    ]);
   });
 
   it('missing-info sheet ends 72 h from now', () => {

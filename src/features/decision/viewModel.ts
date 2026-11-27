@@ -52,10 +52,19 @@ const STATUS_TONE: Record<ApplicantStatus, ChipTone> = {
   offer_expired: 'neutral',
 };
 
+/**
+ * Status shown for an applicant: First-come's front applicant still stored as "new" is In review (§3.14) — the
+ * stored status catches up when S-18 opens (`syncQueueStatus`), the screens must not wait for that (B-65).
+ */
+export function shownStatus(status: ApplicantStatus, queueState?: QueueState | null): ApplicantStatus {
+  return queueState === 'in_review' && status === 'new' ? 'in_review' : status;
+}
+
 /** Applicant status chip ("In review", "Denied"…). First-come applicants not yet at the front read "Waiting". */
 export function statusChip(status: ApplicantStatus, queueState?: QueueState | null): { label: string; tone: ChipTone } {
   if (queueState === 'waiting') return { label: t('decision:status.waiting'), tone: 'outline' };
-  return { label: t(`decision:status.${status}`), tone: STATUS_TONE[status] };
+  const s = shownStatus(status, queueState);
+  return { label: t(`decision:status.${s}`), tone: STATUS_TONE[s] };
 }
 
 /** "Received Dec 2, 9:14 AM". */
@@ -619,6 +628,8 @@ export interface QueueButton {
   action: QueueAction;
   label: string;
   variant: 'primary' | 'secondary';
+  /** Shown but not yet usable ("Move to next (incomplete)" while the 72 h clock runs — mockup S-18). */
+  disabled?: boolean;
 }
 
 export interface QueueRowView {
@@ -642,11 +653,22 @@ const QUEUE_BUTTON: Record<QueueAction, { key: string; variant: 'primary' | 'sec
 };
 
 export function queueRowView(row: QueueRow, currentId: string | null): QueueRowView {
-  const status = row.state === 'waiting' ? t('decision:status.waiting') : t(`decision:status.${row.status}`);
+  const status = row.state === 'waiting' ? t('decision:status.waiting') : t(`decision:status.${shownStatus(row.status, row.state)}`);
   const line = `${shortStamp(row.receivedAt)} · ${status}`;
   // An expired offer leaves one way on (mockup S-18); the row itself still opens S-09.
   const actions = row.actions.includes('offer_expired_move_next') ? (['offer_expired_move_next'] as QueueAction[]) : row.actions;
   const timer = row.timer && row.timer.status !== 'resolved' ? { label: row.timer.label, calm: false } : null;
+  const button = (a: QueueAction, disabled = false): QueueButton => ({
+    action: a,
+    label: t(QUEUE_BUTTON[a].key as 'decision:s18.review'),
+    variant: QUEUE_BUTTON[a].variant,
+    ...(disabled ? { disabled } : {}),
+  });
+  const buttons = actions.map((a) => button(a));
+  // Mockup S-18: while the 72 h clock runs, "Move to next (incomplete)" is there but disabled until it ends (§3.14).
+  if (row.state === 'in_review' && row.timer?.kind === 'missing_info' && row.timer.status === 'running') {
+    buttons.push(button('move_to_next_incomplete', true));
+  }
   return {
     key: row.applicantId,
     rowId: row.rowId,
@@ -655,7 +677,7 @@ export function queueRowView(row: QueueRow, currentId: string | null): QueueRowV
     name: row.fullName,
     line,
     timer,
-    buttons: actions.map((a) => ({ action: a, label: t(QUEUE_BUTTON[a].key as 'decision:s18.review'), variant: QUEUE_BUTTON[a].variant })),
+    buttons,
     a11y: [t('ui:queue.position', { n: row.position }), row.fullName, line, timer?.label].filter(Boolean).join(', '),
   };
 }

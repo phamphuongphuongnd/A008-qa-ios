@@ -34,17 +34,12 @@ import {
 } from '@/engine';
 import { getApplicantBundle, purgeApplicant, setApplicantStatus } from '@/db/repos/applicants';
 import type { FileStore } from '@/db/files';
-import { activeTimer, resolveTimer, saveDecision, setTimerNotifications, startTimer as dbStartTimer } from '@/db/repos/decisions';
+import { activeTimer, resolveTimer, saveDecision, startTimer as dbStartTimer } from '@/db/repos/decisions';
 import { getSettings } from '@/db/repos/settings';
 import { toQueueApplicant } from '@/db/toEngine';
 import type { AppDb, Timer as TimerRow } from '@/db/types';
-import {
-  cancelTimerNotifications,
-  ensureTimerPermission,
-  scheduleTimerNotifications,
-  type PermissionState,
-  type QueueNotifier,
-} from '@/notifications/queueTimers';
+import { cancelTimerNotifications, ensureTimerPermission, type PermissionState, type QueueNotifier } from '@/notifications/queueTimers';
+import { syncTimerNotifications } from '@/notifications/timerSync';
 
 import { loadApplicantReview, loadRentalReview, type ApplicantReview } from './review';
 import { localIso } from './time';
@@ -163,7 +158,8 @@ async function resolveOpenTimers(deps: DecisionDeps, applicantId: number, at: st
 
 /**
  * Start a 72 h / 48 h clock, store it and schedule its two notifications (asks the permission once).
- * Notification problems never fail the action: the clock is shown in the app either way.
+ * Notification problems never fail the action: the clock is shown in the app either way. A clock started while
+ * notifications are off gets its notifications later, once they are allowed (`syncTimerNotifications`, B-58).
  */
 async function startClock(
   deps: DecisionDeps,
@@ -178,13 +174,16 @@ async function startClock(
       // 2E's prompt (ask once, `settings.notificationsAsked`) on the phone; see queueTimersNative.
       permission = await ensureTimerPermission(deps.notifier);
       if (permission === 'granted') {
-        const ids = await scheduleTimerNotifications(deps.notifier, {
-          timer: t,
-          applicant: { id: String(input.applicantId), fullName: input.fullName },
-          rentalId: input.rentalId,
-          now: input.at,
-        });
-        setTimerNotifications(deps.db, timerId, ids);
+        await syncTimerNotifications(deps.db, deps.notifier, { now: input.at, timerIds: [timerId] });
+        // First clock: ask once for exact alarms ("Alarms & reminders", Android 14+) so the reminders come on time.
+        // Not awaited — the landlord may spend a while on the system screen; when they come back, the sync sees the
+        // change and re-schedules every clock exactly.
+        if (deps.notifier.ensureExactAlarms) {
+          void deps.notifier
+            .ensureExactAlarms()
+            .then(() => syncTimerNotifications(deps.db, deps.notifier))
+            .catch(() => undefined);
+        }
       }
     }
   } catch {

@@ -80,6 +80,8 @@ export default function RentalHubScreen() {
     }
   };
   const del = dialog === 'delete' ? actions.deleteMessage(rentalId) : null;
+  // B-61: say what closing stops (an offer out / running First-come clocks).
+  const closeWarn = dialog === 'close' ? actions.closeWarning(rentalId) : null;
 
   return (
     <Screen
@@ -166,13 +168,13 @@ export default function RentalHubScreen() {
         visible={dialog === 'close'}
         tone="warn"
         title={t('units:s06.closeDialog.title')}
-        body={t('units:s06.closeDialog.body')}
+        body={closeWarn?.message ?? t('units:s06.closeDialog.body')}
         confirmLabel={t('units:s06.closeDialog.confirm')}
         onCancel={() => setDialog(null)}
         onConfirm={() => {
           setDialog(null);
-          actions.close(rentalId);
-          showSnackbar({ message: t('units:s02.closedSnack'), actionLabel: t('common:actions.undo'), onAction: () => actions.reopen(rentalId) });
+          const stopped = actions.close(rentalId);
+          showSnackbar({ message: t('units:s02.closedSnack'), actionLabel: t('common:actions.undo'), onAction: () => actions.reopen(rentalId, stopped) });
         }}
       />
       <ConfirmDialog

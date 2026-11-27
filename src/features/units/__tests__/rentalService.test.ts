@@ -10,6 +10,7 @@ import { describeHistoryEntry } from '@/features/criteria/criteriaService';
 import { emptyRentalForm, rentalToForm, type RentalForm } from '../rentalForm';
 import {
   closeRental,
+  closeRentalWarning,
   createRentalFromForm,
   deleteRentalAndData,
   deleteRentalMessage,
@@ -140,6 +141,35 @@ describe('close / reopen / delete / sample', () => {
     expect(R.listRentals(db, 'closed')).toHaveLength(1);
     reopenRental(db, id);
     expect(R.getRental(db, id)).toMatchObject({ status: 'open', closedAt: null });
+  });
+
+  it('B-61: an offer out / a running clock → ask first; closing stops the clocks, Undo restarts them', () => {
+    const db = makeTestDb();
+    const id = create(db, { reviewMode: 'first_come' });
+    const a = addApplicant(db, id);
+    expect(closeRentalWarning(db, id)).toBeNull();
+    const timerId = Dec.startTimer(db, { applicantId: a, kind: 'offer', startedAt: AT, endsAt: '2026-12-07T10:00:00-05:00', notificationIds: ['n1', 'n2'] });
+    expect(closeRentalWarning(db, id)!.message).toContain('first-come clock is still running');
+    A.setApplicantStatus(db, a, 'conditional_offer');
+    expect(closeRentalWarning(db, id)!.message).toContain('The offer to Jordan Ellis is still waiting for a reply');
+
+    const stopped = closeRental(db, id, AT);
+    // The caller cancels these notification ids; no clock runs on a closed rental.
+    expect(stopped.map((t) => [t.id, t.notificationIds])).toEqual([[timerId, ['n1', 'n2']]]);
+    expect(Dec.listActiveTimers(db, id)).toHaveLength(0);
+
+    reopenRental(db, id, stopped);
+    expect(R.getRental(db, id)!.status).toBe('open');
+    // Running again (same end), ids cleared so syncTimers schedules them afresh.
+    expect(Dec.activeTimer(db, a)).toMatchObject({ id: timerId, endsAt: '2026-12-07T10:00:00-05:00', notificationIds: [] });
+  });
+
+  it('deleting a rental returns its running clocks (to cancel their notifications)', () => {
+    const db = makeTestDb();
+    const id = create(db, { reviewMode: 'first_come' });
+    const a = addApplicant(db, id);
+    Dec.startTimer(db, { applicantId: a, kind: 'missing_info', startedAt: AT, endsAt: '2026-12-08T10:00:00-05:00', notificationIds: ['x'] });
+    expect(deleteRentalAndData(db, makeTestFiles([]), id).map((t) => t.notificationIds)).toEqual([['x']]);
   });
 
   it('deletes the rental, its applicants and their files', () => {

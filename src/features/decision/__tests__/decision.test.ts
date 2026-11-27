@@ -221,12 +221,16 @@ describe('First-come order (§3.14)', () => {
     await saveDecisionAction(deps, id('Jordan'), { kind: 'conditional_offer', conditions: [], reasons: [], note: '', reportInfluenced: false });
     expect(notes.askedCount()).toBe(1);
     expect(notes.scheduled.size).toBe(2);
+    // Notifications allowed → exact alarms asked too (the adapter keeps the ask-once rule).
+    expect(notes.exactAskedCount()).toBe(1);
 
     const other = makeDeps(db, T0, 'denied');
     await markWithdrawnByApplicant(other.deps, id('Jordan'));
     const res = await requestMissingInfo(other.deps, id('Priya'), 'call');
     expect(res).toMatchObject({ ok: true, permission: 'denied' });
     expect(other.notes.scheduled.size).toBe(0);
+    // No notifications → no point asking for exact alarms.
+    expect(other.notes.exactAskedCount()).toBe(0);
     expect(Dec.activeTimer(db, id('Priya'), 'missing_info')).not.toBeNull();
   });
 

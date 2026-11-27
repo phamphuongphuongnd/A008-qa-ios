@@ -19,10 +19,39 @@ export interface QueueNotifier {
   cancel(id: string): Promise<void>;
   getPermission(): Promise<PermissionState>;
   requestPermission(): Promise<PermissionState>;
+  /**
+   * true while someone other than the landlord may see the phone (Applicant mode): notifications then carry no
+   * applicant name (B-60). The phone's adapter reads the Applicant mode store; absent = false.
+   */
+  isPrivate?(): boolean;
+  /**
+   * Reminders fire on time (Android exact alarms allowed, or not needed). false → worded "about 2 hours" (Android may
+   * deliver them up to ~1 h late). Absent = on time.
+   */
+  exactAlarms?(): Promise<boolean>;
+  /** Ask once for exact alarms (./exactAlarms); resolves with exactAlarms(). Absent = nothing to ask. */
+  ensureExactAlarms?(): Promise<boolean>;
 }
 
 /** Body line under the §6 title (no applicant data beyond the name already in the title). */
 export const TIMER_NOTIFICATION_BODY = 'Open the order queue to decide what happens next.';
+
+/** Titles without the applicant's name, used while Applicant mode is on (S-08a: the applicant holds the phone). */
+export const PRIVATE_TIMER_TITLES = {
+  two_hours_left: 'A first-come clock has 2 hours left',
+  expired: 'A first-come clock has run out',
+} as const;
+
+/** "2 hours" → "about 2 hours" when the alarm may come late (no exact alarms). Only the 2-hours-left reminder. */
+export function approximateTitle(title: string): string {
+  return title.replace(/\b2 hours\b/, 'about 2 hours');
+}
+
+/** Title of a timer notification for the current privacy / alarm precision. */
+export function timerTitle(n: { type: 'two_hours_left' | 'expired'; title: string }, opts: { anonymous?: boolean; approximate?: boolean }): string {
+  const base = opts.anonymous ? PRIVATE_TIMER_TITLES[n.type] : n.title;
+  return opts.approximate && n.type === 'two_hours_left' ? approximateTitle(base) : base;
+}
 
 /**
  * Schedule the 2-hours-left + ended notifications still in the future for one running timer.
@@ -31,14 +60,24 @@ export const TIMER_NOTIFICATION_BODY = 'Open the order queue to decide what happ
  */
 export async function scheduleTimerNotifications(
   notifier: QueueNotifier,
-  input: { timer: Timer; applicant: { id: string; fullName: string }; rentalId: number | string; now: string },
+  input: {
+    timer: Timer;
+    applicant: { id: string; fullName: string };
+    rentalId: number | string;
+    now: string;
+    /** No applicant name in the title (Applicant mode on, B-60). */
+    anonymous?: boolean;
+    /** Alarms may come late (no exact alarms): "about 2 hours left". */
+    approximate?: boolean;
+  },
 ): Promise<string[]> {
   const items = timerNotifications(input.timer, input.applicant, input.now);
   const url = String(routes.orderQueue(input.rentalId));
   const ids: string[] = [];
   for (const n of items) {
+    const title = timerTitle(n, input);
     try {
-      ids.push(await notifier.schedule({ title: n.title, body: TIMER_NOTIFICATION_BODY, at: new Date(n.at), data: { url, key: n.key } }));
+      ids.push(await notifier.schedule({ title, body: TIMER_NOTIFICATION_BODY, at: new Date(n.at), data: { url, key: n.key } }));
     } catch {
       // Permission denied / OS limit: the clock still shows in the app.
     }

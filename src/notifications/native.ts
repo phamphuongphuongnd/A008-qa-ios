@@ -3,9 +3,12 @@
  */
 import * as Notifications from 'expo-notifications';
 import { AndroidImportance } from 'expo-notifications';
-import { Platform } from 'react-native';
+import { Alert, Platform } from 'react-native';
+
+import { t } from '@/i18n';
 
 import type { NotificationAdapter, PermissionState } from './adapter';
+import type { ExactAlarmAdapter } from './exactAlarms';
 
 const toState = (p: Notifications.NotificationPermissionsStatus): PermissionState =>
   p.granted ? 'granted' : p.canAskAgain ? 'undetermined' : 'denied';
@@ -35,6 +38,32 @@ export const expoNotifications: NotificationAdapter = {
   async cancelAll() {
     await Notifications.cancelAllScheduledNotificationsAsync();
     await Notifications.dismissAllNotificationsAsync();
+  },
+};
+
+/**
+ * Android 12+ "Alarms & reminders" through expo-notifications' own API (it schedules with
+ * `setExactAndAllowWhileIdle` once allowed). Rules in ./exactAlarms.
+ */
+export const expoExactAlarms: ExactAlarmAdapter = {
+  needsPermission: () => Platform.OS === 'android' && Number(Platform.Version) >= 31,
+  async granted() {
+    return (await Notifications.getExactAlarmPermissionsAsync()).granted;
+  },
+  explain: () =>
+    new Promise<boolean>((resolve) => {
+      Alert.alert(
+        t('system:notifications.exactTitle'),
+        t('system:notifications.exactBody'),
+        [
+          { text: t('system:notifications.exactLater'), style: 'cancel', onPress: () => resolve(false) },
+          { text: t('system:notifications.exactAllow'), onPress: () => resolve(true) },
+        ],
+        { cancelable: true, onDismiss: () => resolve(false) },
+      );
+    }),
+  async request() {
+    return (await Notifications.requestExactAlarmPermissionsAsync()).granted;
   },
 };
 

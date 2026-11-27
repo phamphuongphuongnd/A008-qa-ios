@@ -6,10 +6,14 @@
  */
 import * as Notifications from 'expo-notifications';
 
-import { askNotificationPermission } from './index';
+import { db } from '@/db';
+import { isApplicantModeActive } from '@/features/intake/applicantMode/store';
+
 import { CHANNELS } from './adapter';
-import { expoNotifications } from './native';
+import { ensureExactAlarmPermission, exactAlarmsOn } from './exactAlarms';
+import { expoExactAlarms, expoNotifications } from './native';
 import type { PermissionState, QueueNotifier } from './queueTimers';
+import { ensureNotificationPermission } from './reminders';
 
 export const expoQueueNotifier: QueueNotifier = {
   async schedule({ title, body, at, data }) {
@@ -25,7 +29,11 @@ export const expoQueueNotifier: QueueNotifier = {
     return expoNotifications.permission();
   },
   async requestPermission(): Promise<PermissionState> {
-    if (await askNotificationPermission()) return 'granted';
+    // Same as askNotificationPermission() in ./index (ask at most once), without importing index (cycle).
+    if (await ensureNotificationPermission(db, expoNotifications).catch(() => false)) return 'granted';
     return expoNotifications.permission();
   },
+  isPrivate: isApplicantModeActive,
+  exactAlarms: () => exactAlarmsOn(expoExactAlarms),
+  ensureExactAlarms: () => ensureExactAlarmPermission(db, expoExactAlarms),
 };
