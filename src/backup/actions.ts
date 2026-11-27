@@ -105,7 +105,7 @@ export function makeBackupActions(env: BackupEnv) {
     /** S-22 "Folder: Documents" (labels saved before B-76 as "primary:Documents" read the same way). */
     folderLabel(): string | null {
       const label = getDeviceValue(env.db, DEVICE_KEYS.backupFolderLabel);
-      return label ? readableFolderLabel(label) : null;
+      return label ? readableFolderLabel(label, getSettings(env.db).backupFolderUri) : null;
     },
 
     /** Weekly backup if due (app start / background task). */
