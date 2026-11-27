@@ -23,9 +23,11 @@ export interface UseApplicationFormOptions {
   initialStep?: FormSection | null;
   /** Replaces the default submit (applicant mode: `submitInApplicantMode`, which also moves the state machine). */
   submitFn?: (db: AppDb, applicantId: number, form: ApplicationForm) => SubmitResult;
+  /** Runs when the screen goes away, after the pending write, with the form it still held (B-62). */
+  onUnmount?: (form: ApplicationForm | null) => void;
 }
 
-export function useApplicationForm({ db, files, applicantId, mode, initialStep, submitFn }: UseApplicationFormOptions) {
+export function useApplicationForm({ db, files, applicantId, mode, initialStep, submitFn, onUnmount }: UseApplicationFormOptions) {
   const [state, dispatch] = useReducer(formReducer, INITIAL_FORM_STATE);
   const latest = useRef(state);
   latest.current = state; // eslint-disable-line react-hooks/refs -- read by timers / async handlers
@@ -58,8 +60,16 @@ export function useApplicationForm({ db, files, applicantId, mode, initialStep, 
     return () => clearTimeout(id);
   }, [state.form, state.dirty, flush]);
 
-  // Leaving the screen writes what is pending.
-  useEffect(() => () => void flush(), [flush]);
+  // Leaving the screen writes what is pending, then hands the last form to `onUnmount`.
+  const unmountRef = useRef(onUnmount);
+  unmountRef.current = onUnmount; // eslint-disable-line react-hooks/refs -- read once, on unmount
+  useEffect(
+    () => () => {
+      flush();
+      unmountRef.current?.(latest.current.form);
+    },
+    [flush],
+  );
 
   const ctx = { mode };
 

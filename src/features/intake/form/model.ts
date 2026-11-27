@@ -171,6 +171,41 @@ export function emptyResidence(): ResidenceDraft {
   };
 }
 
+const blank = (v: string | null | undefined) => !v?.trim();
+
+/**
+ * Nothing typed in: no text, no filled rows, no answers, no consent / signature. Defaults the form shows on its own
+ * (1 occupant, voucher "No", an empty residence row) do not count. Such a draft is not an applicant (B-62).
+ */
+export function isBlankForm(f: ApplicationForm): boolean {
+  const texts = [f.fullName, f.phone, f.email, f.emergencyName, f.emergencyPhone, f.voucherProgram, f.employer, f.jobTitle, f.employerPhone, f.supervisor];
+  return (
+    texts.every(blank) &&
+    Object.values(f.explain).every(blank) &&
+    f.otherAdults.every((o) => blank(o.name) && o.monthlyCents == null) &&
+    Object.values(f.pets).every((n) => n === 0) &&
+    f.moveInOn == null &&
+    f.voucherCents == null &&
+    f.residences.every(
+      (r) =>
+        [r.address, r.landlordName, r.landlordPhone, r.landlordEmail, r.reason].every(blank) &&
+        r.fromMonth == null &&
+        r.toMonth == null &&
+        r.type == null &&
+        r.rentCents == null,
+    ) &&
+    f.startMonth == null &&
+    f.monthlyCents == null &&
+    f.otherIncome.every((i) => i.monthlyCents == null) &&
+    Object.values(f.answers).every((v) => v == null) &&
+    Object.values(f.customAnswers).every((v) => v == null) &&
+    !f.consent.authorize &&
+    !f.consent.certify &&
+    !f.pendingSignature &&
+    !f.signaturePath
+  );
+}
+
 /** First name for S-08b "Thank you, {first name}." */
 export function firstName(fullName: string): string {
   return fullName.trim().split(/\s+/)[0] ?? '';
