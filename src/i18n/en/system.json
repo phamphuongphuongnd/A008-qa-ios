@@ -280,6 +280,8 @@
       "face": "Face unlock",
       "fingerprint": "Fingerprint",
       "iris": "Iris",
+      "faceOrFingerprint": "Fingerprint or face",
+      "biometric": "Biometrics",
       "device": "Phone passcode",
       "pin": "App PIN"
     },

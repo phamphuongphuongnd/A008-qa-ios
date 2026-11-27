@@ -2,6 +2,7 @@ import {
   appLockRowValue,
   appearanceRowValue,
   backupRowValue,
+  biometricLabel,
   cleanupRowValue,
   daysSince,
   formatUsPhone,
@@ -9,6 +10,8 @@ import {
   relativeDays,
   validateContact,
 } from '../summary';
+import { biometricKind } from '../lock';
+import { appLockView } from '../view';
 
 const now = new Date(2026, 11, 20, 9, 0); // Dec 20, 2026 local
 
@@ -66,5 +69,32 @@ describe('landlord contact', () => {
       landlordAddress: '12 Elm St\nColumbus',
       landlordPhone: '(614) 555-0142',
     });
+  });
+});
+
+describe('B-103 biometric label', () => {
+  const types = (face: boolean, fingerprint: boolean, iris = false) => ({ face, fingerprint, iris });
+
+  it('Android with face + fingerprint (Galaxy A13): neutral "Fingerprint or face", never "Face unlock"', () => {
+    const k = biometricKind(true, types(true, true), false);
+    expect(k).toBe('faceOrFingerprint');
+    expect(biometricLabel(k!, false)).toBe('Fingerprint or face');
+    expect(appLockView({ appLock: true, appPinHash: null }, { biometric: k, deviceSecure: true }, false).switchTitle).toBe(
+      'Require Fingerprint or face to open',
+    );
+  });
+
+  it('one kind → that kind; others → "Biometrics"; none enrolled → null', () => {
+    expect(biometricKind(true, types(false, true), false)).toBe('fingerprint');
+    expect(biometricKind(true, types(true, false), false)).toBe('face');
+    expect(biometricKind(true, types(false, true, true), false)).toBe('biometric');
+    expect(biometricKind(true, types(false, false), false)).toBe('biometric');
+    expect(biometricLabel('biometric', false)).toBe('Biometrics');
+    expect(biometricKind(false, types(true, true), false)).toBeNull();
+  });
+
+  it('iOS has one (Face ID or Touch ID) and the prompt uses it', () => {
+    expect(biometricLabel(biometricKind(true, types(true, false), true)!, true)).toBe('Face ID');
+    expect(biometricLabel(biometricKind(true, types(false, true), true)!, true)).toBe('Touch ID');
   });
 });

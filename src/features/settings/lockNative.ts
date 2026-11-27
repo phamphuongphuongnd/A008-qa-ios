@@ -4,8 +4,9 @@
  * pending forever — the Unlock button calls `cancel()` before asking again.
  */
 import * as LocalAuthentication from 'expo-local-authentication';
+import { Platform } from 'react-native';
 
-import type { AuthCapability, BiometricKind } from './lock';
+import { biometricKind, type AuthCapability } from './lock';
 
 export type AuthResult = 'success' | 'cancel' | 'lockout' | 'unavailable' | 'failed';
 
@@ -26,13 +27,12 @@ export const expoAuthAdapter: AuthAdapter = {
       const T = LocalAuthentication.AuthenticationType;
       const L = LocalAuthentication.SecurityLevel;
       const enrolled = level === L.BIOMETRIC_STRONG || level === L.BIOMETRIC_WEAK;
-      let biometric: BiometricKind | null = null;
-      if (enrolled) {
-        if (types.includes(T.FACIAL_RECOGNITION)) biometric = 'face';
-        else if (types.includes(T.FINGERPRINT)) biometric = 'fingerprint';
-        else if (types.includes(T.IRIS)) biometric = 'iris';
-        else biometric = 'fingerprint';
-      }
+      // B-103: never "Face unlock" when the prompt will really ask for a fingerprint (lock.ts biometricKind).
+      const biometric = biometricKind(
+        enrolled,
+        { face: types.includes(T.FACIAL_RECOGNITION), fingerprint: types.includes(T.FINGERPRINT), iris: types.includes(T.IRIS) },
+        Platform.OS === 'ios',
+      );
       return { biometric, deviceSecure: level !== L.NONE };
     } catch {
       return { biometric: null, deviceSecure: false };
