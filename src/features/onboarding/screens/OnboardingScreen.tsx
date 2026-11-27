@@ -179,14 +179,15 @@ const styles = StyleSheet.create({
   paper: {
     position: 'absolute',
     alignSelf: 'center',
-    top: 28,
+    // B-83: the sheet of paper (and its rotation) stays inside the 170 dp frame of page 3, also with the taller footer.
+    top: 22,
     width: 150,
-    height: 150,
+    height: 124,
     borderRadius: 10,
     borderWidth: 1,
     padding: 16,
     gap: 8,
     transform: [{ rotate: '-3deg' }],
   },
-  stamp: { width: 56, height: 56, top: 110, left: '50%', marginLeft: 40 },
+  stamp: { width: 56, height: 56, top: 98, left: '50%', marginLeft: 40 },
 });

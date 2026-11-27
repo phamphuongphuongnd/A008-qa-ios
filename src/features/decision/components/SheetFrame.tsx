@@ -89,6 +89,10 @@ export function SheetFrame({
       <ScrollView
         ref={scrollRef}
         style={styles.scroll}
+        // B-84: inside the native iOS formSheet the default "automatic" content-inset adjustment pushed the first lines of the body
+        // up under the sheet header ("CHOOSE A DECISION" over "Decision", iPad + Pro Max AX-XL). The frame lays out its own header.
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustKeyboardInsets={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.body, { maxWidth: size.contentMax }]}
       >
