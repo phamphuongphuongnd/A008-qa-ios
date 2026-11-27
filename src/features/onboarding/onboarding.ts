@@ -69,7 +69,7 @@ export function needsOnboarding(s: Pick<AppSettings, 'onboarded' | 'legalAccepte
 export interface FinishResult {
   /** The sample rental's id when "Explore with a sample rental" was chosen. */
   sampleRentalId: number | null;
-  /** Where to go next (replace, not push): the sample's Rental hub, or Rentals. */
+  /** Where to land: the sample's Rental hub (above the tabs), or Rentals. See `landAfterOnboarding`. */
   next: Href;
 }
 

@@ -1,4 +1,4 @@
-import { usePreventRemove, useFocusEffect, useNavigation } from 'expo-router';
+import { usePreventRemove, useFocusEffect } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { useCallback, useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import {
@@ -155,19 +155,25 @@ export function DiscardDialog({ visible, onKeep, onDiscard }: { visible: boolean
 /**
  * For a screen presented as a native sheet (S-07, S-15 formSheet) or any form screen: while `dirty`, leaving
  * (swipe down, back, router.back) asks "Discard changes?". Render the returned element.
+ *
+ * B-47: "Discard" must turn the prevention OFF before the blocked action runs again. Re-dispatching `data.action`
+ * while `usePreventRemove(dirty)` is still on gets blocked again → the dialog comes back forever. `repeat()` (from
+ * usePreventRemove) disables the prevention and re-dispatches in the same batch; `leaving` keeps the prop false so the
+ * hook does not switch it back on before the screen is gone.
  */
 export function useDiscardGuard(dirty: boolean): ReactNode {
-  const navigation = useNavigation();
   const [pending, setPending] = useState<null | (() => void)>(null);
-  usePreventRemove(dirty, ({ data }) => setPending(() => () => navigation.dispatch(data.action)));
+  const [leaving, setLeaving] = useState(false);
+  usePreventRemove(dirty && !leaving, ({ repeat }) => setPending(() => repeat));
   return (
     <DiscardDialog
       visible={!!pending}
       onKeep={() => setPending(null)}
       onDiscard={() => {
-        const go = pending;
+        const repeat = pending;
         setPending(null);
-        go?.();
+        setLeaving(true);
+        repeat?.();
       }}
     />
   );

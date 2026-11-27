@@ -40,7 +40,7 @@ export const settingsActions = {
   setCleanupAfter: (d: A.CleanupAfter) => A.setCleanupAfter(db, expoNotifications, d),
   /** S-24 "Delete their data". */
   deleteNotSelected: (rentalId: number) => deleteNotSelected(db, fileStore, rentalId, { notifications: expoNotifications }),
-  /** S-27: then `router.replace(routes.onboarding())`. */
+  /** S-27: then `router.dismissTo(routes.rentals())` — the onboarding guard shows S-01 (B-40). */
   async deleteAll() {
     await deleteEverything(db, fileStore, expoNotifications);
     lockStore.dispatch({ type: 'disabled' });
