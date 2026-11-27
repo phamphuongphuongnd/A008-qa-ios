@@ -150,7 +150,10 @@ export interface BackgroundState {
   /** Assessment questions still empty (only asked when a conviction is in the lookback). */
   missing: AssessmentField[];
   needsAssessment: boolean;
-  /** "Continue with the offer" — allowed once the review is entered. */
+  /**
+   * "Continue with the offer" — allowed once the review is entered and, with a conviction in the lookback, the
+   * individual assessment answered (product.md S-14: the questions are required when there is a conviction; B-50).
+   */
   continueBlock: OutcomeBlock | null;
   /** "Withdraw the offer" (→ S-15) — only for a conviction in the lookback, after the individual assessment. */
   withdrawBlock: OutcomeBlock | null;
@@ -180,7 +183,7 @@ export function backgroundState(
     convictions,
     missing,
     needsAssessment: inLookback.length > 0,
-    continueBlock: base,
+    continueBlock: base ?? (missing.length ? 'assessment_required' : null),
     withdrawBlock: base ?? (inLookback.length === 0 ? 'no_convictions_in_lookback' : missing.length ? 'assessment_required' : null),
   };
 }

@@ -212,9 +212,9 @@ describe('S-14 view', () => {
       { index: 0, title: 'Property', badge: 'needs_review', outsideLabel: 'Older than 7 years — not considered', line: 'Convicted Jun 2020 · sentence completed Dec 2020' },
     ]);
     expect(v.howLongAgo).toBe('6 years, 6 months (calculated)');
-    expect(v.footer).toEqual({ show: true, continueDisabled: false, showWithdraw: true, withdrawDisabled: true, hint: 'Answer the individual assessment questions first.' });
+    expect(v.footer).toEqual({ show: true, continueDisabled: true, showWithdraw: true, withdrawDisabled: true, hint: 'Answer the individual assessment questions first.' });
     const done = backgroundView(s, listed({ seriousness: 'x', rehabilitation: 'y', other: 'z' }), TODAY);
-    expect(done.kind === 'review' && done.footer).toMatchObject({ withdrawDisabled: false, hint: undefined });
+    expect(done.kind === 'review' && done.footer).toMatchObject({ continueDisabled: false, withdrawDisabled: false, hint: undefined });
 
     // An old conviction only: not considered, no assessment, no Withdraw.
     const old = backgroundView(s, listed({ convictions: [{ type: 'fraud', convictedOn: '2015-01-01', sentenceEndedOn: null }] }), TODAY);

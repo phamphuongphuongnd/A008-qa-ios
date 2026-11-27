@@ -289,9 +289,15 @@ describe('S-14 background', () => {
     const f: BackgroundForm = { ...toBackgroundForm(null), mode: 'listed', convictions: [{ type: 'property', convictedOn: '2020-06-01', sentenceEndedOn: '2020-12-01' }, { type: 'fraud', convictedOn: '2015-01-01', sentenceEndedOn: null }] };
     const s = backgroundState(f, ctx);
     expect(s.convictions.map((c) => c.inLookback)).toEqual([true, false]);
-    expect(s).toMatchObject({ needsAssessment: true, continueBlock: null, withdrawBlock: 'assessment_required', missing: ['seriousness', 'rehabilitation', 'other'] });
+    // B-50: with a conviction in the lookback, Continue needs the assessment too (product.md S-14).
+    expect(s).toMatchObject({ needsAssessment: true, continueBlock: 'assessment_required', withdrawBlock: 'assessment_required', missing: ['seriousness', 'rehabilitation', 'other'] });
+    expect(backgroundState({ ...f, seriousness: 'Shoplifting, single offense.' }, ctx).continueBlock).toBe('assessment_required');
     const done = backgroundState({ ...f, seriousness: 'Shoplifting, single offense.', rehabilitation: 'Clean record since', other: 'Nothing' }, ctx);
     expect(done.withdrawBlock).toBeNull();
+    expect(done.continueBlock).toBeNull();
+    // Only convictions older than the lookback: nothing to assess, Continue is open.
+    const old = backgroundState({ ...f, convictions: [f.convictions[1]] }, ctx);
+    expect(old).toMatchObject({ needsAssessment: false, continueBlock: null });
     expect(backgroundState(f, { ...ctx, gate: 'read_only' }).continueBlock).toBe('not_editable');
     expect(backgroundState(toBackgroundForm(null), ctx).continueBlock).toBe('not_entered');
   });
