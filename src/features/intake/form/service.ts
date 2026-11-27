@@ -18,7 +18,7 @@ import type { AppFiles } from '@/files/files';
 import { signatureSvg, validateSignature, type SignatureError, type SignatureInput } from '../signature';
 import { localIso } from '../time';
 import { applicantPatch, formFromRows, incomeRows, residenceRows, withSavedIds } from './mapping';
-import { clampSection, type ApplicationForm, type FormMode, type FormSection } from './model';
+import { clampSection, isBlankForm, type ApplicationForm, type FormMode, type FormSection } from './model';
 import { validateForm, type FieldError } from './validate';
 
 /** File operations the signature needs (the real `files`, or a fake in tests). */
@@ -59,13 +59,17 @@ export function loadApplication(db: AppDb, applicantId: number): LoadedApplicati
 /**
  * Autosave ("Draft saved"): writes every part + the furthest step reached. `receivedAt` only while a draft.
  * Returns the form with DB ids on new residence / income rows.
+ *
+ * One transaction; every repo call gets `tx` (expo-sqlite cannot `begin` inside a transaction — B-53). Called with a
+ * transaction as `db` (from `submitApplication`) it nests as a savepoint.
  */
 export function saveDraft(db: AppDb, applicantId: number, form: ApplicationForm, step: FormSection, now = new Date()): ApplicationForm {
-  return db.transaction(() => {
-    const a = getApplicant(db, applicantId);
+  return db.transaction((t) => {
+    const tx = t as unknown as AppDb;
+    const a = getApplicant(tx, applicantId);
     if (!a || a.deletedAt) throw new Error('Applicant not found');
     updateApplicant(
-      db,
+      tx,
       applicantId,
       {
         ...applicantPatch(form),
@@ -74,8 +78,8 @@ export function saveDraft(db: AppDb, applicantId: number, form: ApplicationForm,
       },
       localIso(now),
     );
-    const rIds = saveResidences(db, applicantId, residenceRows(form));
-    const iIds = saveIncomes(db, applicantId, incomeRows(form));
+    const rIds = saveResidences(tx, applicantId, residenceRows(form));
+    const iIds = saveIncomes(tx, applicantId, incomeRows(form));
     return withSavedIds(form, rIds, iIds);
   });
 }
@@ -97,12 +101,13 @@ export function submitApplication(db: AppDb, applicantId: number, form: Applicat
   if (errors.length) return { ok: false, errors, section: check.firstInvalid ?? 6 };
 
   const receivedAt = !a.draft ? a.receivedAt : opts.mode === 'applicant' ? localIso(now) : form.receivedAt;
-  const saved = db.transaction(() => {
-    const f = saveDraft(db, applicantId, { ...form, receivedAt, petsAnswered: true }, 7, now);
+  const saved = db.transaction((t) => {
+    const tx = t as unknown as AppDb;
+    const f = saveDraft(tx, applicantId, { ...form, receivedAt, petsAnswered: true }, 7, now);
     if (a.draft) {
-      const paper = listDocuments(db, applicantId).some((d) => d.type === 'paper_form');
+      const paper = listDocuments(tx, applicantId).some((d) => d.type === 'paper_form');
       updateApplicant(
-        db,
+        tx,
         applicantId,
         {
           draft: false,
@@ -124,6 +129,19 @@ export function discardDraft(db: AppDb, files: FileStore, applicantId: number): 
   if (!a || !a.draft) return false;
   purgeApplicant(db, files, applicantId, { keepRecord: false });
   return true;
+}
+
+/**
+ * Applicant mode ended on a form nobody typed into (S-08a "Start", then "Landlord" → Exit): the draft is removed, so it
+ * is never counted as an applicant nor left as an anonymous row (B-62). `form` = what the screen still holds (it may
+ * be ahead of the last autosave); both it and the saved draft must be blank. Returns true when removed.
+ */
+export function discardBlankDraft(db: AppDb, files: FileStore, applicantId: number, form?: ApplicationForm | null): boolean {
+  const loaded = loadApplication(db, applicantId);
+  if (!loaded || !loaded.applicant.draft) return false;
+  if (!isBlankForm(loaded.form) || (form && !isBlankForm(form))) return false;
+  if (listDocuments(db, applicantId).length) return false;
+  return discardDraft(db, files, applicantId);
 }
 
 export type SignatureResult = { ok: true; path: string; signedAt: string } | { ok: false; error: SignatureError };
