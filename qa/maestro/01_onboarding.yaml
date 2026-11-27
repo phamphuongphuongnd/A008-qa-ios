@@ -42,6 +42,14 @@ name: 01_onboarding
 - tapOn: "Explore with a sample rental"
 - takeScreenshot: ${LANE}_01c_page3_not_ticked
 - assertVisible: "A checklist, not legal advice.*"
+# The box sits under the fixed footer until the page is scrolled (SE, and AX-XL text): bring it to the middle first
+# (run 45799132934: the tap hit the footer on SE, element not found on Pro Max AX-XL).
+- scrollUntilVisible:
+    element:
+      text: "I understand Evenlease is not legal advice"
+    centerElement: true
+    visibilityPercentage: 100
+    timeout: 15000
 - tapOn: "I understand Evenlease is not legal advice"
 - takeScreenshot: ${LANE}_01d_ticked
 - tapOn: "Explore with a sample rental"
