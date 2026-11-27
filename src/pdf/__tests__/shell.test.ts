@@ -5,6 +5,7 @@ import path from 'path';
 import {
   dateTime,
   escapeHtml,
+  fileDate,
   html,
   multiline,
   PDF_CSS,
@@ -13,6 +14,7 @@ import {
   pdfDocument,
   printToPdfAndShare,
   raw,
+  refFileName,
   safeFileName,
   section,
   table,
@@ -46,6 +48,19 @@ describe('formatting', () => {
     expect(dateTime('2026-12-02T09:14:00-05:00')).toBe('Dec 2, 2026, 9:14 AM');
     expect(dateTime('2026-12-02T00:05:00-05:00')).toBe('Dec 2, 2026, 12:05 AM');
     expect(dateTime('2026-12-02T14:40:00-05:00')).toBe('Dec 2, 2026, 2:40 PM');
+  });
+  it('B-52: a UTC (Z) timestamp prints in local time, not as UTC wall-clock', () => {
+    // Signed 4:16 PM in Vietnam (+07:00) = 09:16 UTC.
+    expect(dateTime('2026-11-26T09:16:00.000Z', 7 * 60)).toBe('Nov 26, 2026, 4:16 PM');
+    expect(dateTime('2026-11-26T20:30:00Z', 7 * 60)).toBe('Nov 27, 2026, 3:30 AM');
+    expect(dateTime('2026-12-02T14:12:00Z', -5 * 60)).toBe('Dec 2, 2026, 9:12 AM');
+    // Device zone by default: same text as formatting the instant with local getters.
+    const d = new Date('2026-11-26T09:16:00.000Z');
+    const h = d.getHours();
+    expect(dateTime('2026-11-26T09:16:00.000Z')).toContain(`${h % 12 === 0 ? 12 : h % 12}:16 ${h < 12 ? 'AM' : 'PM'}`);
+    // Offset timestamps keep the wall clock in the string, whatever offset is asked for.
+    expect(dateTime('2026-11-26T16:16:00+07:00', -5 * 60)).toBe('Nov 26, 2026, 4:16 PM');
+    expect(dateTime('not a date')).toBe('not a date');
   });
 });
 
@@ -83,6 +98,21 @@ describe('pdfDocument', () => {
     expect(doc).toContain('table.grid > thead { display: table-header-group; }');
     expect(doc.indexOf('<tfoot>')).toBeGreaterThan(doc.indexOf('<thead>'));
   });
+  it('B-57: on Android the footer also goes in the page bottom margin (bottom of the last page too), <tfoot> hidden', () => {
+    const android = pdfDocument({ title: 'Rental application', body: html`<p>x</p>`, footerNote: 'Note "1" <b>', footerInPageMargin: true });
+    expect(android).toContain('@supports (reading-flow: normal)');
+    expect(android).toMatch(/@page \{\s*margin-bottom: [\d.]+in;\s*@bottom-left \{/);
+    expect(android).toContain(String.raw`content: "Note \"1\" \3C b>\A ` + `${PDF_FOOTER}";`);
+    expect(android).toContain('table.page > tfoot { display: none; }');
+    expect(android).not.toContain('position: fixed');
+    // The <tfoot> stays in the HTML: the fallback when the WebView has no margin boxes.
+    expect(android).toContain('<tfoot>');
+    const ios = pdfDocument({ title: 'Rental application', body: html`<p>x</p>`, footerInPageMargin: false });
+    expect(ios).not.toContain('@bottom-left');
+    expect(ios).not.toContain('tfoot { display: none; }');
+    // Default (jest: shellNative mocked, no platform flag) = the <tfoot> footer only.
+    expect(doc).not.toContain('@bottom-left');
+  });
   it('stays black and white: the logo and the print style use no colour', () => {
     expect(PDF_LOGO).toContain('viewBox="232 216 560 584"');
     expect(PDF_LOGO.match(/#[0-9A-Fa-f]{3,6}\b/g)!.every((c) => ['#000', '#fff'].includes(c.toLowerCase()))).toBe(true);
@@ -94,6 +124,16 @@ describe('pdfDocument', () => {
   });
   it('escapes the title', () => {
     expect(pdfDocument({ title: 'A & B', body: html`` })).toContain('<title>A &amp; B</title>');
+  });
+});
+
+describe('refFileName (B-49)', () => {
+  it('type + record id + local date, nothing about the person', () => {
+    expect(refFileName('Decision file', { kind: 'rental', id: 3 }, new Date(2026, 10, 27, 23, 59))).toBe('Decision file - rental 3 - 2026-11-27');
+    expect(safeFileName(refFileName('Adverse action notice', { kind: 'letter', id: 12 }, new Date(2027, 0, 5)))).toBe(
+      'Adverse action notice - letter 12 - 2027-01-05.pdf',
+    );
+    expect(fileDate(new Date(2026, 0, 2))).toBe('2026-01-02');
   });
 });
 

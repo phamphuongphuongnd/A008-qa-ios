@@ -218,6 +218,7 @@
     "photosDenied": "Photo access is off. Turn it on in your phone's settings.",
     "attachFailed": "Couldn't attach the file. Try again.",
     "saved": "Report saved",
+    "fixErrors": "Fix the highlighted fields to save.",
     "remove": "Remove report",
     "removeTitle": "Remove this report?",
     "removeBody": "The results and attached files are deleted from this phone. This can't be undone."

@@ -8,7 +8,7 @@
  */
 import { t } from '@/i18n';
 
-import { html, pdfDocument, raw, section, table, type SafeHtml } from './shell';
+import { html, pdfDocument, raw, refFileName, section, table, type SafeHtml } from './shell';
 
 export interface DecisionFileResultRow {
   title: string;
@@ -124,7 +124,7 @@ ${input.applicants.length ? input.applicants.map(applicantBlock) : html`<p>${t('
   });
 }
 
-/** "Decision file - 1428 Maple St, Unit B". */
-export function decisionFileName(rentalShortAddress: string): string {
-  return `${t('decision:decisionFile.title')} - ${rentalShortAddress.replace(/,\s*/g, ' ')}`;
+/** "Decision file - rental 3 - 2026-11-27": no address or applicant names in the file name (B-49). */
+export function decisionFileName(rentalId: number, at?: Date): string {
+  return refFileName(t('decision:decisionFile.title'), { kind: 'rental', id: rentalId }, at);
 }

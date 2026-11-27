@@ -2,7 +2,8 @@
  * S-20 Move-in checklist (product.md S-20, mockup v2 "S-20 Room items" + "Meters, keys, signatures"):
  * room chips · items with Good / Fair / Damaged + note + photos · "Add item" · meter readings · keys stepper ·
  * smoke & CO alarms · two signatures · "Export PDF" (needs both). Saved as you go; can be left and continued.
- * Any change after a signature asks first and clears both signatures (model.ts).
+ * Any change after a signature asks first and clears both signatures (model.ts). Notes and meter readings save while
+ * typing and flush on leave / background (autosave.ts, B-51).
  */
 import { Image } from 'expo-image';
 import { useLocalSearchParams } from 'expo-router';
@@ -43,6 +44,7 @@ import {
   type SignatureValue,
 } from '@/ui';
 
+import { createFlushRegistry, useAutosaveText, type FlushRegistry } from '../autosave';
 import { useMoveIn } from '../hooks';
 import {
   CONDITIONS,
@@ -93,6 +95,10 @@ function MoveIn({ rentalId, applicantId }: { rentalId: number; applicantId: numb
   const [showGas, setShowGas] = useState(false);
   const [includePhotos, setIncludePhotos] = useState(true);
   const [exporting, setExporting] = useState(false);
+  // B-51: notes / meters save while typing; anything else first flushes what they are still waiting to save.
+  const [registry] = useState(createFlushRegistry);
+  // Bumped when "Editing clears both signatures" is cancelled: remounts the text fields back to the saved values.
+  const [fieldsRev, setFieldsRev] = useState(0);
 
   if (m.rental === null) return <NotFound />;
   const d = m.draft;
@@ -106,11 +112,18 @@ function MoveIn({ rentalId, applicantId }: { rentalId: number; applicantId: numb
 
   /** Content edits after a signature ask first ("Editing clears both signatures"). */
   const edit = (e: MoveInEdit) => {
+    if (e.type !== 'setNote' && e.type !== 'setMeter') registry.flushAll();
     if (hasSignature(d)) setPending(e);
     else m.edit(e);
   };
 
+  const openSheet = (s: SheetState) => {
+    registry.flushAll();
+    setSheet(s);
+  };
+
   const exportPdf = async () => {
+    registry.flushAll();
     setExporting(true);
     try {
       await m.exportPdf(includePhotos && hasPhotos);
@@ -136,33 +149,48 @@ function MoveIn({ rentalId, applicantId }: { rentalId: number; applicantId: numb
           accessibilityLabel={t('system:s20.rooms.label')}
           options={d.rooms.map((r, i) => ({ value: String(i), label: r.name }))}
           value={String(room)}
-          onChange={(v) => setRoomIdx(Number(v))}
+          onChange={(v) => {
+            registry.flushAll();
+            setRoomIdx(Number(v));
+          }}
         />
       ) : null}
       <View style={styles.roomActions}>
-        <TextButton label={t('system:s20.addRoom')} onPress={() => setSheet({ kind: 'addRoom' })} />
-        {current ? <TextButton label={t('system:s20.renameRoom')} onPress={() => setSheet({ kind: 'renameRoom' })} /> : null}
-        {current ? <TextButton label={t('system:s20.removeRoom')} tone="danger" onPress={() => setRemoveRoom(true)} /> : null}
+        <TextButton label={t('system:s20.addRoom')} onPress={() => openSheet({ kind: 'addRoom' })} />
+        {current ? <TextButton label={t('system:s20.renameRoom')} onPress={() => openSheet({ kind: 'renameRoom' })} /> : null}
+        {current ? <TextButton label={t('system:s20.removeRoom')} tone="danger" onPress={() => {
+              registry.flushAll();
+              setRemoveRoom(true);
+            }} /> : null}
       </View>
 
       {current?.items.map((item, i) => (
         <ItemCard
-          key={`${room}-${i}-${item.name}`}
+          key={`${room}-${i}-${item.name}-${fieldsRev}`}
           item={item}
+          signed={hasSignature(d)}
+          registry={registry}
           onCondition={(c) => edit({ type: 'setCondition', room, item: i, condition: c })}
           onNote={(note) => edit({ type: 'setNote', room, item: i, note })}
-          onAddPhoto={() => setSheet({ kind: 'photo', item: i })}
+          onAddPhoto={() => openSheet({ kind: 'photo', item: i })}
           onRemovePhoto={(path) => edit({ type: 'removePhoto', room, item: i, path })}
           onRemove={() => edit({ type: 'removeItem', room, item: i })}
         />
       ))}
-      {current ? <Button label={t('system:s20.addItem')} icon={Plus} variant="secondary" onPress={() => setSheet({ kind: 'addItem' })} block /> : null}
+      {current ? <Button label={t('system:s20.addItem')} icon={Plus} variant="secondary" onPress={() => openSheet({ kind: 'addItem' })} block /> : null}
 
       {/* Meters, keys, alarms */}
       <SectionHeader title={t('system:s20.meters')} />
       <View style={styles.grid}>
         {meterFields(d, showGas).map((k) => (
-          <MeterField key={k} kind={k} value={d.meters[k] ?? ''} onCommit={(v) => edit({ type: 'setMeter', meter: k, value: v })} />
+          <MeterField
+            key={`${k}-${fieldsRev}`}
+            kind={k}
+            value={d.meters[k] ?? ''}
+            signed={hasSignature(d)}
+            registry={registry}
+            onCommit={(v) => edit({ type: 'setMeter', meter: k, value: v })}
+          />
         ))}
       </View>
       {!meterFields(d, showGas).includes('gas') ? (
@@ -198,7 +226,7 @@ function MoveIn({ rentalId, applicantId }: { rentalId: number; applicantId: numb
       <SectionHeader title={t('system:s20.signatures')} />
       <View style={styles.grid}>
         {(['landlord', 'tenant'] as const).map((role) => (
-          <SignatureBox key={role} role={role} signedAt={d.signatures[role]?.at ?? null} shape={m.signatureShape(role)} onPress={() => setSheet({ kind: 'sign', role })} />
+          <SignatureBox key={role} role={role} signedAt={d.signatures[role]?.at ?? null} shape={m.signatureShape(role)} onPress={() => openSheet({ kind: 'sign', role })} />
         ))}
       </View>
       {hasPhotos ? <Checkbox label={t('system:s20.includePhotos')} value={includePhotos} onChange={setIncludePhotos} /> : null}
@@ -264,6 +292,7 @@ function MoveIn({ rentalId, applicantId }: { rentalId: number; applicantId: numb
         confirmLabel={t('system:s20.editAnyway')}
         onCancel={() => {
           if (pending?.type === 'addPhoto') files.deleteFile(pending.path);
+          if (pending?.type === 'setNote' || pending?.type === 'setMeter') setFieldsRev((r) => r + 1);
           setPending(null);
         }}
         onConfirm={() => {
@@ -293,6 +322,8 @@ async function savePhoto(rentalId: number, uri: string): Promise<string> {
 
 function ItemCard({
   item,
+  signed,
+  registry,
   onCondition,
   onNote,
   onAddPhoto,
@@ -300,17 +331,23 @@ function ItemCard({
   onRemove,
 }: {
   item: MoveInItem;
+  signed: boolean;
+  registry: FlushRegistry;
   onCondition: (c: ItemCondition) => void;
   onNote: (note: string) => void;
   onAddPhoto: () => void;
   onRemovePhoto: (path: string) => void;
   onRemove: () => void;
 }) {
-  const [note, setNote] = useState(item.note ?? '');
+  const saved = item.note ?? '';
+  const note = useAutosaveText(
+    saved,
+    (v) => {
+      if (v.trim() !== saved.trim()) onNote(v.trim());
+    },
+    { immediate: signed, registry },
+  );
   const [noteOpen, setNoteOpen] = useState(!!item.note);
-  const commit = () => {
-    if (note.trim() !== (item.note ?? '').trim()) onNote(note.trim());
-  };
   return (
     <Card>
       <View style={styles.itemHead}>
@@ -325,7 +362,7 @@ function ItemCard({
         onChange={onCondition}
       />
       {noteOpen ? (
-        <TextField label={t('system:s20.note')} value={note} onChangeText={setNote} onBlur={commit} onSubmitEditing={commit} multiline />
+        <TextField label={t('system:s20.note')} value={note.text} onChangeText={note.onChangeText} onBlur={note.flush} onSubmitEditing={note.flush} multiline />
       ) : (
         <View style={{ alignItems: 'flex-start' }}>
           <TextButton label={t('system:s20.addNote')} onPress={() => setNoteOpen(true)} />
@@ -354,24 +391,34 @@ function Thumb({ path, onRemove }: { path: string; onRemove: () => void }) {
   );
 }
 
-function MeterField({ kind, value, onCommit }: { kind: MeterKind; value: string; onCommit: (v: string) => void }) {
-  const [text, setText] = useState(value);
-  const [seen, setSeen] = useState(value);
-  if (value !== seen) {
-    setSeen(value);
-    setText(value);
-  }
+function MeterField({
+  kind,
+  value,
+  signed,
+  registry,
+  onCommit,
+}: {
+  kind: MeterKind;
+  value: string;
+  signed: boolean;
+  registry: FlushRegistry;
+  onCommit: (v: string) => void;
+}) {
+  const field = useAutosaveText(
+    value,
+    (v) => {
+      if (v.trim() !== value) onCommit(v.trim());
+    },
+    { immediate: signed, registry },
+  );
   const unit = t(`system:s20.meterUnit.${kind}`);
-  const commit = () => {
-    if (text.trim() !== value) onCommit(text);
-  };
   return (
     <TextField
       label={t(`system:s20.meter.${kind}`)}
-      value={text}
-      onChangeText={setText}
-      onBlur={commit}
-      onSubmitEditing={commit}
+      value={field.text}
+      onChangeText={field.onChangeText}
+      onBlur={field.flush}
+      onSubmitEditing={field.flush}
       keyboardType="numbers-and-punctuation"
       suffix={unit || undefined}
       style={styles.cell}

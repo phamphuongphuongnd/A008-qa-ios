@@ -6,7 +6,7 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Camera, ExternalLink, FileText, FolderOpen, Image as ImageIcon, Plus, ShieldCheck, Trash2, TriangleAlert } from 'lucide-react-native';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Keyboard, StyleSheet, View } from 'react-native';
 
 import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
@@ -71,10 +71,25 @@ export function ReportSheetView({ sheet, now = new Date() }: { sheet: ReportShee
   const err = (f: string) => fieldError(errors, f);
   const view = reportView(sheet, form, today);
 
+  /**
+   * B-45: "Save" always answers. The keyboard is closed first (its pending text lands in the form before the save,
+   * and the snackbar is not hidden behind it); a validation error or a failed write says so instead of doing nothing.
+   */
   const save = () => {
-    if (commit()) {
+    Keyboard.dismiss();
+    let ok: boolean;
+    try {
+      ok = commit();
+    } catch {
+      haptics.error();
+      showSnackbar({ message: t('verify:errors.saveFailed') });
+      return;
+    }
+    if (ok) {
       haptics.success();
       showSnackbar({ message: t('verify:report.saved') });
+    } else {
+      showSnackbar({ message: t('verify:report.fixErrors') });
     }
   };
 

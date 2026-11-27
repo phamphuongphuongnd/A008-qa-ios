@@ -9,7 +9,7 @@
 import type { CriterionCode, DecisionCondition, DecisionKind, LetterData, LetterKind } from '@/engine';
 import { t } from '@/i18n';
 
-import { date, html, multiline, pdfDocument, section, usd, type SafeHtml } from './shell';
+import { date, html, multiline, pdfDocument, refFileName, section, usd, type SafeHtml } from './shell';
 
 export interface LetterParty {
   name: string;
@@ -169,7 +169,7 @@ ${input.closing.trim() ? html`<p>${multiline(input.closing)}</p>` : ''}
   return pdfDocument({ title, subtitle: input.recipient.name, body });
 }
 
-/** "Adverse action notice - Priya Raman.pdf" (via safeFileName at print time). */
-export function letterFileName(kind: LetterKind, applicantName: string): string {
-  return `${letterTitle(kind)} - ${applicantName}`;
+/** "Adverse action notice - letter 12 - 2026-11-27" (.pdf added by safeFileName): never the applicant's name (B-49). */
+export function letterFileName(kind: LetterKind, letterId: number, at?: Date): string {
+  return refFileName(letterTitle(kind), { kind: 'letter', id: letterId }, at);
 }
