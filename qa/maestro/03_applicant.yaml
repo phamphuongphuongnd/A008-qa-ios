@@ -9,7 +9,7 @@ name: 03_applicant
     timeout: 10000
 - tapOn: ".*Jordan.*"
 - extendedWaitUntil:
-    visible: "Not a score.*"
+    visible: ".*Not a score.*"
     timeout: 15000
 - takeScreenshot: ${LANE}_03a_s09_jordan
 - tapOn:

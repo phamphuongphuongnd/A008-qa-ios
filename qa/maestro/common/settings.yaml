@@ -2,8 +2,9 @@
 appId: com.maglobal.evenlease
 ---
 - runFlow: home.yaml
+# iOS names the tab "Settings, tab, 3 of 3" (run 45927418233).
 - tapOn:
-    text: "Settings"
+    text: "Settings(, tab.*)?"
     index: 0
 - extendedWaitUntil:
     visible: "Backup & restore"

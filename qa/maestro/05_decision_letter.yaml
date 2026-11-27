@@ -10,7 +10,7 @@ name: 05_decision_letter
     timeout: 10000
 - tapOn: ".*Priya.*"
 - extendedWaitUntil:
-    visible: "Not a score.*"
+    visible: ".*Not a score.*"
     timeout: 15000
 - scrollUntilVisible:
     element:

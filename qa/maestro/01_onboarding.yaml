@@ -44,6 +44,8 @@ name: 01_onboarding
     centerElement: true
     visibilityPercentage: 100
     timeout: 15000
+    # After the B-80 fix the box sits in the fixed footer: it can never be centred (run 45927418233, iPad).
+    optional: true
 - tapOn: "I understand Evenlease is not legal advice"
 - takeScreenshot: ${LANE}_01d_ticked
 - tapOn: "Explore with a sample rental"

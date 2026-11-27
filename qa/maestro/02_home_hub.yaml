@@ -15,3 +15,11 @@ name: 02_home_hub
       text: ".*Dana.*"
     timeout: 15000
 - takeScreenshot: ${LANE}_02c_hub_list
+# S-03 at this lane's text size (B-81 retest: "State" picker must not break mid-word at AX-XL). Nothing typed → Back.
+- runFlow: common/home.yaml
+- tapOn: "New rental"
+- extendedWaitUntil:
+    visible: "Step 1 of 3"
+    timeout: 15000
+- takeScreenshot: ${LANE}_02d_s03_new_rental
+- tapOn: "Back"
