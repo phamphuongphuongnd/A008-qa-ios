@@ -23,8 +23,9 @@ import { useApplicantModeGuard } from '@/features/intake/applicantMode/hooks';
 import { settingsPersistence } from '@/features/intake/applicantMode/persistence';
 import { hydrateApplicantMode, useApplicantMode } from '@/features/intake/applicantMode/store';
 import { isActive as applicantModeOn } from '@/features/intake/applicantMode/machine';
-import { LockScreen } from '@/features/settings/components/LockScreen';
+import { LockScreen, LockShield } from '@/features/settings/components/LockScreen';
 import { useAppLockGate, useOnboarded } from '@/features/settings/hooks';
+import { isLockVisible } from '@/features/settings/lock';
 import { ROOT_STACK_SETTINGS, RootNavigator } from '@/navigation/RootNavigator';
 import { useNotificationSetup } from '@/notifications';
 import { RouterBridge } from '@/services/router';
@@ -97,6 +98,7 @@ function RootStack() {
   const onboarded = useOnboarded();
   const lock = useAppLockGate();
   const [applicantMode] = useApplicantMode();
+  const lockShown = isLockVisible(onboarded, lock.locked, applicantModeOn(applicantMode));
   useEffect(() => {
     if (!onboarded) return;
     registerBackupTask();
@@ -120,11 +122,14 @@ function RootStack() {
       {/* A006 B-23: keeps `router` from @/services/router bound to the live tree after a config change. */}
       <RouterBridge />
       <ApplicantModeGuard />
-      {/* Tabs + every pushed screen; onboarding gate (B-40) inside, see src/navigation/RootNavigator.tsx. */}
-      <RootNavigator onboarded={onboarded} contentStyle={{ backgroundColor: colors.surface0 }} />
+      {/* Tabs + every pushed screen; onboarding gate (B-40) inside, see src/navigation/RootNavigator.tsx.
+          B-70: while the lock is up, screen readers can't reach the screens behind it. */}
+      <LockShield hidden={lockShown}>
+        <RootNavigator onboarded={onboarded} contentStyle={{ backgroundColor: colors.surface0 }} />
+      </LockShield>
       <NotificationSetup />
       {/* 2E App lock; the applicant holding the phone (Applicant mode) never sees it — 2B has its own exit lock. */}
-      {onboarded && lock.locked && !applicantModeOn(applicantMode) ? <LockScreen pinBlockedUntil={lock.pinBlockedUntil} /> : null}
+      {lockShown ? <LockScreen pinBlockedUntil={lock.pinBlockedUntil} /> : null}
     </ThemeProvider>
   );
 }
