@@ -31,6 +31,7 @@ import {
 import { submitInApplicantMode } from '../applicantMode/actions';
 import { canAccessApplicant } from '../applicantMode/guard';
 import { dispatchApplicantMode, getApplicantMode, useApplicantMode } from '../applicantMode/store';
+import { FileSheet, Thumb } from '../components/DocumentParts';
 import { ApplicantModeBar } from '../components/LandlordLock';
 import {
   AboutSection,
@@ -89,6 +90,8 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
   });
   const [submitting, setSubmitting] = useState(false);
   const [askDiscard, setAskDiscard] = useState<null | (() => void)>(null);
+  // Paper-form photo opened in the viewer (B-160); looked up live so a deleted file closes its sheet.
+  const [openPaperId, setOpenPaperId] = useState<number | null>(null);
 
   // Keep the applicant-mode machine on the same part (the guard routes by it).
   useEffect(() => {
@@ -166,7 +169,7 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
         </Txt>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           {paperPhotos.map((p, i) => (
-            <DocThumb key={p.id} label={thumbLabel(t('intake:fields.paperForm'), i, paperPhotos.length, false)} />
+            <Thumb key={p.id} doc={p} label={thumbLabel(t('intake:fields.paperForm'), i, paperPhotos.length, false)} onPress={() => setOpenPaperId(p.id)} />
           ))}
           <DocThumb
             add
@@ -250,6 +253,12 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
     >
       {body}
       {picker.ui}
+      <FileSheet
+        doc={paperPhotos.find((p) => p.id === openPaperId) ?? null}
+        title={t('intake:fields.paperForm')}
+        markable={false}
+        onClose={() => setOpenPaperId(null)}
+      />
       <ConfirmDialog
         visible={askDiscard != null}
         title={t('intake:s08.discardTitle')}
