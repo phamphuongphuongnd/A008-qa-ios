@@ -9,7 +9,7 @@
 <!-- Phần T (124 case, 702 test jest): chưa tìm thấy lỗi. -->
 
 **Gộp / trùng (không sửa riêng):** B-54 → B-47 · B-74(b) → B-41 · B-66, B-77…B-79 bỏ trống (QA-3 tự gộp trùng vào B-40 / B-47 / B-48 rồi đánh lại số).
-**Tổng 27/11:** đã sửa + tick (thử lại máy ảo release / A13) B-40…B-81, B-100…B-105, B-120…B-123, B-140…B-146, B-150, B-160 (B-130 lỗi build cũng đã sửa). **Code đã sửa, chờ thử máy:** B-65 / B-132, B-131, B-161, B-162, B-163, B-85 (iPad). **Còn mở:** B-72(d) tablet ngang (chưa thử lại), B-151 (chưa thử máy), iOS B-84 🟡 (chờ run 45957881383).
+**Tổng 27/11:** đã sửa + tick (thử lại máy ảo release / A13) B-40…B-81, B-100…B-105, B-120…B-123, B-140…B-146, B-150, B-160 (B-130 lỗi build cũng đã sửa). **Đã thử A13 bản 14:32 (dev 2873479) ✅:** B-65 / B-132, B-131, B-161, B-162, B-163. **Code đã sửa, chờ run iOS:** B-85 (iPad). **Còn mở:** B-72(d) tablet ngang (chưa thử lại), B-151 (chưa thử máy), iOS B-84 🟡 (chờ run 45957881383).
 
 ## 🔴 Chặn
 - [x] B-40 🔴 [TC-127, TC-196] S-01 — Cài mới / `pm clear` → mở thẳng S-03 "New rental", không bao giờ qua onboarding (cả launcher, cả iOS); Back chết; sau Delete all về S-02 rỗng chứ không về S-01 · nghi `app/_layout.tsx` `initialRouteName: '(tabs)'` trong `Stack.Protected guard={onboarded}` (3 làn + iOS cùng gặp)
@@ -70,11 +70,11 @@
 - Phương xét (không phải lỗi): splash không có dòng "Same criteria for every applicant." (mockup có) · "Explore with a sample rental" vào thẳng S-06 thay vì S-02 · About thiếu "Send feedback" · S-20 bố cục khác mockup (thẻ + chip, tab phòng xuống dòng).
 
 ## Thử lại 27/11 — lỗi còn mở / mới (B-120…B-163)
-- [ ] B-131 🟡 [TC-169, B-58] S-18 sheet "Request missing info" — dòng "You'll get a reminder 2 hours before it ends." cố định kể cả khi chọn "Not now" · **code xong de4c94d** (hộp chỉ hứa nhắc khi có quyền thông báo), chờ thử máy
-- [ ] B-132 🟡 [TC-168, B-65] S-06 — hub ghi Bea / Chris "New" khi S-18 / S-09 ghi "Waiting" (cũng thấy trên A13 với Priya / Marcus / Dana: hub "New") · **code xong de4c94d** (S-06 ghi "Waiting" như S-18), chờ thử máy
+- [x] B-131 🟡 [TC-169, B-58] S-18 sheet "Request missing info" — dòng "You'll get a reminder 2 hours before it ends." cố định kể cả khi chọn "Not now" · **code xong de4c94d** (hộp chỉ hứa nhắc khi có quyền thông báo), chờ thử máy
+- [x] B-132 🟡 [TC-168, B-65] S-06 — hub ghi Bea / Chris "New" khi S-18 / S-09 ghi "Waiting" (cũng thấy trên A13 với Priya / Marcus / Dana: hub "New") · **code xong de4c94d** (S-06 ghi "Waiting" như S-18), chờ thử máy
 - [x] B-133 🟡 [TC-167] TESTCASES lệch code — ảnh đơn giấy hiện ở thẻ "Paper form" của S-08, không phải "Other files" → sửa mong đợi TC-167 · đã sửa mong đợi TC-167 (de4c94d)
 - [ ] B-151 🟡 [TC-170] Hộp "Get deadline reminders on time?" đã đổi sang hộp riêng của app (fix 4e4a5e0) — chưa thử máy (A13 đã cấp sẵn quyền alarm → không hiện hộp)
-- [ ] B-161 🟡 [TC-190] S-06 hub, 320 dp + chữ 200 % — "APPLICANTS" vỡ "AP/PLI/CA/NT/S" vì "Sorted by received" chiếm chỗ (A13, `qa/runs/2026-11-27-retest-a13-r4.md`) · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
-- [ ] B-162 🟡 [TC-190] S-02 Rentals, 320 dp + chữ 200 % — "Columbus, OH 43215" gãy giữa từ ("Columb/us, OH") cạnh huy hiệu "Offer out" · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
-- [ ] B-163 🟡 [TC-188] Sheet "Add applicant" — dòng cuối "…Screening services collect them directly." chạm biểu tượng thanh điều hướng 3 nút (A13), thiếu đệm đáy · **code xong de4c94d** (đệm đáy theo inset), chờ thử máy A13
+- [x] B-161 🟡 [TC-190] S-06 hub, 320 dp + chữ 200 % — "APPLICANTS" vỡ "AP/PLI/CA/NT/S" vì "Sorted by received" chiếm chỗ (A13, `qa/runs/2026-11-27-retest-a13-r4.md`) · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
+- [x] B-162 🟡 [TC-190] S-02 Rentals, 320 dp + chữ 200 % — "Columbus, OH 43215" gãy giữa từ ("Columb/us, OH") cạnh huy hiệu "Offer out" · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
+- [x] B-163 🟡 [TC-188] Sheet "Add applicant" — dòng cuối "…Screening services collect them directly." chạm biểu tượng thanh điều hướng 3 nút (A13), thiếu đệm đáy · **code xong de4c94d** (đệm đáy theo inset), chờ thử máy A13
 - [ ] B-85 🔴 [TC-144, TC-184, iOS iPad] S-15 — chọn Deny: sheet iPad là thẻ ≈ 590×660 pt nhưng khung cao cả cửa sổ → "Save decision" nằm dưới mép thẻ, không bấm được (run iOS #7, ảnh ipad-light_05a2) · **code xong de4c94d** (khung ≤ 600 pt trên iPad), chờ run iOS
