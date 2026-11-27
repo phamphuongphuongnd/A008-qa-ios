@@ -89,6 +89,8 @@ describe('S-06 hub', () => {
     const hub = loadRentalHub(db, id)!;
     expect(hub.modeChip).toBe('First-come mode');
     expect(hub.applicants.map((a) => a.queueNumber)).toEqual([1, 2, 3, 4]);
+    // B-132: S-06 reads like S-18 / S-09 — the front one is In review, the others behind it are Waiting (Dana is final).
+    expect(hub.applicants.map((a) => [a.status, a.waiting])).toEqual([['in_review', false], ['new', true], ['new', true], ['approved', false]]);
     expect(hub.moveInApplicantId).toBe(dana.id);
   });
 

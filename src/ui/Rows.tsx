@@ -160,7 +160,8 @@ export function RentalCard({
       style={{ gap: 12 }}
     >
       <View style={styles.top}>
-        <View style={{ flex: 1 }}>
+        {/* B-162: ≥ 60 % of the row so the address never breaks mid-word; at big text the status chip wraps under it. */}
+        <View style={{ flex: 1, minWidth: '60%' }}>
           <Txt style={font(600, 17, 22)}>{address}</Txt>
           <Txt style={[font(400, 14, 20), { color: colors.inkMuted }]}>{city}</Txt>
         </View>

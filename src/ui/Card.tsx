@@ -192,7 +192,9 @@ export function SectionHeader({
   const { colors } = useTheme();
   return (
     <View style={styles.section}>
-      <Txt accessibilityRole="header" style={[font(600, 13, 18, 0.02), { color: colors.inkMuted, textTransform: 'uppercase', flex: 1 }]}>
+      {/* B-161: the title never shrinks below its own text (it wrapped "AP/PLI/CA/NT/S" at 320 dp + 200 %): the row wraps and
+          the note drops under it instead. */}
+      <Txt accessibilityRole="header" style={[font(600, 13, 18, 0.02), { color: colors.inkMuted, textTransform: 'uppercase', flexGrow: 1, flexShrink: 0, maxWidth: '100%' }]}>
         {title}
       </Txt>
       {meta && !action ? <Txt style={[font(500, 13, 18), { color: colors.inkMuted, flexShrink: 1, textAlign: 'right' }]}>{meta}</Txt> : null}
@@ -229,7 +231,7 @@ const styles = StyleSheet.create({
   ico: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   main: { flex: 1, minWidth: 0, gap: 2 },
   value: { textAlign: 'right', flexShrink: 1, maxWidth: '45%' },
-  section: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 4, marginTop: 4, paddingBottom: 8 },
+  section: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 8, rowGap: 2, marginHorizontal: 4, marginTop: 4, paddingBottom: 8 },
   sectionAction: { minHeight: TOUCH_MIN, justifyContent: 'center' },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 4 },
   kvLabel: { flex: 1, flexShrink: 1 },

@@ -95,6 +95,8 @@ export interface HubApplicantRow {
   summaryText: string;
   /** First-come: 1-based place in received order; Compare: null. */
   queueNumber: number | null;
+  /** First-come applicant still waiting behind the one in review — S-18 / S-09 read "Waiting", so does S-06 (B-132). */
+  waiting: boolean;
 }
 
 export function initials(name: string): string {
@@ -127,6 +129,7 @@ export function hubApplicantRows(
       missingCount: summary.missingCount,
       summaryText: summary.text,
       queueNumber: firstCome ? i + 1 : null,
+      waiting: firstCome && a !== front && a.status === 'new',
     };
   });
 }

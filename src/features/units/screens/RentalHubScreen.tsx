@@ -147,7 +147,7 @@ export default function RentalHubScreen() {
                 <ApplicantRow
                   key={a.id}
                   name={a.fullName}
-                  status={applicantStatusLabel(a.status)}
+                  status={a.waiting ? t('decision:status.waiting') : applicantStatusLabel(a.status)}
                   received={t('units:s06.received', { when: receivedText(a.receivedAt) })}
                   summary={a.summaryText}
                   summaryReady={a.ready}
