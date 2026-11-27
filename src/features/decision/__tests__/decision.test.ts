@@ -214,6 +214,20 @@ describe('First-come order (§3.14)', () => {
     expect(notes.scheduled.size).toBe(0);
   });
 
+  it('after saving, the live context would reject the same form — S-15 keeps the one it saved with (no flash)', async () => {
+    const { db, id } = sampleDb();
+    const { deps } = makeDeps(db, T0);
+    const before = loadDecisionContext(db, id('Jordan'), T0)!;
+    const approve = { kind: 'approve' as const, conditions: [], reasons: [], note: '', reportInfluenced: false };
+    expect(checkDecision(before, approve).errors).toEqual([]);
+    expect((await saveDecisionAction(deps, id('Jordan'), approve)).ok).toBe(true);
+    const after = loadDecisionContext(db, id('Jordan'), T0)!;
+    expect(after.options).toEqual([]);
+    expect(checkDecision(after, approve).errors.map((e) => e.code)).toEqual(['not_your_turn']);
+    // The frozen (pre-save) context still validates: nothing to show while the sheet closes.
+    expect(checkDecision(before, approve).errors).toEqual([]);
+  });
+
   it('asks the notification permission once; denied permission still starts the clock', async () => {
     const { db, rentalId, id } = sampleDb();
     R.updateRental(db, rentalId, { reviewMode: 'first_come' });
