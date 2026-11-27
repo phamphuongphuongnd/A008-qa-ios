@@ -132,3 +132,6 @@ export function parseMonthInput(text: string): YearMonth | null | undefined {
 export function monthInputText(ym: YearMonth | null | undefined): string {
   return isMonth(ym) ? `${ym.slice(5, 7)}/${ym.slice(0, 4)}` : '';
 }
+
+/** Same field values (sheet forms are plain JSON: strings, numbers, booleans, null, arrays, small objects). */
+export const sameForm = (a: object, b: object) => JSON.stringify(a) === JSON.stringify(b);
