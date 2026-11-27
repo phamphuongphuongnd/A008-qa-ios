@@ -9,7 +9,7 @@ import { BackHandler, StyleSheet, View } from 'react-native';
 
 import type { Outcome } from '@/engine';
 import { t } from '@/i18n';
-import { router } from '@/services/router';
+import { landAfterOnboarding } from '@/navigation/onboardingLanding';
 import { font, useTheme } from '@/theme';
 import { Button, ButtonBar, Checkbox, PageDots, Screen, StatusBadge, TextButton, Txt } from '@/ui';
 
@@ -36,7 +36,8 @@ export default function OnboardingScreen() {
 
   const finish = (withSample: boolean) => {
     const r = withSample ? f.explore() : f.getStarted();
-    if (r) router.replace(r.next);
+    // B-40: no navigation here — the root stack's onboarding guard swaps S-01 for the tabs once `onboarded` flips.
+    if (r) landAfterOnboarding(r.next);
   };
 
   const footer =
