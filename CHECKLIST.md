@@ -52,7 +52,7 @@
 - [x] F-18 Backup & restore mã hoá + tự động + nhắc (S-22) — ✅ máy ảo release + A13 27/11 (sao lưu đầu < 2 s trên A13)
 - [x] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27) — ✅ A13 + máy ảo 27/11 (B-120 Delete all → S-01, B-140 PIN dọc + tablet ngang, B-145)
 - [x] Thử máy dồn từ Phase 2: dev client mới (icon/splash), SQLite migration thật, files native, PDF + expo-print, formSheet/sheet kéo, ô ký trong ScrollView, 320 dp/200 %, S-01 gate + S-27 về S-01, App lock + withLockSuspended, Applicant mode qua khởi động lại, đồng hồ 72/48 h + thông báo → S-18, sao lưu nền + đo PBKDF2, iOS bookmark thư mục — ✅ xong 27/11 trên máy ảo release + A13 (riêng iOS bookmark thư mục TC-199: chờ đọc run iOS r3b ở Bước 4)
-- [ ] Ghép nhánh, toàn bộ test xanh + cài chạy trên Galaxy A13 → gộp `dev` → `main`
+- [x] Ghép nhánh, toàn bộ test xanh + cài chạy trên Galaxy A13 → gộp `dev` → `main` — ✅ 27/11: jest 863 · tsc · lint xanh, release R8 chạy trên A13, dev → main (20da840)
 
 ## Bước 4 — Test toàn bộ (chỉ ghi lỗi)
 - [x] Viết TESTCASES.md (100–200 case) — 200 case: 124 T ✅ (jest 702), 76 M chờ thử máy
