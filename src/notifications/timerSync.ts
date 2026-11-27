@@ -7,7 +7,9 @@
  * when notifications are off the stale ones are cancelled so they are scheduled afresh once allowed again.
  * Called at start, when the app comes back to the foreground, when S-18 opens, after a clock starts, after a restore,
  * when a closed rental is reopened, and (with `force`) when Applicant mode turns on / off: while the applicant holds
- * the phone the notifications carry no applicant name (B-60, S-08a "tắt thông báo").
+ * the phone the notifications carry no applicant name (B-60, S-08a "tắt thông báo"). Without exact alarms (Android 14+
+ * "Alarms & reminders" off) the 2-hours-left reminder says "about 2 hours"; when that setting changes the clocks are
+ * re-scheduled (./exactAlarms).
  *
  * Calls are serialised (one at a time per process) so a foreground sync and a clock that just started never schedule
  * the same reminders twice. Never throws.
@@ -37,6 +39,8 @@ export interface TimerSyncResult {
 }
 
 let chain: Promise<unknown> = Promise.resolve();
+/** Exact-alarm state each notifier last scheduled with: a change (allowed / revoked in system settings) re-schedules. */
+const lastExact = new WeakMap<QueueNotifier, boolean>();
 
 /** Runs `job` after every sync already queued (in-process mutex). */
 function serial<T>(job: () => Promise<T>): Promise<T> {
@@ -60,6 +64,12 @@ export function syncTimerNotifications(db: AppDb, notifier: QueueNotifier, opts:
       if (!rows.length) return result;
       const on = getSettings(db).reminders.timers && (await notifier.getPermission()) === 'granted';
       const anonymous = notifier.isPrivate?.() ?? false;
+      const exact = (await notifier.exactAlarms?.().catch(() => false)) ?? true;
+      // "Alarms & reminders" switched since the last sync: re-schedule (exact alarms, "about 2 hours" wording).
+      // Only a sync over every clock records the state (a one-clock sync must not swallow the change for the others).
+      const changed = !only && lastExact.has(notifier) && lastExact.get(notifier) !== exact;
+      const force = opts.force || changed;
+      if (!only) lastExact.set(notifier, exact);
       for (const t of rows) {
         const has = (t.notificationIds?.length ?? 0) > 0;
         if (!on) {
@@ -69,7 +79,7 @@ export function syncTimerNotifications(db: AppDb, notifier: QueueNotifier, opts:
           }
           continue;
         }
-        if (has && !opts.force) continue;
+        if (has && !force) continue;
         const a = getApplicant(db, t.applicantId);
         if (!a || a.deletedAt) continue;
         if (has) await cancelTimerNotifications(notifier, t.notificationIds);
@@ -79,6 +89,7 @@ export function syncTimerNotifications(db: AppDb, notifier: QueueNotifier, opts:
           rentalId: a.rentalId,
           now,
           anonymous,
+          approximate: !exact,
         });
         setTimerNotifications(db, t.id, ids);
         result.scheduled += 1;

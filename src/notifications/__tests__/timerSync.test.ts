@@ -81,6 +81,31 @@ describe('First-come clock notifications follow the permission (B-58) and Applic
     expect(n.scheduled.size).toBe(2);
   });
 
+  it('without exact alarms the reminder says "about 2 hours"; allowing them later re-schedules on time', async () => {
+    const { db, jordan, n } = setup('granted');
+    n.setExact(false);
+    await syncTimerNotifications(db, n.notifier, { now: NOW });
+    expect([...n.scheduled.values()].map((x) => x.title)).toEqual([
+      `${jordan.fullName} — about 2 hours left to provide missing info`,
+      `${jordan.fullName} — time to provide missing info is up`,
+    ]);
+    // The landlord allows "Alarms & reminders" in system settings → next foreground sync (no force) re-schedules.
+    n.setExact(true);
+    expect(await syncTimerNotifications(db, n.notifier, { now: NOW })).toMatchObject({ scheduled: 1 });
+    expect(n.cancelled).toEqual(['n1', 'n2']);
+    expect([...n.scheduled.values()].map((x) => x.title)[0]).toBe(`${jordan.fullName} — 2 hours left to provide missing info`);
+    // Nothing changes → nothing re-scheduled.
+    expect(await syncTimerNotifications(db, n.notifier, { now: NOW })).toMatchObject({ scheduled: 0 });
+  });
+
+  it('Applicant mode without exact alarms: no name, still "about"', async () => {
+    const { db, n } = setup('granted');
+    n.setExact(false);
+    n.setPrivate(true);
+    await syncTimerNotifications(db, n.notifier, { now: NOW, force: true });
+    expect([...n.scheduled.values()].map((x) => x.title)).toEqual(['A first-come clock has about 2 hours left', PRIVATE_TIMER_TITLES.expired]);
+  });
+
   it('moments already past are not scheduled (clock ran out while notifications were off)', async () => {
     const { db, n } = setup('granted');
     await syncTimerNotifications(db, n.notifier, { now: '2026-12-08T08:00:00.000-05:00' });

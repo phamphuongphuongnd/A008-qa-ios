@@ -14,7 +14,11 @@
  *   throws SecurityException without it (Android 9+) → automatic weekly backup (fact expo-native-v2-gotchas).
  * - CAMERA — document photos (expo-image-picker). Declared not required as hardware (uses-feature below).
  * - POST_NOTIFICATIONS, RECEIVE_BOOT_COMPLETED, VIBRATE, WAKE_LOCK — local 72 h / 48 h timers, backup and cleanup
- *   reminders (expo-notifications reschedules after a reboot). No exact alarms: a few minutes late is fine.
+ *   reminders (expo-notifications reschedules after a reboot).
+ * - SCHEDULE_EXACT_ALARM (app.json `android.permissions`; never USE_EXACT_ALARM) — the First-come "2 hours left" /
+ *   "time is up" reminders of the 72 h / 48 h clocks fire on time (inexact alarms can be ~1 h late). Android 14+ asks
+ *   the landlord in "Alarms & reminders" (src/notifications/exactAlarms.ts); denied = inexact, the app works the same.
+ *   Play declaration (Bước 6): see apps/A008-evenlease report fix-decision.
  * - USE_BIOMETRIC, USE_FINGERPRINT — App lock and leaving Applicant mode (expo-local-authentication).
  * TODO(6B): `aapt2 dump permissions` on the release APK before filling in Play Data safety.
  */

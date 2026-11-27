@@ -10,7 +10,8 @@ import { db } from '@/db';
 import { isApplicantModeActive } from '@/features/intake/applicantMode/store';
 
 import { CHANNELS } from './adapter';
-import { expoNotifications } from './native';
+import { ensureExactAlarmPermission, exactAlarmsOn } from './exactAlarms';
+import { expoExactAlarms, expoNotifications } from './native';
 import type { PermissionState, QueueNotifier } from './queueTimers';
 import { ensureNotificationPermission } from './reminders';
 
@@ -33,4 +34,6 @@ export const expoQueueNotifier: QueueNotifier = {
     return expoNotifications.permission();
   },
   isPrivate: isApplicantModeActive,
+  exactAlarms: () => exactAlarmsOn(expoExactAlarms),
+  ensureExactAlarms: () => ensureExactAlarmPermission(db, expoExactAlarms),
 };

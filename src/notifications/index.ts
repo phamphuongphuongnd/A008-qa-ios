@@ -84,3 +84,13 @@ export function refreshReminders(): Promise<void> {
 export function askNotificationPermission(): Promise<boolean> {
   return ensureNotificationPermission(db, expoNotifications).catch(() => false);
 }
+
+/**
+ * First-come turned on the first time: after the notification permission, ask once for exact alarms (Android 14+
+ * "Alarms & reminders") so the 72 h / 48 h reminders come on time; then re-schedule the clocks. Never throws.
+ */
+export async function askFirstComePermissions(): Promise<void> {
+  if (!(await askNotificationPermission())) return;
+  await (expoQueueNotifier.ensureExactAlarms?.() ?? Promise.resolve(true)).catch(() => false);
+  await syncTimers();
+}

@@ -173,7 +173,18 @@ async function startClock(
     if (s.reminders.timers) {
       // 2E's prompt (ask once, `settings.notificationsAsked`) on the phone; see queueTimersNative.
       permission = await ensureTimerPermission(deps.notifier);
-      if (permission === 'granted') await syncTimerNotifications(deps.db, deps.notifier, { now: input.at, timerIds: [timerId] });
+      if (permission === 'granted') {
+        await syncTimerNotifications(deps.db, deps.notifier, { now: input.at, timerIds: [timerId] });
+        // First clock: ask once for exact alarms ("Alarms & reminders", Android 14+) so the reminders come on time.
+        // Not awaited — the landlord may spend a while on the system screen; when they come back, the sync sees the
+        // change and re-schedules every clock exactly.
+        if (deps.notifier.ensureExactAlarms) {
+          void deps.notifier
+            .ensureExactAlarms()
+            .then(() => syncTimerNotifications(deps.db, deps.notifier))
+            .catch(() => undefined);
+        }
+      }
     }
   } catch {
     // Reminders are best-effort.

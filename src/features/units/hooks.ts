@@ -8,7 +8,7 @@ import { db } from '@/db/client';
 import { countRentals, getRental } from '@/db/repos/rentals';
 import { useLive } from '@/db/useLive';
 import { fileStore } from '@/files';
-import { askNotificationPermission, refreshReminders, syncTimers } from '@/notifications';
+import { askFirstComePermissions, refreshReminders, syncTimers } from '@/notifications';
 import { cancelStoppedTimers } from '@/notifications/queueTimers';
 import { expoQueueNotifier } from '@/notifications/queueTimersNative';
 
@@ -70,10 +70,10 @@ export function useRentalForm(rentalId: number | null): RentalForm | null {
 /** Rental actions bound to the app database / file store. */
 export function useRentalActions() {
   return {
-    /** Also asks the notification permission the first time First-come is on (§6, 2E asks at most once). */
+    /** Also asks the notification permission (+ exact alarms) the first time First-come is on (§6, asked at most once). */
     create: useCallback((form: RentalForm) => {
       const r = createRentalFromForm(db, form);
-      if (r.ok && r.askNotifications) void askNotificationPermission();
+      if (r.ok && r.askNotifications) void askFirstComePermissions();
       return r;
     }, []),
     /** Also cancels the notifications of first-come timers stopped by a switch to Compare (2D). */
@@ -81,7 +81,7 @@ export function useRentalActions() {
       const r = updateRentalFromForm(db, id, form, { confirmModeChange });
       if (r.ok) {
         if (r.stoppedTimers.length) void cancelStoppedTimers(expoQueueNotifier, r.stoppedTimers);
-        if (r.askNotifications) void askNotificationPermission();
+        if (r.askNotifications) void askFirstComePermissions();
       }
       return r;
     }, []),

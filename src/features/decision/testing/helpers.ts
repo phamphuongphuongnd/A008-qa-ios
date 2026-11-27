@@ -13,6 +13,8 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
   const cancelled: string[] = [];
   let asked = 0;
   let priv = false;
+  let exact = true;
+  let exactAsked = 0;
   const notifier: QueueNotifier = {
     async schedule(x) {
       const id = `n${++n}`;
@@ -32,6 +34,13 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
       return perm;
     },
     isPrivate: () => priv,
+    async exactAlarms() {
+      return exact;
+    },
+    async ensureExactAlarms() {
+      exactAsked += 1;
+      return exact;
+    },
   };
   return {
     notifier,
@@ -46,6 +55,11 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
     setPrivate: (on: boolean) => {
       priv = on;
     },
+    /** Android "Alarms & reminders" allowed (exact alarms) or not. */
+    setExact: (on: boolean) => {
+      exact = on;
+    },
+    exactAskedCount: () => exactAsked,
   };
 }
 
