@@ -9,7 +9,7 @@
 <!-- Phần T (124 case, 702 test jest): chưa tìm thấy lỗi. -->
 
 **Gộp / trùng (không sửa riêng):** B-54 → B-47 · B-74(b) → B-41 · B-66, B-77…B-79 bỏ trống (QA-3 tự gộp trùng vào B-40 / B-47 / B-48 rồi đánh lại số).
-**Tổng 27/11:** đã sửa + tick (thử lại máy ảo release / A13) B-40…B-81, B-100…B-103, B-105, B-120…B-123, B-140…B-146, B-150, B-160 (B-130 lỗi build cũng đã sửa). **Còn mở:** B-65 (= B-132), B-72(d), B-104 (WRITE_EXTERNAL_STORAGE), B-131, B-132, B-133, B-151 (chưa thử máy), B-161…B-163 (mới 27/11), iOS run #7 (B-84, B-85 — đang đọc).
+**Tổng 27/11:** đã sửa + tick (thử lại máy ảo release / A13) B-40…B-81, B-100…B-105, B-120…B-123, B-140…B-146, B-150, B-160 (B-130 lỗi build cũng đã sửa). **Code đã sửa, chờ thử máy:** B-65 / B-132, B-131, B-161, B-162, B-163, B-85 (iPad). **Còn mở:** B-72(d) tablet ngang (chưa thử lại), B-151 (chưa thử máy), iOS B-84 🟡 (chờ run 45957881383).
 
 ## 🔴 Chặn
 - [x] B-40 🔴 [TC-127, TC-196] S-01 — Cài mới / `pm clear` → mở thẳng S-03 "New rental", không bao giờ qua onboarding (cả launcher, cả iOS); Back chết; sau Delete all về S-02 rỗng chứ không về S-01 · nghi `app/_layout.tsx` `initialRouteName: '(tabs)'` trong `Stack.Protected guard={onboarded}` (3 làn + iOS cùng gặp)
@@ -59,7 +59,7 @@
 - [x] B-101 🔴 [TC-180, 182] S-22 — deriveKey PBKDF2 310 000 vòng = **847 s (14 phút)** trên A13 release (~350 vòng/s, JS) → PBKDF2 native (module nhỏ trong `modules/`, Phương để điều phối chọn 2026-11-27)
 - [x] B-102 🟡 [TC-181] S-22 — thư mục Google Drive hiện id SAF thô "acc=6;doc=encoded=…" thay vì tên thư mục
 - [x] B-103 🟡 [TC-178] S-23 — máy có cả mặt + vân tay: app ghi "Require Face unlock" nhưng hệ thống hỏi vân tay (`lockNative.ts:31`)
-- [x] B-104 🟡 [TC-195] Quyền release còn `FOREGROUND_SERVICE` + `WRITE_EXTERNAL_STORAGE` (maxSdk 28) → gỡ ở `plugins/withReleasePermissions.js` hoặc ghi lý do · giữ WRITE_EXTERNAL_STORAGE (maxSdk 28) có chủ ý, lý do ghi trong ; FOREGROUND_SERVICE đã gỡ
+- [x] B-104 🟡 [TC-195] Quyền release còn `FOREGROUND_SERVICE` + `WRITE_EXTERNAL_STORAGE` (maxSdk 28) → gỡ ở `plugins/withReleasePermissions.js` hoặc ghi lý do · giữ WRITE_EXTERNAL_STORAGE (maxSdk 28) có chủ ý, lý do ghi ở đầu plugins/withReleasePermissions.js; FOREGROUND_SERVICE đã gỡ
 - Số đo A13 release: khởi động lạnh 2,2–3,1 s · S-06 (20 Applicant) 1,2–1,7 s, cuộn ổn · **S-17 4,5–4,9 s, cuộn 45 % khung trễ → B-71 xác nhận** · Drive SAF ghi/đọc ✅ · rung ✅ · vân tay ✅.
 - [x] B-160 🟠 [S-08, Phương thử A13 27/11] Form đơn mới (chủ nhà nhập đơn) — ảnh / file đã chọn ở "Attach photos of the paper form" (camera / ảnh / PDF) **không xoá được** và **không xem được** (mong đợi giống Documents S-10: thumbnail + chạm xem toàn màn, phóng to / PDF mở được, xoá có xác nhận)
 
