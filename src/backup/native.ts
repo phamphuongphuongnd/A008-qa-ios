@@ -12,6 +12,7 @@ import { withLockSuspended } from '@/features/settings/lockController';
 import { excludeRootOf } from '@/files/cloudBackup';
 import { cloudBackupPort } from '@/files/cloudBackupNative';
 
+import { AndroidFolders } from '../../modules/android-folders';
 import { IosFiles } from '../../modules/ios-files';
 import type { FolderPort } from './auto';
 import { folderLabel } from './folderName';
@@ -131,13 +132,22 @@ export async function pickBackupFolder(): Promise<{ uri: string; label: string }
     return null; // cancelled
   }
   if (!dir) return null;
-  const label = folderLabel(dir.uri, dir.name);
+  // B-102: Drive's Directory.name is a document id — ask the provider for the folder's display name.
+  const label = folderLabel(dir.uri, dir.name, Platform.OS === 'android' ? safDisplayName(dir.uri) : null);
   if (Platform.OS !== 'ios') return { uri: dir.uri, label };
   try {
     return { uri: folderSetting(IosFiles, dir.uri), label };
   } catch {
     // No bookmark for this folder: the plain URL works until the app restarts, then S-22 asks to choose it again.
     return { uri: dir.uri, label };
+  }
+}
+
+function safDisplayName(uri: string): string | null {
+  try {
+    return AndroidFolders?.displayName(uri) ?? null;
+  } catch {
+    return null;
   }
 }
 

@@ -10,7 +10,23 @@ import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { AppSettings } from '@/db/repos/settings';
 
 export type LockAfter = AppSettings['lockAfter'];
-export type BiometricKind = 'face' | 'fingerprint' | 'iris';
+/**
+ * Which biometric the system prompt will ask for, as far as the app can know. Android only reports what the HARDWARE
+ * supports, not what is enrolled or strong enough for BiometricPrompt (A13: face is Class 2, the prompt asks for a
+ * fingerprint — B-103), so with several kinds the label stays neutral: 'faceOrFingerprint' / 'biometric'.
+ */
+export type BiometricKind = 'face' | 'fingerprint' | 'iris' | 'faceOrFingerprint' | 'biometric';
+
+/** BiometricKind from what the phone reports (enrolled = some biometric is set up). */
+export function biometricKind(enrolled: boolean, types: { face: boolean; fingerprint: boolean; iris: boolean }, ios: boolean): BiometricKind | null {
+  if (!enrolled) return null;
+  const kinds = (['face', 'fingerprint', 'iris'] as const).filter((k) => types[k]);
+  // iOS phones have exactly one (Face ID or Touch ID), and it is the one the prompt uses.
+  if (ios) return kinds[0] ?? 'biometric';
+  if (kinds.length === 1) return kinds[0];
+  if (kinds.length === 2 && types.face && types.fingerprint) return 'faceOrFingerprint';
+  return 'biometric';
+}
 
 /** S-23 "Lock after": Immediately / 1 min / 5 min (time in the background). */
 export const LOCK_AFTER_MS: Record<LockAfter, number> = { immediately: 0, '1min': 60_000, '5min': 300_000 };

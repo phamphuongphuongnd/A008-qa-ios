@@ -197,6 +197,8 @@
     "changeFolder": "Change folder",
     "folder": "Folder: {{name}}",
     "internalStorage": "Internal storage",
+    "driveFolder": "Google Drive folder",
+    "chosenFolder": "Chosen folder",
     "restore": "Restore from backup",
     "forgetWarning": "If you forget the backup password, the backup can't be opened.",
     "password": "Backup password",
@@ -278,6 +280,8 @@
       "face": "Face unlock",
       "fingerprint": "Fingerprint",
       "iris": "Iris",
+      "faceOrFingerprint": "Fingerprint or face",
+      "biometric": "Biometrics",
       "device": "Phone passcode",
       "pin": "App PIN"
     },
