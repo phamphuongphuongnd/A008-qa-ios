@@ -4,6 +4,7 @@ import { makeTestDb } from '@/db/testing/testDb';
 
 import { makeBackupActions, type BackupEnv } from '../actions';
 import { autoBackupDue, autoBackupFailedAt, backupErrorText, backupReminder, filesToPrune, runAutoBackup, snoozeBackupReminder, backupSnoozedUntil } from '../auto';
+import { DEVICE_KEYS, setDeviceValue } from '../deviceStore';
 import { BackupError } from '../format';
 import { setBackupPassword } from '../service';
 import { bytes, makeFakeFolder, makeFakeIO, testRng } from '../testing/fakes';
@@ -152,6 +153,8 @@ describe('S-22 actions', () => {
     expect(await t.actions.setAutomatic('weekly')).toBe('done');
     expect(getSettings(t.db)).toMatchObject({ autoBackup: 'weekly', backupFolderUri: 'content://tree/Evenlease' });
     expect(t.actions.folderLabel()).toBe('Evenlease');
+    setDeviceValue(t.db, DEVICE_KEYS.backupFolderLabel, 'primary:Documents'); // saved by an older build (B-76)
+    expect(t.actions.folderLabel()).toBe('Documents');
     expect(t.folder.files.size).toBe(1);
     expect(await t.actions.setAutomatic('off')).toBe('off');
     expect(getSettings(t.db).autoBackup).toBe('off');

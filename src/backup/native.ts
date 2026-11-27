@@ -14,6 +14,7 @@ import { cloudBackupPort } from '@/files/cloudBackupNative';
 
 import { IosFiles } from '../../modules/ios-files';
 import type { FolderPort } from './auto';
+import { folderLabel } from './folderName';
 import { BackupError, type Rng } from './format';
 import { bookmarkFolderPort, folderSetting, isBookmarkUri, type TempFiles } from './iosFolder';
 import { BACKUP_MIME, type AppFileIO } from './service';
@@ -148,13 +149,6 @@ const cacheTemp: TempFiles = {
     if (f.exists) f.delete();
   },
 };
-
-/** "Evenlease" from a SAF tree uri like content://…/tree/primary%3ADocuments%2FEvenlease. */
-export function folderLabel(uri: string, name?: string | null): string {
-  if (name && !name.includes(';') && !name.includes('%')) return name;
-  const last = decodeURIComponent(uri).split(/[/:]/).filter(Boolean).pop();
-  return last ?? uri;
-}
 
 /**
  * The picked folder. Android Drive lists children by document id, so the real names come from `info().files`

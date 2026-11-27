@@ -197,6 +197,7 @@
     "chooseFolder": "Choose folder",
     "changeFolder": "Change folder",
     "folder": "Folder: {{name}}",
+    "internalStorage": "Internal storage",
     "restore": "Restore from backup",
     "forgetWarning": "If you forget the backup password, the backup can't be opened.",
     "password": "Backup password",

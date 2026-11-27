@@ -7,6 +7,7 @@ import type { AppDb } from '@/db/types';
 
 import { runAutoBackup, type AutoResult, type FolderPort } from './auto';
 import { DEVICE_KEYS, getDeviceValue, setDeviceValue } from './deviceStore';
+import { readableFolderLabel } from './folderName';
 import { readHeader, type Rng } from './format';
 import {
   buildBackup,
@@ -101,7 +102,11 @@ export function makeBackupActions(env: BackupEnv) {
       return true;
     },
 
-    folderLabel: (): string | null => getDeviceValue(env.db, DEVICE_KEYS.backupFolderLabel),
+    /** S-22 "Folder: Documents" (labels saved before B-76 as "primary:Documents" read the same way). */
+    folderLabel(): string | null {
+      const label = getDeviceValue(env.db, DEVICE_KEYS.backupFolderLabel);
+      return label ? readableFolderLabel(label) : null;
+    },
 
     /** Weekly backup if due (app start / background task). */
     runAutoIfDue: () => runAutoBackup(deps(), env.folder),
