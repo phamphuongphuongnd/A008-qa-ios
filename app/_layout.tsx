@@ -28,6 +28,7 @@ import { useAppLockGate, useOnboarded } from '@/features/settings/hooks';
 import { isLockVisible } from '@/features/settings/lock';
 import { ROOT_STACK_SETTINGS, RootNavigator } from '@/navigation/RootNavigator';
 import { useNotificationSetup } from '@/notifications';
+import { ExactAlarmPromptHost } from '@/notifications/ExactAlarmPromptHost';
 import { RouterBridge } from '@/services/router';
 import { useTheme } from '@/theme';
 import { AppThemeProvider, SystemBars } from '@/theme/preference';
@@ -128,6 +129,8 @@ function RootStack() {
         <RootNavigator onboarded={onboarded} contentStyle={{ backgroundColor: colors.surface0 }} />
       </LockShield>
       <NotificationSetup />
+      {/* B-151: "Get deadline reminders on time?" in the app's own dialog (asked from non-screen code). */}
+      <ExactAlarmPromptHost />
       {/* 2E App lock; the applicant holding the phone (Applicant mode) never sees it — 2B has its own exit lock. */}
       {lockShown ? <LockScreen pinBlockedUntil={lock.pinBlockedUntil} /> : null}
     </ThemeProvider>
