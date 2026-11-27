@@ -5,6 +5,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Clock, ShieldAlert, Smartphone } from 'lucide-react-native';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { db } from '@/db';
 import { t } from '@/i18n';
@@ -27,7 +28,8 @@ export default function ApplicantModeStartScreen() {
 
 function StartBody() {
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, size } = useTheme();
+  const insets = useSafeAreaInsets();
   const rentalId = parseId(useLocalSearchParams<{ rentalId?: string }>().rentalId);
   const [mode] = useApplicantMode();
   const rental = useIntakeRental(db, rentalId);
@@ -58,7 +60,8 @@ function StartBody() {
       header={<ApplicantModeBar />}
       contentStyle={{ paddingTop: 32, paddingHorizontal: 24, gap: 20, flexGrow: 1 }}
       footer={
-        <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+        // The footer clears the system bar itself (Screen leaves that to it): a tablet taskbar hid "Start" — B-141.
+        <View style={{ paddingHorizontal: 24, paddingTop: 8, paddingBottom: 24 + insets.bottom, width: '100%', maxWidth: size.contentMax, alignSelf: 'center' }}>
           <Button
             block
             label={t('intake:s08a.start')}

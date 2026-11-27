@@ -6,7 +6,7 @@
 import { usePreventRemove, useLocalSearchParams, useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { useWindowDimensions, View } from 'react-native';
 
 import { db, getApplicant } from '@/db';
 import { files } from '@/files';
@@ -22,6 +22,7 @@ import {
   EmptyState,
   FormProgress,
   haptics,
+  keyValueStacked,
   Screen,
   showSnackbar,
   Txt,
@@ -67,6 +68,9 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
   const rental = useIntakeRental(db, rentalId);
   const paperPhotos = usePaperPhotos(db, mode === 'landlord' ? applicantId : null);
   const picker = usePickFile();
+  // From 150 % text the footer stacks (same threshold as the kit's KeyValue): side by side at 320 dp, "Save applicant"
+  // broke mid-word (B-143).
+  const stackFooter = keyValueStacked(useWindowDimensions().fontScale);
 
   const f = useApplicationForm({
     db,
@@ -235,11 +239,11 @@ function FormBody({ mode, applicantId, section }: { mode: FormMode; applicantId:
       footer={
         <ButtonBar>
           {/* Mockup S-08: narrow Back, the primary button fills the rest (alone on applicant part 1 → whole row) — B-63. */}
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={stackFooter ? { flexDirection: 'column-reverse', gap: 8 } : { flexDirection: 'row', gap: 12 }}>
             {footer.showBack ? (
               <Button variant="secondary" block label={t('common:actions.back')} onPress={f.step === 1 ? () => router.back() : f.back} />
             ) : null}
-            <Button block style={{ flex: 1 }} label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
+            <Button block style={stackFooter ? undefined : { flex: 1 }} label={footer.primaryLabel} onPress={() => void onPrimary()} loading={submitting} />
           </View>
         </ButtonBar>
       }
