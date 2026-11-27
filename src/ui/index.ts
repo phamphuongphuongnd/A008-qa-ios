@@ -69,3 +69,5 @@ export { strokesToPath, type SignatureStroke } from './signaturePath';
 export { Logo, LogoMark, Wordmark } from './Logo';
 export { AppBar, ButtonBar, Content, Hero, LargeTitle, ModeBar, Screen } from './Layout';
 export { TabIcon, useTabBarOptions } from './TabBar';
+export { TOUCH_MIN } from './touch';
+export { formCellBasis, keyValueStacked } from './textLayout';

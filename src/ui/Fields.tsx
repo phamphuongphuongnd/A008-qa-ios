@@ -118,6 +118,8 @@ export function TextField({
         {prefix ? <Txt style={[type.body, { color: colors.inkMuted }]}>{prefix}</Txt> : null}
         <TextInput
           ref={ref}
+          // B-72: a password field must not turn on Shift for the first letter (Android IME CapSentences).
+          {...(input.secureTextEntry ? { autoCapitalize: 'none' as const, autoCorrect: false, spellCheck: false } : null)}
           {...input}
           multiline={multiline}
           editable={!isDisabled}

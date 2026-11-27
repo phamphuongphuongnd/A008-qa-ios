@@ -17,14 +17,14 @@ export default function LegalScreen() {
         <Txt>{t('system:s26.notLawFirm')}</Txt>
         <Txt color="inkMuted">{t('system:s26.sameCriteria')}</Txt>
       </Card>
-      <View style={{ gap: 16 }}>
+      <View>
         <SectionHeader title={t('system:s26.dataTitle')} />
         <Card>
           <Txt>{t('system:s26.data')}</Txt>
           <Txt color="inkMuted">{t('system:s26.applicantData')}</Txt>
         </Card>
       </View>
-      <View style={{ gap: 16 }}>
+      <View>
         <SectionHeader title={t('system:s26.sourcesTitle')} />
         <ListGroup>
           {LEGAL_SOURCES.map((s) => (

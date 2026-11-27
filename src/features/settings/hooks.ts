@@ -68,6 +68,11 @@ export function useAuthCapability(): AuthCapability | null {
 
 export const isIos = Platform.OS === 'ios';
 
+/** performance.now(): monotonic, not affected by the phone's clock settings (undefined where missing). */
+function monotonicNow(): number | undefined {
+  return typeof performance !== 'undefined' && typeof performance.now === 'function' ? performance.now() : undefined;
+}
+
 /**
  * Root layout App lock gate (`app/_layout.tsx` renders the lock screen over the stack while `locked`).
  * Locks at start when App lock is on, and on return from the background after "Lock after".
@@ -87,8 +92,10 @@ export function useAppLockGate(): { locked: boolean; pinBlockedUntil: number } {
       // The applicant is holding the phone: Applicant mode has its own exit lock (2B); App lock stays out of it.
       if (isApplicantModeActive()) return;
       const now = Date.now();
-      if (s === 'background') lockStore.dispatch({ type: 'background', now });
-      else if (s === 'active') lockStore.dispatch({ type: 'foreground', now, settings: latest.current });
+      // B-76: the monotonic clock too — moving the phone's clock back while away must not skip the lock.
+      const mono = monotonicNow();
+      if (s === 'background') lockStore.dispatch({ type: 'background', now, mono });
+      else if (s === 'active') lockStore.dispatch({ type: 'foreground', now, mono, settings: latest.current });
     });
     return () => sub.remove();
   }, []);
