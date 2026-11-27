@@ -78,3 +78,7 @@
 - [x] B-162 🟡 [TC-190] S-02 Rentals, 320 dp + chữ 200 % — "Columbus, OH 43215" gãy giữa từ ("Columb/us, OH") cạnh huy hiệu "Offer out" · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
 - [x] B-163 🟡 [TC-188] Sheet "Add applicant" — dòng cuối "…Screening services collect them directly." chạm biểu tượng thanh điều hướng 3 nút (A13), thiếu đệm đáy · **code xong de4c94d** (đệm đáy theo inset), chờ thử máy A13
 - [ ] B-85 🔴 [TC-144, TC-184, iOS iPad] S-15 — chọn Deny: sheet iPad là thẻ ≈ 590×660 pt nhưng khung cao cả cửa sổ → "Save decision" nằm dưới mép thẻ, không bấm được (run iOS #7, ảnh ipad-light_05a2) · **code xong de4c94d** (khung ≤ 600 pt trên iPad), chờ run iOS
+- [x] B-82 🟡 [TC-200, TC-190] S-06 iOS AX-XL — "APPLICANTS" gãy "APP/LICA/NTS" · cùng gốc B-161 (SectionHeader xuống dòng), đã ✅ trên A13 (320 dp + chữ 200 %); chờ ảnh iOS xác nhận
+- [ ] B-83 🟡 [TC-129] S-01 trang 3 iOS (SE, iPad) — tờ giấy minh hoạ bị mép dưới khung 170 dp cắt sau B-80 · **code xong** (giấy 124 dp, top 22), chờ run iOS
+- [ ] B-84 🟡 [iOS iPad, Pro Max AX-XL] S-15 — "CHOOSE A DECISION" / "REASONS (REQUIRED)" chồng lên tiêu đề "Decision" và nút ‹ · nghi cùng gốc B-85 (khung cao hơn thẻ formSheet) → fix B-85 có thể chữa; xác nhận bằng ảnh run iOS
+
