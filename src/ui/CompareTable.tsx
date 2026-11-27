@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
+import { FlatList, Pressable, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import type { Evidence, Outcome } from '@/engine';
 import { t } from '@/i18n';
@@ -7,6 +7,7 @@ import { font, useTheme, withAlpha } from '@/theme';
 
 import { BadgeRow, EvidenceTag, StatusBadge, evidenceLabel, outcomeLabel } from './Badges';
 import { useCardStyle } from './Card';
+import { COMPARE_HEADER_HEIGHT, COMPARE_PIN_WIDTH, COMPARE_ROW_HEIGHT, COMPARE_WINDOW, compareColumnWidth } from './compareLayout';
 import { COMPARE_CARDS_FONT_SCALE, fontScaleAtLeast } from './fontScale';
 import { Txt } from './Txt';
 
@@ -57,6 +58,7 @@ export function CompareTable({
   onCellPress?: (rowKey: string, columnKey: string) => void;
 }) {
   const auto = useCompareAsCards();
+  const colWidth = compareColumnWidth(useWindowDimensions().fontScale);
   const { colors, radius } = useTheme();
   const card = useCardStyle();
   if (cards ?? auto) {
@@ -87,13 +89,11 @@ export function CompareTable({
     );
   }
 
-  const PIN = 104;
-  const COL = 120;
   return (
     <View style={[styles.table, { backgroundColor: colors.surface1, borderColor: colors.line, borderRadius: radius.lg }]}>
       <View style={{ flexDirection: 'row' }}>
         {/* Pinned criteria column */}
-        <View style={{ width: PIN, borderRightWidth: 1, borderRightColor: colors.line }}>
+        <View style={{ width: COMPARE_PIN_WIDTH, borderRightWidth: 1, borderRightColor: colors.line }}>
           <View style={[styles.hd, styles.pinCell, { backgroundColor: colors.surface2 }]}>
             <Txt style={font(600, 14, 18)}>{cornerLabel}</Txt>
           </View>
@@ -105,30 +105,54 @@ export function CompareTable({
             </View>
           ))}
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {columns.map((col) => (
-            // minWidth, not width: a column grows to its widest badge ("Needs review") instead of clipping it (B-46).
-            <View key={col.key} style={{ minWidth: COL }}>
-              <View style={[styles.hd, { backgroundColor: colors.surface2 }]}>
-                <Txt numberOfLines={1} style={font(600, 14, 18)}>
-                  {col.title}
-                </Txt>
-                {col.subtitle ? <Txt style={[font(400, 12, 16), { color: colors.inkMuted }]}>{col.subtitle}</Txt> : null}
-              </View>
-              {rows.map((r) => (
-                <CellPress
-                  key={r.key}
-                  label={cellLabel(col, r)}
-                  onPress={onCellPress ? () => onCellPress(r.key, col.key) : undefined}
-                  style={[styles.cell, { borderTopColor: colors.line }]}
-                >
-                  {renderCell(r.cells[col.key], true)}
-                </CellPress>
-              ))}
-            </View>
-          ))}
-        </ScrollView>
+        {/* Applicant columns: virtualised sideways (B-71) — 20 applicants no longer mount 200 cells at once. */}
+        <FlatList
+          horizontal
+          style={{ flex: 1 }}
+          data={columns as CompareColumn[]}
+          keyExtractor={(col) => col.key}
+          renderItem={({ item }) => <TableColumn col={item} rows={rows} width={colWidth} onCellPress={onCellPress} />}
+          getItemLayout={(_, index) => ({ length: colWidth, offset: colWidth * index, index })}
+          extraData={rows}
+          showsHorizontalScrollIndicator={false}
+          {...COMPARE_WINDOW}
+        />
       </View>
+    </View>
+  );
+}
+
+/** One applicant's column: name header + one cell per row. */
+function TableColumn({
+  col,
+  rows,
+  width,
+  onCellPress,
+}: {
+  col: CompareColumn;
+  rows: readonly CompareRow[];
+  width: number;
+  onCellPress?: (rowKey: string, columnKey: string) => void;
+}) {
+  const { colors } = useTheme();
+  return (
+    <View style={{ width }}>
+      <View style={[styles.hd, { backgroundColor: colors.surface2 }]}>
+        <Txt numberOfLines={1} style={font(600, 14, 18)}>
+          {col.title}
+        </Txt>
+        {col.subtitle ? <Txt style={[font(400, 12, 16), { color: colors.inkMuted }]}>{col.subtitle}</Txt> : null}
+      </View>
+      {rows.map((r) => (
+        <CellPress
+          key={r.key}
+          label={cellLabel(col, r)}
+          onPress={onCellPress ? () => onCellPress(r.key, col.key) : undefined}
+          style={[styles.cell, styles.cellStack, { borderTopColor: colors.line }]}
+        >
+          {renderCell(r.cells[col.key], true)}
+        </CellPress>
+      ))}
     </View>
   );
 }
@@ -180,11 +204,12 @@ function CellPress({
 function renderCell(cell: CompareCell | undefined, compact?: boolean): ReactNode {
   if (!cell) return null;
   if ('outcome' in cell) {
+    // Compact: badge + tag straight in the cell (styles.cellStack), no wrapper View per cell.
     return compact ? (
-      <View style={{ gap: 4 }}>
+      <>
         <StatusBadge outcome={cell.outcome} />
         {cell.evidence ? <EvidenceTag evidence={cell.evidence} compact /> : null}
-      </View>
+      </>
     ) : (
       <BadgeRow>
         <StatusBadge outcome={cell.outcome} />
@@ -208,8 +233,9 @@ function CellText({ text, tone = 'ink', bold }: { text: string; tone?: 'ink' | '
 const styles = StyleSheet.create({
   table: { borderWidth: 1, overflow: 'hidden' },
   // Fixed heights keep the pinned column and the scrolling columns aligned (≥130 % text uses cards instead).
-  hd: { height: 60, paddingVertical: 8, paddingHorizontal: 8, justifyContent: 'center' },
+  hd: { height: COMPARE_HEADER_HEIGHT, paddingVertical: 8, paddingHorizontal: 8, justifyContent: 'center' },
   pinCell: { paddingLeft: 12 },
-  cell: { height: 72, paddingVertical: 8, paddingHorizontal: 8, justifyContent: 'center', borderTopWidth: 1 },
+  cell: { height: COMPARE_ROW_HEIGHT, paddingVertical: 8, paddingHorizontal: 8, justifyContent: 'center', borderTopWidth: 1 },
+  cellStack: { gap: 4 },
   cardRow: { gap: 6, paddingTop: 10, borderTopWidth: 1 },
 });

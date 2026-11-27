@@ -140,24 +140,78 @@ export interface ApplicantBundle {
  */
 export function getApplicantBundle(db: AppDb, id: number): ApplicantBundle | null {
   const applicant = getApplicant(db, id);
-  if (!applicant) return null;
-  const refs = db.select().from(references).where(eq(references.applicantId, id)).orderBy(asc(references.id)).all();
-  const atts = refs.length
-    ? db.select().from(attempts).where(inArray(attempts.referenceId, refs.map((r) => r.id))).orderBy(asc(attempts.at), asc(attempts.id)).all()
-    : [];
-  const decs = db.select().from(decisions).where(eq(decisions.applicantId, id)).orderBy(asc(decisions.at), asc(decisions.id)).all();
-  const lets = decs.length ? db.select().from(letters).where(inArray(letters.decisionId, decs.map((d) => d.id))).orderBy(asc(letters.id)).all() : [];
-  return {
-    applicant,
-    residences: listResidences(db, id),
-    incomes: listIncomes(db, id),
-    documents: db.select().from(documents).where(eq(documents.applicantId, id)).orderBy(asc(documents.id)).all(),
-    references: refs.map((r) => ({ ...r, attempts: atts.filter((a) => a.referenceId === r.id) })),
-    report: db.select().from(reports).where(eq(reports.applicantId, id)).get() ?? null,
-    background: db.select().from(background).where(eq(background.applicantId, id)).get() ?? null,
-    decisions: decs.map((d) => ({ ...d, letters: lets.filter((l) => l.decisionId === d.id) })),
-    timers: db.select().from(timers).where(eq(timers.applicantId, id)).orderBy(asc(timers.startedAt)).all(),
-  };
+  return applicant ? listApplicantBundles(db, [applicant])[0] : null;
+}
+
+/** Rows grouped by applicant id, keeping the query's order inside each group. */
+function byApplicant<T extends { applicantId: number }>(rows: readonly T[]): Map<number, T[]> {
+  const m = new Map<number, T[]>();
+  for (const r of rows) {
+    const list = m.get(r.applicantId);
+    if (list) list.push(r);
+    else m.set(r.applicantId, [r]);
+  }
+  return m;
+}
+
+/** SQLite caps bound parameters; rentals stay far below, but chunk anyway. */
+const IN_CHUNK = 500;
+function chunked<T>(ids: readonly number[], run: (part: number[]) => T[]): T[] {
+  if (ids.length <= IN_CHUNK) return ids.length ? run([...ids]) : [];
+  const out: T[] = [];
+  for (let i = 0; i < ids.length; i += IN_CHUNK) out.push(...run(ids.slice(i, i + IN_CHUNK)));
+  return out;
+}
+
+/**
+ * Bundles for many applicants with one query per table (S-17 Compare, S-18, S-19 load a whole rental — B-71: one
+ * `getApplicantBundle` per applicant was ~12 queries each). Same rows and order as `getApplicantBundle`.
+ */
+export function listApplicantBundles(db: AppDb, rows: readonly Applicant[]): ApplicantBundle[] {
+  const ids = rows.map((a) => a.id);
+  if (!ids.length) return [];
+  const res = byApplicant(
+    chunked(ids, (part) => db.select().from(residences).where(inArray(residences.applicantId, part)).orderBy(asc(residences.order), asc(residences.id)).all()),
+  );
+  const inc = byApplicant(
+    chunked(ids, (part) => db.select().from(incomes).where(inArray(incomes.applicantId, part)).orderBy(asc(incomes.order), asc(incomes.id)).all()),
+  );
+  const docs = byApplicant(
+    chunked(ids, (part) => db.select().from(documents).where(inArray(documents.applicantId, part)).orderBy(asc(documents.id)).all()),
+  );
+  const refs = byApplicant(
+    chunked(ids, (part) => db.select().from(references).where(inArray(references.applicantId, part)).orderBy(asc(references.id)).all()),
+  );
+  const refIds = [...refs.values()].flat().map((r) => r.id);
+  const atts = chunked(refIds, (part) =>
+    db.select().from(attempts).where(inArray(attempts.referenceId, part)).orderBy(asc(attempts.at), asc(attempts.id)).all(),
+  );
+  const attsByRef = new Map<number, Attempt[]>();
+  for (const a of atts) attsByRef.set(a.referenceId, [...(attsByRef.get(a.referenceId) ?? []), a]);
+  const reps = byApplicant(chunked(ids, (part) => db.select().from(reports).where(inArray(reports.applicantId, part)).all()));
+  const bgs = byApplicant(chunked(ids, (part) => db.select().from(background).where(inArray(background.applicantId, part)).all()));
+  const decs = byApplicant(
+    chunked(ids, (part) => db.select().from(decisions).where(inArray(decisions.applicantId, part)).orderBy(asc(decisions.at), asc(decisions.id)).all()),
+  );
+  const decIds = [...decs.values()].flat().map((d) => d.id);
+  const lets = chunked(decIds, (part) => db.select().from(letters).where(inArray(letters.decisionId, part)).orderBy(asc(letters.id)).all());
+  const tms = byApplicant(
+    chunked(ids, (part) => db.select().from(timers).where(inArray(timers.applicantId, part)).orderBy(asc(timers.startedAt)).all()),
+  );
+  return rows.map((applicant) => {
+    const id = applicant.id;
+    return {
+      applicant,
+      residences: res.get(id) ?? [],
+      incomes: inc.get(id) ?? [],
+      documents: docs.get(id) ?? [],
+      references: (refs.get(id) ?? []).map((r) => ({ ...r, attempts: attsByRef.get(r.id) ?? [] })),
+      report: reps.get(id)?.[0] ?? null,
+      background: bgs.get(id)?.[0] ?? null,
+      decisions: (decs.get(id) ?? []).map((d) => ({ ...d, letters: lets.filter((l) => l.decisionId === d.id) })),
+      timers: tms.get(id) ?? [],
+    };
+  });
 }
 
 /**

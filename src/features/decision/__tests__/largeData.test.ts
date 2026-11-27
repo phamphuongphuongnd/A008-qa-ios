@@ -5,8 +5,9 @@
 import * as A from '@/db/repos/applicants';
 import * as C from '@/db/repos/criteria';
 import * as R from '@/db/repos/rentals';
+import * as S from '@/db/repos/sample';
 import { makeTestDb } from '@/db/testing/testDb';
-import { defaultCriteria } from '@/engine';
+import { defaultCriteria, SAMPLE } from '@/engine';
 import { decisionFileHtml } from '@/pdf/decisionFile';
 
 import { criteriaToRows } from '../../criteria/criteriaRows';
@@ -83,5 +84,56 @@ describe('50 applicants × 15 criteria', () => {
     expect(firstSeen).toHaveLength(N);
     expect(firstSeen.slice(0, 3)).toEqual(['01', '03', '05']);
     expect(html).toMatch(/\d+ of 15 Met/);
+  });
+});
+
+/** The §8 sample rental with its 4 applicants copied `times` times (A13 TC-193 used 20 = 4 × 5). */
+function sampleTimes(times: number) {
+  const applicants = Array.from({ length: times }, (_, k) =>
+    SAMPLE.applicants.map((a) => JSON.parse(JSON.stringify(a).replaceAll(`"${a.id}`, `"${a.id}-k${k}`)) as (typeof SAMPLE.applicants)[number]),
+  ).flat();
+  const db = makeTestDb();
+  const rentalId = S.loadSampleRental(db, { ...SAMPLE, applicants });
+  return { db, rentalId };
+}
+
+/** SQL statements prepared while `f` runs (better-sqlite3 prepares one per Drizzle query). */
+function countQueries(db: ReturnType<typeof makeTestDb>, f: () => void): number {
+  const client = (db as unknown as { $client: { prepare: (...a: unknown[]) => unknown } }).$client;
+  const spy = jest.spyOn(client, 'prepare');
+  f();
+  const n = spy.mock.calls.length;
+  spy.mockRestore();
+  return n;
+}
+
+describe('B-71: S-17 with 20 applicants', () => {
+  it('loading the rental is a fixed number of queries, whatever the number of applicants', () => {
+    const four = sampleTimes(1);
+    const twenty = sampleTimes(5);
+    const q4 = countQueries(four.db, () => loadCompare(four.db, four.rentalId, { hideClosed: false }));
+    const q20 = countQueries(twenty.db, () => loadCompare(twenty.db, twenty.rentalId, { hideClosed: false }));
+    expect(q20).toBe(q4);
+    expect(q20).toBeLessThan(20);
+  });
+
+  it('20 applicants: same results as the 4 of §8, and load + view well under the old time', () => {
+    const { db, rentalId } = sampleTimes(5);
+    const run = () => compareView(loadCompare(db, rentalId, { hideClosed: false })!);
+    run(); // warm up (first prepare / JIT)
+    const t0 = performance.now();
+    const view = run();
+    const ms = performance.now() - t0;
+    expect(view.columns).toHaveLength(20);
+    // Copies share their received time: each of the 4 §8 applicants appears 5 times with the same Issues count.
+    const counts = (v: ReturnType<typeof run>) => {
+      const issues = v.rows[v.rows.length - 1];
+      return v.columns.map((c) => (issues.cells[c.key] as { text: string }).text);
+    };
+    const four = sampleTimes(1);
+    const base = counts(compareView(loadCompare(four.db, four.rentalId, { hideClosed: false })!));
+    expect(counts(view)).toEqual(base.flatMap((n) => [n, n, n, n, n]));
+    // Dev PC: ~25 ms after the fix (was ~220 ms with ~12 queries per applicant). Generous bound against regressions.
+    expect(ms).toBeLessThan(120);
   });
 });
