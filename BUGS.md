@@ -59,7 +59,7 @@
 - [x] B-101 🔴 [TC-180, 182] S-22 — deriveKey PBKDF2 310 000 vòng = **847 s (14 phút)** trên A13 release (~350 vòng/s, JS) → PBKDF2 native (module nhỏ trong `modules/`, Phương để điều phối chọn 2026-11-27)
 - [x] B-102 🟡 [TC-181] S-22 — thư mục Google Drive hiện id SAF thô "acc=6;doc=encoded=…" thay vì tên thư mục
 - [x] B-103 🟡 [TC-178] S-23 — máy có cả mặt + vân tay: app ghi "Require Face unlock" nhưng hệ thống hỏi vân tay (`lockNative.ts:31`)
-- [ ] B-104 🟡 [TC-195] Quyền release còn `FOREGROUND_SERVICE` + `WRITE_EXTERNAL_STORAGE` (maxSdk 28) → gỡ ở `plugins/withReleasePermissions.js` hoặc ghi lý do
+- [x] B-104 🟡 [TC-195] Quyền release còn `FOREGROUND_SERVICE` + `WRITE_EXTERNAL_STORAGE` (maxSdk 28) → gỡ ở `plugins/withReleasePermissions.js` hoặc ghi lý do · giữ WRITE_EXTERNAL_STORAGE (maxSdk 28) có chủ ý, lý do ghi trong ; FOREGROUND_SERVICE đã gỡ
 - Số đo A13 release: khởi động lạnh 2,2–3,1 s · S-06 (20 Applicant) 1,2–1,7 s, cuộn ổn · **S-17 4,5–4,9 s, cuộn 45 % khung trễ → B-71 xác nhận** · Drive SAF ghi/đọc ✅ · rung ✅ · vân tay ✅.
 - [x] B-160 🟠 [S-08, Phương thử A13 27/11] Form đơn mới (chủ nhà nhập đơn) — ảnh / file đã chọn ở "Attach photos of the paper form" (camera / ảnh / PDF) **không xoá được** và **không xem được** (mong đợi giống Documents S-10: thumbnail + chạm xem toàn màn, phóng to / PDF mở được, xoá có xác nhận)
 
@@ -70,10 +70,11 @@
 - Phương xét (không phải lỗi): splash không có dòng "Same criteria for every applicant." (mockup có) · "Explore with a sample rental" vào thẳng S-06 thay vì S-02 · About thiếu "Send feedback" · S-20 bố cục khác mockup (thẻ + chip, tab phòng xuống dòng).
 
 ## Thử lại 27/11 — lỗi còn mở / mới (B-120…B-163)
-- [ ] B-131 🟡 [TC-169, B-58] S-18 sheet "Request missing info" — dòng "You'll get a reminder 2 hours before it ends." cố định kể cả khi chọn "Not now"
-- [ ] B-132 🟡 [TC-168, B-65] S-06 — hub ghi Bea / Chris "New" khi S-18 / S-09 ghi "Waiting" (cũng thấy trên A13 với Priya / Marcus / Dana: hub "New")
-- [ ] B-133 🟡 [TC-167] TESTCASES lệch code — ảnh đơn giấy hiện ở thẻ "Paper form" của S-08, không phải "Other files" → sửa mong đợi TC-167
+- [ ] B-131 🟡 [TC-169, B-58] S-18 sheet "Request missing info" — dòng "You'll get a reminder 2 hours before it ends." cố định kể cả khi chọn "Not now" · **code xong de4c94d** (hộp chỉ hứa nhắc khi có quyền thông báo), chờ thử máy
+- [ ] B-132 🟡 [TC-168, B-65] S-06 — hub ghi Bea / Chris "New" khi S-18 / S-09 ghi "Waiting" (cũng thấy trên A13 với Priya / Marcus / Dana: hub "New") · **code xong de4c94d** (S-06 ghi "Waiting" như S-18), chờ thử máy
+- [x] B-133 🟡 [TC-167] TESTCASES lệch code — ảnh đơn giấy hiện ở thẻ "Paper form" của S-08, không phải "Other files" → sửa mong đợi TC-167 · đã sửa mong đợi TC-167 (de4c94d)
 - [ ] B-151 🟡 [TC-170] Hộp "Get deadline reminders on time?" đã đổi sang hộp riêng của app (fix 4e4a5e0) — chưa thử máy (A13 đã cấp sẵn quyền alarm → không hiện hộp)
-- [ ] B-161 🟡 [TC-190] S-06 hub, 320 dp + chữ 200 % — "APPLICANTS" vỡ "AP/PLI/CA/NT/S" vì "Sorted by received" chiếm chỗ (A13, `qa/runs/2026-11-27-retest-a13-r4.md`)
-- [ ] B-162 🟡 [TC-190] S-02 Rentals, 320 dp + chữ 200 % — "Columbus, OH 43215" gãy giữa từ ("Columb/us, OH") cạnh huy hiệu "Offer out"
-- [ ] B-163 🟡 [TC-188] Sheet "Add applicant" — dòng cuối "…Screening services collect them directly." chạm biểu tượng thanh điều hướng 3 nút (A13), thiếu đệm đáy
+- [ ] B-161 🟡 [TC-190] S-06 hub, 320 dp + chữ 200 % — "APPLICANTS" vỡ "AP/PLI/CA/NT/S" vì "Sorted by received" chiếm chỗ (A13, `qa/runs/2026-11-27-retest-a13-r4.md`) · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
+- [ ] B-162 🟡 [TC-190] S-02 Rentals, 320 dp + chữ 200 % — "Columbus, OH 43215" gãy giữa từ ("Columb/us, OH") cạnh huy hiệu "Offer out" · **code xong de4c94d**, chờ thử máy 320 dp + 200 %
+- [ ] B-163 🟡 [TC-188] Sheet "Add applicant" — dòng cuối "…Screening services collect them directly." chạm biểu tượng thanh điều hướng 3 nút (A13), thiếu đệm đáy · **code xong de4c94d** (đệm đáy theo inset), chờ thử máy A13
+- [ ] B-85 🔴 [TC-144, TC-184, iOS iPad] S-15 — chọn Deny: sheet iPad là thẻ ≈ 590×660 pt nhưng khung cao cả cửa sổ → "Save decision" nằm dưới mép thẻ, không bấm được (run iOS #7, ảnh ipad-light_05a2) · **code xong de4c94d** (khung ≤ 600 pt trên iPad), chờ run iOS
