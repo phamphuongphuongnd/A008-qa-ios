@@ -26,12 +26,20 @@ export default function RentalsScreen() {
   const cleanup = useCleanupReminder(now);
   const actions = useRentalActions();
   const [deleting, setDeleting] = useState<{ id: number; title: string; message: string } | null>(null);
+  const [closing, setClosing] = useState<{ id: number; title: string; message: string } | null>(null);
   const view = rentalsView(filter, counts);
+
+  const close = (id: number) => {
+    const stopped = actions.close(id);
+    showSnackbar({ message: t('units:s02.closedSnack'), actionLabel: t('common:actions.undo'), onAction: () => actions.reopen(id, stopped) });
+  };
 
   const onAction = (id: number, a: SwipeAction) => {
     if (a === 'close') {
-      actions.close(id);
-      showSnackbar({ message: t('units:s02.closedSnack'), actionLabel: t('common:actions.undo'), onAction: () => actions.reopen(id) });
+      // B-61: an offer out / a running First-come clock → ask first (closing stops the clocks and their reminders).
+      const warning = actions.closeWarning(id);
+      if (warning) setClosing({ id, ...warning });
+      else close(id);
     } else if (a === 'reopen') {
       actions.reopen(id);
       showSnackbar({ message: t('units:s02.reopenedSnack') });
@@ -119,6 +127,18 @@ export default function RentalsScreen() {
         </>
       )}
 
+      <ConfirmDialog
+        visible={!!closing}
+        tone="warn"
+        title={closing?.title ?? ''}
+        body={closing?.message}
+        confirmLabel={t('units:s06.closeDialog.confirm')}
+        onCancel={() => setClosing(null)}
+        onConfirm={() => {
+          if (closing) close(closing.id);
+          setClosing(null);
+        }}
+      />
       <ConfirmDialog
         visible={!!deleting}
         title={deleting?.title ?? ''}
