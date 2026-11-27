@@ -11,9 +11,10 @@
  * The KDF cost is written in every file, so `BACKUP_KDF` can be tuned (measure on the A13) without breaking old files.
  */
 import { gcm } from '@noble/ciphers/aes.js';
-import { pbkdf2Async } from '@noble/hashes/pbkdf2.js';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, concatBytes, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
+
+import { pbkdf2Sha256 } from './kdf';
 
 export const MAGIC = utf8ToBytes('EVLBAK');
 export const FORMAT_VERSION = 1;
@@ -24,8 +25,8 @@ const NONCE_LEN = 12;
 const CHECK_LEN = 16;
 
 /**
- * Password → key cost. TODO(A13): time `deriveKey` on the Galaxy A13 (Hermes) and set the highest count that stays
- * under ~3 s; OWASP 2023 suggests 600 000 for PBKDF2-SHA256.
+ * Password → key cost. PBKDF2 runs in native code on the phone (./kdf.ts, B-101: JS took 14 min on the A13 for
+ * 310 000). TODO(A13): time native deriveKey on the A13 release build before raising it (OWASP 2023: 600 000).
  */
 export const BACKUP_KDF = { id: KDF_PBKDF2_SHA256, iterations: 310_000 } as const;
 export const MIN_PASSWORD_LENGTH = 8;
@@ -66,7 +67,7 @@ export async function deriveKey(
   kdf: number = BACKUP_KDF.id,
 ): Promise<BackupKey> {
   if (kdf !== KDF_PBKDF2_SHA256) throw new BackupError('newer_version', `unknown kdf ${kdf}`);
-  const key = await pbkdf2Async(sha256, utf8ToBytes(password.normalize('NFC')), salt, { c: iterations, dkLen: 32, asyncTick: 25 });
+  const key = await pbkdf2Sha256(utf8ToBytes(password.normalize('NFC')), salt, iterations, 32);
   return { kdf, iterations, salt, key };
 }
 

@@ -13,10 +13,15 @@ import { expoNotifications, firstDataAt, refreshReminders } from '@/notification
 import { rescheduleAllNotifications } from '@/notifications/afterRestore';
 import { expoQueueNotifier } from '@/notifications/queueTimersNative';
 
+import { EvenleaseCrypto } from '../../modules/evenlease-crypto';
 import { makeBackupActions } from './actions';
 import { autoBackupFailedAt, backupReminder, backupSnoozedUntil, snoozeBackupReminder, type BackupReminder } from './auto';
 import { clearBackupCache, expoAppFileIO, folderPort, nativeRng, pickBackupFile, pickBackupFolder, shareBackupFile, writeCacheFile } from './native';
+import { installPbkdf2, makePbkdf2 } from './kdf';
 import { hasBackupPassword, lastBackupInfo } from './service';
+
+// B-101: PBKDF2 in native code when the module is in this build and passes its self-check, else JS.
+installPbkdf2(makePbkdf2(EvenleaseCrypto));
 
 export const backupActions = makeBackupActions({
   db,
