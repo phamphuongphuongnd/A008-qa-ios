@@ -66,13 +66,82 @@ export function criterionTitle(c: Criterion): string {
     case 'C6':
       return 'Required documents provided';
     case 'C7':
-      return `Occupancy: up to ${c.params.perBedroom} people per bedroom`;
+      return `Occupancy: up to ${c.params.perBedroom} ${c.params.perBedroom === 1 ? 'person' : 'people'} per bedroom`;
     case 'C8':
       return `Pet policy: ${PET_POLICY_TEXT[c.params.policy](c.params.maxPets)}`;
     case 'C9':
       return `Credit score of at least ${c.params.minScore}`;
     case 'C10':
       return 'Criminal history review (after a conditional offer)';
+    case 'CX':
+      return c.params.title.trim();
+  }
+}
+
+const PET_POLICY_SHORT: Record<PetPolicy, (max: number) => string> = {
+  no_pets: () => 'No pets',
+  cats_only: () => 'Cats only',
+  cats_and_dogs: (max) => `Cats and dogs, max ${max}`,
+  case_by_case: () => 'Pets case by case',
+};
+
+const plural = (n: number, one: string, other: string) => `${n} ${n === 1 ? one : other}`;
+
+/**
+ * Short name for one criterion row of S-09 and its evidence sheet (mockup v2: "Income ≥ 3.0× rent",
+ * "12 months rental history"). The full `criterionTitle` stays on S-04, the published page, S-15 reasons, letters
+ * and the Decision file.
+ */
+export function criterionShortTitle(c: Criterion): string {
+  switch (c.code) {
+    case 'C1':
+      return `Income ≥ ${formatMultiple(c.params.multipleTenths)}× rent`;
+    case 'C2':
+      return c.params.months > 0 ? `${plural(c.params.months, 'month', 'months')} rental history` : 'Rental history';
+    case 'C3':
+      return `No eviction judgment, ${plural(c.params.years, 'yr', 'yrs')}`;
+    case 'C4':
+      return 'Landlord would rent again';
+    case 'C5':
+      return 'No unpaid landlord balance';
+    case 'C6':
+      return 'Required documents';
+    case 'C7':
+      return `Occupancy ≤ ${c.params.perBedroom} per bedroom`;
+    case 'C8':
+      return PET_POLICY_SHORT[c.params.policy](c.params.maxPets);
+    case 'C9':
+      return `Credit score ≥ ${c.params.minScore}`;
+    case 'C10':
+      return 'Criminal history review';
+    case 'CX':
+      return c.params.title.trim();
+  }
+}
+
+/** Row label of the S-17 pinned column (mockup v2: "Income ≥ 3.0×", "Rental history", "Landlord ref."). */
+export function criterionCompareLabel(c: Criterion): string {
+  switch (c.code) {
+    case 'C1':
+      return `Income ≥ ${formatMultiple(c.params.multipleTenths)}×`;
+    case 'C2':
+      return 'Rental history';
+    case 'C3':
+      return 'No eviction';
+    case 'C4':
+      return 'Landlord ref.';
+    case 'C5':
+      return 'Unpaid balance';
+    case 'C6':
+      return 'Documents';
+    case 'C7':
+      return 'Occupancy';
+    case 'C8':
+      return 'Pets';
+    case 'C9':
+      return `Credit ≥ ${c.params.minScore}`;
+    case 'C10':
+      return 'Background';
     case 'CX':
       return c.params.title.trim();
   }

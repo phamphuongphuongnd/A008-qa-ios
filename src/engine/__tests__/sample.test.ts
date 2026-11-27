@@ -114,6 +114,16 @@ describe('§8 #3 Marcus Webb', () => {
   it('issues: rent mismatch +29% and dates; sorted Mismatch → Needs review → Missing', () => {
     expect(e.issues.some((i) => i.code === 'C4' && i.message.includes('+29%'))).toBe(true);
     expect(e.issues.some((i) => i.code === 'C2' && i.message.includes('Jan 2023'))).toBe(true);
+    // B-44: C2 and C4 both see the same dates mismatch — listed once (mockup "4 things to check").
+    expect(e.issues.filter((i) => i.message.includes('Jan 2023'))).toHaveLength(1);
+    expect(e.issues.map((i) => [i.code, i.kind])).toEqual([
+      ['C2', 'mismatch'],
+      ['C4', 'mismatch'],
+      ['C4', 'needs_review'],
+      ['C5', 'missing'],
+    ]);
+    // C4 keeps its own copy for its evidence sheet.
+    expect(cell(e, 'C4').issues.some((i) => i.message.includes('Jan 2023'))).toBe(true);
     const kinds = e.issues.map((i) => i.kind);
     expect(kinds).toEqual([...kinds].sort((a, b) => rank(a) - rank(b)));
     expect(kinds[0]).toBe('mismatch');
