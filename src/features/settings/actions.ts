@@ -36,10 +36,11 @@ export function setAppLock(db: AppDb, on: boolean, cap: AuthCapability): 'ok' | 
 }
 
 /** S-23 PIN (phones with no system lock; also guards leaving Applicant mode). Saves only the salted hash. */
-export function setAppPin(db: AppDb, pin: string, confirm: string, rng: Rng, opts: { enableLock?: boolean } = {}): PinError | null {
+export async function setAppPin(db: AppDb, pin: string, confirm: string, rng: Rng, opts: { enableLock?: boolean } = {}): Promise<PinError | null> {
   const err = validateNewPin(pin, confirm);
   if (err) return err;
-  updateSettings(db, { appPinHash: hashPin(pin, rng(16)), ...(opts.enableLock ? { appLock: true } : {}) });
+  const appPinHash = await hashPin(pin, rng(16)); // B-105: async, off the JS thread when native
+  updateSettings(db, { appPinHash, ...(opts.enableLock ? { appLock: true } : {}) });
   return null;
 }
 

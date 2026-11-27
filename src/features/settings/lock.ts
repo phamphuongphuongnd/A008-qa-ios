@@ -3,10 +3,9 @@
  * biometrics and no passcode), and the lock state machine the root layout's gate runs. The same unlock guards leaving
  * Applicant mode (S-08a/b, 2B) — see `landlordUnlockMethod`.
  */
-import { pbkdf2 } from '@noble/hashes/pbkdf2.js';
-import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 
+import { pbkdf2Sha256 } from '@/backup/kdf';
 import type { AppSettings } from '@/db/repos/settings';
 
 export type LockAfter = AppSettings['lockAfter'];
@@ -118,12 +117,17 @@ export function validateNewPin(pin: string, confirm: string): PinError | null {
   return null;
 }
 
-export function hashPin(pin: string, salt: Uint8Array, iterations = PIN_ITERATIONS): string {
-  const hash = pbkdf2(sha256, utf8ToBytes(pin), salt, { c: iterations, dkLen: 32 });
+/**
+ * B-105: PBKDF2 through @/backup/kdf — native when the module passed its self-check, else @noble's async version.
+ * The old synchronous JS hash froze the JS thread ~1 min on a Galaxy A13 (20 000 rounds at ~350/s), both when setting
+ * the PIN and on every PIN unlock. Same bytes in, same hash out: the stored "p1:…" format is unchanged.
+ */
+export async function hashPin(pin: string, salt: Uint8Array, iterations = PIN_ITERATIONS): Promise<string> {
+  const hash = await pbkdf2Sha256(utf8ToBytes(pin), salt, iterations, 32);
   return `p1:${iterations}:${bytesToHex(salt)}:${bytesToHex(hash)}`;
 }
 
-export function verifyPin(pin: string, stored: string | null): boolean {
+export async function verifyPin(pin: string, stored: string | null): Promise<boolean> {
   if (!stored || !PIN_PATTERN.test(pin)) return false;
   const parts = stored.split(':');
   if (parts.length !== 4 || parts[0] !== 'p1') return false;
@@ -137,7 +141,8 @@ export function verifyPin(pin: string, stored: string | null): boolean {
   } catch {
     return false;
   }
-  const got = pbkdf2(sha256, utf8ToBytes(pin), salt, { c: iterations, dkLen: expected.length });
+  if (expected.length < 1 || expected.length > 64) return false;
+  const got = await pbkdf2Sha256(utf8ToBytes(pin), salt, iterations, expected.length);
   let diff = got.length ^ expected.length;
   for (let i = 0; i < expected.length; i++) diff |= got[i] ^ expected[i];
   return diff === 0;

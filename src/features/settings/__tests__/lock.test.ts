@@ -13,6 +13,9 @@ import {
 } from '../lock';
 import { createLockStore, unlockLandlord, unlockWithPin, withLockSuspended } from '../lockController';
 import type { AuthAdapter } from '../lockNative';
+import { pbkdf2Sync } from 'crypto';
+
+import { installPbkdf2, makePbkdf2, resetPbkdf2, type NativePbkdf2 } from '@/backup/kdf';
 
 jest.mock('../lockNative', () => ({ expoAuthAdapter: {} }));
 
@@ -49,16 +52,39 @@ describe('app PIN', () => {
     expect(validateNewPin('123456', '123456')).toBeNull();
   });
 
-  it('stores a salted hash, never the PIN, and verifies', () => {
-    const stored = hashPin('2468', SALT, 1000);
+  it('stores a salted hash, never the PIN, and verifies', async () => {
+    const stored = await hashPin('2468', SALT, 1000);
     expect(stored).toMatch(/^p1:1000:[0-9a-f]{32}:[0-9a-f]{64}$/);
     expect(stored).not.toContain('2468');
-    expect(verifyPin('2468', stored)).toBe(true);
-    expect(verifyPin('2469', stored)).toBe(false);
-    expect(verifyPin('2468', null)).toBe(false);
-    expect(verifyPin('2468', 'garbage')).toBe(false);
-    expect(verifyPin('2468', 'p1:1000:zz:zz')).toBe(false);
-    expect(hashPin('2468', new Uint8Array(16).fill(4), 1000)).not.toBe(stored);
+    expect(await verifyPin('2468', stored)).toBe(true);
+    expect(await verifyPin('2469', stored)).toBe(false);
+    expect(await verifyPin('2468', null)).toBe(false);
+    expect(await verifyPin('2468', 'garbage')).toBe(false);
+    expect(await verifyPin('2468', 'p1:1000:zz:zz')).toBe(false);
+    expect(await hashPin('2468', new Uint8Array(16).fill(4), 1000)).not.toBe(stored);
+  });
+
+  describe('B-105 PIN hash async (native or JS), same "p1:" format', () => {
+    // Made by the old synchronous build (@noble pbkdf2, 20 000 rounds) — checked against Node / OpenSSL.
+    const OLD = 'p1:20000:03030303030303030303030303030303:307543599dbbc52d9b748b954d2bb1f7c4f675d1e30fb6e32357736e3fb2de29';
+    const nodeNative: NativePbkdf2 = {
+      pbkdf2Sha256: async (p, s, c, len) => pbkdf2Sync(Buffer.from(p, 'hex'), Buffer.from(s, 'hex'), c, len, 'sha256').toString('hex'),
+    };
+    afterEach(() => resetPbkdf2());
+
+    it('a PIN set by the old build still opens — with the JS PBKDF2 and with the native one', async () => {
+      expect(await hashPin('2468', SALT)).toBe(OLD);
+      expect(await verifyPin('2468', OLD)).toBe(true);
+      installPbkdf2(makePbkdf2(nodeNative));
+      expect(await verifyPin('2468', OLD)).toBe(true);
+      expect(await verifyPin('2469', OLD)).toBe(false);
+      expect(await hashPin('2468', SALT)).toBe(OLD);
+    });
+
+    it('never blocks: hashPin / verifyPin return promises', () => {
+      expect(hashPin('2468', SALT, 10)).toBeInstanceOf(Promise);
+      expect(verifyPin('2468', OLD)).toBeInstanceOf(Promise);
+    });
   });
 
   it('waits after 5 wrong PINs, doubling up to 15 min', () => {
@@ -184,12 +210,12 @@ describe('lock controller', () => {
     expect(noLock.authenticate).not.toHaveBeenCalled();
   });
 
-  it('PIN pad: right PIN unlocks, 5 wrong ones block', () => {
+  it('PIN pad: right PIN unlocks, 5 wrong ones block', async () => {
     const store = createLockStore({ ...INITIAL_LOCK, locked: true });
-    const s = { appPinHash: hashPin('1357', SALT, 1000) };
-    for (let i = 0; i < 5; i++) expect(unlockWithPin('0000', s, 1000, store)).toBe('wrong');
-    expect(unlockWithPin('1357', s, 2000, store)).toBe('blocked');
-    expect(unlockWithPin('1357', s, 31_001, store)).toBe('success');
+    const s = { appPinHash: await hashPin('1357', SALT, 1000) };
+    for (let i = 0; i < 5; i++) expect(await unlockWithPin('0000', s, 1000, store)).toBe('wrong');
+    expect(await unlockWithPin('1357', s, 2000, store)).toBe('blocked');
+    expect(await unlockWithPin('1357', s, 31_001, store)).toBe('success');
     expect(store.get().locked).toBe(false);
   });
 
