@@ -58,6 +58,34 @@ describe('S-09 applicant detail', () => {
     expect(JSON.stringify(v)).not.toMatch(/ of \d+ Met/);
   });
 
+  it('B-42: short criterion names and evidence reasons (mockup S-09 Jordan)', () => {
+    const { db, id } = sampleDb();
+    const v = applicantDetailView(loadApplicantReview(db, id('Jordan'), NOW)!);
+    expect(v.criteria.map((c) => c.name)).toEqual([
+      'Income ≥ 3.0× rent',
+      '12 months rental history',
+      'No eviction judgment, 5 yrs',
+      'Landlord would rent again',
+      'No unpaid landlord balance',
+      'Required documents',
+      'Occupancy ≤ 2 per bedroom',
+      'Cats and dogs, max 2',
+      'Criminal history review',
+    ]);
+    const reason = (i: number) => v.criteria[i].reason;
+    expect(reason(2)).toBe('Screening report: no cases found');
+    expect(reason(3)).toBe('Yes · owner confirmed via county records');
+    expect(reason(4)).toBe('Report: no landlord collections');
+    for (const c of v.criteria) expect(c.reason).not.toBe(c.name);
+  });
+
+  it('B-44: Marcus — "4 things to check", the dates mismatch listed once', () => {
+    const { db, id } = sampleDb();
+    const v = applicantDetailView(loadApplicantReview(db, id('Marcus'), NOW)!);
+    expect(v.issues?.title).toBe('4 things to check');
+    expect(v.issues?.items.filter((i) => i.title.includes('Jan 2023'))).toHaveLength(1);
+  });
+
   it('Priya: issues card with actions, sections in plain words', () => {
     const { db, id } = sampleDb();
     const v = applicantDetailView(loadApplicantReview(db, id('Priya'), NOW)!);
@@ -222,6 +250,40 @@ describe('S-17 compare', () => {
     expect(last.cells[v.columns[0].key]).toEqual({ text: '0', tone: 'muted', bold: false });
   });
 
+  it('B-42: short row labels as in the mockup (no cut "At least 12 months of rental or ho…")', () => {
+    const { db, rentalId } = sampleDb();
+    const v = compareView(loadCompare(db, rentalId, { hideClosed: false })!);
+    expect(v.rows.map((r) => r.label)).toEqual([
+      'Income ≥ 3.0×',
+      'Rental history',
+      'No eviction',
+      'Landlord ref.',
+      'Unpaid balance',
+      'Documents',
+      'Occupancy',
+      'Pets',
+      'Background',
+      'Issues',
+    ]);
+  });
+
+  it('B-46: "First-come rules (Seattle)" only for First-come or a WA rental, not the Ohio sample', () => {
+    const { db, rentalId } = sampleDb();
+    const data = loadCompare(db, rentalId, { hideClosed: false })!;
+    expect(data.rentalRow.state).toBe('OH');
+    expect(compareView(data).firstComeGuide).toBe(false);
+    expect(compareView({ ...data, rentalRow: { ...data.rentalRow, state: 'WA' } }).firstComeGuide).toBe(true);
+    expect(compareView({ ...data, rentalRow: { ...data.rentalRow, reviewMode: 'first_come' } }).firstComeGuide).toBe(true);
+    expect(compareView({ ...data, enough: false }).firstComeGuide).toBe(false);
+  });
+
+  it('B-44: Marcus Issues count is 4 (dates mismatch once)', () => {
+    const { db, rentalId } = sampleDb();
+    const v = compareView(loadCompare(db, rentalId, { hideClosed: false })!);
+    const marcus = v.columns.find((c) => c.title === 'Marcus W.')!;
+    expect(v.rows[v.rows.length - 1].cells[marcus.key]).toEqual({ text: '4', tone: 'warn', bold: true });
+  });
+
   it('tap on a cell: evidence sheet of that applicant (same as S-09); Issues row opens S-09', () => {
     const { db, rentalId, id } = sampleDb();
     const data = loadCompare(db, rentalId, { hideClosed: false })!;
@@ -233,7 +295,9 @@ describe('S-17 compare', () => {
     if (tap?.kind !== 'evidence') return;
     const review = loadApplicantReview(db, id('Dana'), NOW)!;
     const s09 = evidenceSheetView(evidenceDetail(review.evaluation.results.find((r) => r.code === 'C1')!, review.bundle, review.applicant));
-    expect(tap.sheet).toEqual({ ...s09, title: `Dana O. · ${s09.title}` });
+    // S-09 sheet uses the short name, S-17 the row label (mockup "Jordan E. · Income ≥ 3.0×").
+    expect(s09.title).toBe('Income ≥ 3.0× rent');
+    expect(tap.sheet).toEqual({ ...s09, title: 'Dana O. · Income ≥ 3.0×' });
     expect(compareCellTap(data, 'issues', dana.key)).toEqual({ kind: 'applicant', href: `/review/applicant/${id('Dana')}` });
     expect(compareCellTap(data, c1.criterionId, 'nobody')).toBeNull();
     expect(compareCellTap(data, 'no-such-criterion', dana.key)).toBeNull();

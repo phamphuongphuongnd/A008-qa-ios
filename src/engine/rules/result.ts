@@ -1,3 +1,4 @@
+import { criterionShortTitle } from '../criteria';
 import type {
   Criterion,
   CriterionResult,
@@ -59,6 +60,7 @@ export function makeResult(c: Criterion, title: string, o: ResultOptions): RuleR
     criterionId: c.id,
     code: c.code,
     title,
+    shortTitle: criterionShortTitle(c),
     outcome: o.outcome,
     evidence,
     source: o.outcome === 'missing' || o.outcome === 'not_reviewed' ? null : (o.source ?? 'application'),

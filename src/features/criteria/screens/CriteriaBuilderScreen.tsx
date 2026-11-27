@@ -1,7 +1,7 @@
 /** S-04 Criteria builder — product.md §5 S-04, §3.2, §3.12, §3.13; mockup v2 "Criteria" + "Guardrails". */
 import { router, useLocalSearchParams } from 'expo-router';
 import { FileQuestion, Plus } from 'lucide-react-native';
-import { useEffect, useRef, useState, type ComponentRef } from 'react';
+import { Children, useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
 
 import { MAX_CUSTOM_CRITERIA, WARNING_MESSAGES, formatUsd } from '@/engine';
@@ -81,6 +81,7 @@ export default function CriteriaBuilderScreen() {
   const footer = criteriaFooter(state, isSetup, smokingDirty);
   const customErr = customTitle.trim() ? customAddError(state.draft, customTitle) : null;
   const atLimit = customCount(state.draft) >= MAX_CUSTOM_CRITERIA;
+  const blocked = customErr?.code === 'prohibited';
 
   const save = (): boolean => {
     const r = ed.save({ smokingPolicy: smokingValue });
@@ -194,10 +195,10 @@ export default function CriteriaBuilderScreen() {
         title={t('units:s04.unlock.title')}
         dirty={!!state.reason.trim()}
         footer={
-          <ButtonBar row>
-            <Button variant="secondary" label={t('common:actions.cancel')} onPress={() => dispatch({ type: 'cancelUnlock' })} />
-            <Button label={t('units:s04.unlock.confirm')} disabled={!state.reason.trim()} onPress={() => dispatch({ type: 'confirmUnlock' })} />
-          </ButtonBar>
+          <SheetButtons>
+            <Button variant="secondary" block label={t('common:actions.cancel')} onPress={() => dispatch({ type: 'cancelUnlock' })} />
+            <Button block label={t('units:s04.unlock.confirm')} disabled={!state.reason.trim()} onPress={() => dispatch({ type: 'confirmUnlock' })} />
+          </SheetButtons>
         }
       >
         <Txt style={[font(400, 14, 20), { color: colors.inkMuted }]}>{t('units:s04.unlock.body')}</Txt>
@@ -218,21 +219,27 @@ export default function CriteriaBuilderScreen() {
         title={t('units:s04.custom.title')}
         dirty={!!customTitle.trim()}
         footer={
-          <ButtonBar row>
-            <Button
-              variant="secondary"
-              label={customErr?.code === 'prohibited' ? t('common:actions.edit') : t('common:actions.cancel')}
-              onPress={() => (customErr?.code === 'prohibited' ? customRef.current?.focus() : closeCustom())}
-            />
-            <Button
-              label={t('units:s04.custom.addAction')}
-              disabled={!customTitle.trim() || !!customErr}
-              onPress={() => {
-                dispatch({ type: 'addCustom', title: customTitle, answeredBy });
-                closeCustom();
-              }}
-            />
-          </ButtonBar>
+          // Mockup "Custom criterion blocked": Edit / Add share the row, then the legal line — no grey bar.
+          <View style={styles.sheetFooter}>
+            <SheetButtons>
+              <Button
+                variant="secondary"
+                block
+                label={blocked ? t('common:actions.edit') : t('common:actions.cancel')}
+                onPress={() => (blocked ? customRef.current?.focus() : closeCustom())}
+              />
+              <Button
+                block
+                label={t('units:s04.custom.addAction')}
+                disabled={!customTitle.trim() || !!customErr}
+                onPress={() => {
+                  dispatch({ type: 'addCustom', title: customTitle, answeredBy });
+                  closeCustom();
+                }}
+              />
+            </SheetButtons>
+            <LegalFooter />
+          </View>
         }
       >
         <TextField
@@ -241,8 +248,16 @@ export default function CriteriaBuilderScreen() {
           value={customTitle}
           maxLength={80}
           onChangeText={setCustomTitle}
-          error={customErr?.message ?? null}
+          // A blocked word is a fair-housing warning (orange box below), not a typing error.
+          error={blocked ? null : (customErr?.message ?? null)}
+          state={blocked ? 'error' : undefined}
+          accessibilityHint={blocked ? customErr?.message : undefined}
         />
+        {blocked ? (
+          <View accessibilityLiveRegion="polite">
+            <Banner tone="warn">{customErr?.message}</Banner>
+          </View>
+        ) : null}
         <Txt variant="label">{t('units:s04.custom.whoAnswers')}</Txt>
         <Segmented
           options={[
@@ -253,7 +268,6 @@ export default function CriteriaBuilderScreen() {
           onChange={setAnsweredBy}
           accessibilityLabel={t('units:s04.custom.whoAnswers')}
         />
-        <LegalFooter />
       </Sheet>
 
       {/* Voucher option off (§3.12) */}
@@ -273,7 +287,14 @@ export default function CriteriaBuilderScreen() {
   );
 }
 
+/** Two equal buttons on one row inside a sheet (ButtonBar is the screen's bottom bar: own background, border, inset). */
+function SheetButtons({ children }: { children: ReactNode }) {
+  return <View style={styles.sheetButtons}>{Children.map(children, (c) => (c ? <View style={{ flex: 1 }}>{c}</View> : null))}</View>;
+}
+
 const styles = StyleSheet.create({
+  sheetButtons: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sheetFooter: { gap: 12 },
   progress: { paddingHorizontal: 16, paddingBottom: 8 },
   intro: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 6 },
   policy: { paddingVertical: 14, paddingHorizontal: 16, gap: 8 },

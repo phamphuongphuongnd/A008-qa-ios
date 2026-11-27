@@ -124,6 +124,12 @@ describe('C4 landlord reference (§3.6)', () => {
     expect(r.issues.map((i) => i.message)).toContain('Landlord identity not confirmed');
     expect(r.issues.every((i) => ['mismatch', 'needs_review', 'missing'].includes(i.kind))).toBe(true);
   });
+  it('B-42: Met reason is the evidence, not the criterion again', () => {
+    expect(run([ref('cur', { confirmSource: 'county_records' })]).reason).toBe('Yes · owner confirmed via county records');
+    expect(run([ref('cur', { confirmSource: 'management_website' })]).reason).toBe("Yes · owner confirmed via the management company's website");
+    expect(run([ref('cur', { confirmSource: null })]).reason).toBe('Yes · owner confirmed');
+    expect(run([ref('cur', { ownerConfirmed: false })]).reason).toBe('Yes · owner not confirmed yet');
+  });
   it('rent more than 5% off → Mismatch, outcome unchanged; exactly 5% is fine', () => {
     const over = run([ref('cur', { rentCents: 126001 })]);
     expect(over.outcome).toBe('met');

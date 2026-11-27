@@ -50,6 +50,10 @@ describe('C3 eviction (§3.5)', () => {
   it('no cases → Met (Verified)', () => {
     expect([c3([], 'no').outcome, c3([], 'no').evidence]).toEqual(['met', 'verified']);
   });
+  it('B-42: Met reason names the report — "no cases found", or none in the lookback when older ones exist', () => {
+    expect(c3([]).reason).toBe('Screening report: no cases found');
+    expect(c3([{ date: '2015-03', outcome: 'judgment' }]).reason).toBe('Screening report: no cases in the past 5 years');
+  });
   it('no report: application No → Met Claimed; Yes → Needs review Claimed; blank → Missing', () => {
     expect([c3(null, 'no', false).outcome, c3(null, 'no', false).evidence]).toEqual(['met', 'claimed']);
     expect([c3(null, 'yes', false).outcome, c3(null, 'yes', false).evidence]).toEqual(['needs_review', 'claimed']);
@@ -89,6 +93,10 @@ describe('C5 unpaid landlord balance (§3.7)', () => {
   it('report None → Met; landlord No → Met', () => {
     expect(c5(report()).outcome).toBe('met');
     expect(c5(null, [ref('no')]).outcome).toBe('met');
+  });
+  it('B-42: Met reason is the source, not the criterion again', () => {
+    expect(c5(report()).reason).toBe('Report: no landlord collections');
+    expect(c5(null, [ref('no')]).reason).toBe('Landlord says nothing is owed');
   });
   it('landlord "Yes $500" → Not met', () => {
     const r = c5(null, [ref('yes', 50000)]);

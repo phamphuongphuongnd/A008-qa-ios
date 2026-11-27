@@ -10,6 +10,7 @@ import {
   activeCriteria,
   formatDate,
   formatUsd,
+  reviewModeHint,
   type ApplicantStatus,
   type ConditionKind,
   type CriterionCode,
@@ -130,7 +131,7 @@ export function applicantDetailView(r: ApplicantReview): ApplicantDetailView {
       outcome: issue.kind === 'missing' ? 'missing' : issue.kind === 'needs_review' ? 'needs_review' : issue.outcome,
       evidence: issue.kind === 'mismatch' ? 'mismatch' : undefined,
       title: issue.message,
-      detail: result?.title ?? '',
+      detail: result?.shortTitle ?? '',
       action: { label: t(`decision:${ISSUE_ACTION_KEYS[issue.action]}` as 'decision:issueAction.addReport'), href: issueHref(issue.action, r.applicant) },
     };
   });
@@ -145,7 +146,7 @@ export function applicantDetailView(r: ApplicantReview): ApplicantDetailView {
     issues: items.length ? { title: t('decision:s09.issuesTitle', { count: items.length }), items } : null,
     criteria: r.evaluation.results.map((x) => ({
       key: x.criterionId,
-      name: x.title,
+      name: x.shortTitle,
       outcome: x.outcome,
       evidence: x.evidence ?? undefined,
       reason: x.reason,
@@ -259,7 +260,7 @@ export function evidenceSheetView(d: EvidenceDetail): EvidenceSheetView {
   }
   if (d.documents.length) rows.push({ label: t('decision:evidenceSheet.files'), value: t('decision:evidenceSheet.fileCount', { count: d.documents.length }) });
   return {
-    title: r.title,
+    title: r.shortTitle,
     outcome: r.outcome,
     evidence: r.evidence ?? undefined,
     reason: r.reason,
@@ -563,18 +564,21 @@ export type CompareViewCell = { outcome: Outcome; evidence?: Evidence } | { text
 
 export interface CompareView {
   state: 'empty' | 'all_hidden' | 'table';
+  /** Guide "First-come rules (Seattle)" only where it applies: First-come mode or a WA rental (B-46). */
+  firstComeGuide: boolean;
   columns: CompareViewColumn[];
   rows: { key: string; label: string; bold?: boolean; cells: Record<string, CompareViewCell> }[];
 }
 
 /** S-17: columns in received order (never re-sorted), last row "Issues". */
 export function compareView(d: CompareData): CompareView {
-  if (!d.enough) return { state: 'empty', columns: [], rows: [] };
+  const firstComeGuide = d.rentalRow.reviewMode === 'first_come' || reviewModeHint(d.rentalRow.state) != null;
+  if (!d.enough) return { state: 'empty', firstComeGuide, columns: [], rows: [] };
   const cols = d.table.columns.map((c) => ({ key: c.applicantId, title: shortName(c.fullName), subtitle: shortStamp(c.receivedAt) }));
-  if (!cols.length) return { state: 'all_hidden', columns: [], rows: [] };
+  if (!cols.length) return { state: 'all_hidden', firstComeGuide, columns: [], rows: [] };
   const rows: CompareView['rows'] = d.table.rows.map((r) => ({
     key: r.criterionId,
-    label: r.title,
+    label: r.label,
     cells: Object.fromEntries(
       r.cells.map((cell, i) => [cols[i].key, cell.evidence ? { outcome: cell.outcome, evidence: cell.evidence } : { outcome: cell.outcome }]),
     ),
@@ -585,7 +589,7 @@ export function compareView(d: CompareData): CompareView {
     bold: true,
     cells: Object.fromEntries(d.table.issueCounts.map((n, i) => [cols[i].key, { text: String(n), tone: n > 0 ? 'warn' : 'muted', bold: n > 0 }])),
   });
-  return { state: 'table', columns: cols, rows };
+  return { state: 'table', firstComeGuide, columns: cols, rows };
 }
 
 /** What a tap on an S-17 cell opens. */
@@ -603,7 +607,8 @@ export function compareCellTap(d: CompareData, rowKey: string, applicantId: stri
   const result = d.table.evaluations[i]?.results.find((r) => r.criterionId === rowKey);
   if (!result) return null;
   const sheet = evidenceSheetView(evidenceDetail(result, bundle, d.applicants[i]));
-  return { kind: 'evidence', sheet: { ...sheet, title: t('decision:s17.sheetTitle', { name: shortName(d.table.columns[i].fullName), criterion: sheet.title }) } };
+  const label = d.table.rows.find((r) => r.criterionId === rowKey)?.label ?? sheet.title;
+  return { kind: 'evidence', sheet: { ...sheet, title: t('decision:s17.sheetTitle', { name: shortName(d.table.columns[i].fullName), criterion: label }) } };
 }
 
 // ---------------------------------------------------------------------------

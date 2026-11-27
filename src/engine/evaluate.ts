@@ -2,7 +2,7 @@
  * Applicant evaluation (§3.1): one result per enabled criterion, the Issues list and the summary line.
  * No total score, no ranking: Compare columns follow the order applications were received.
  */
-import { activeCriteria, criterionTitle } from './criteria';
+import { activeCriteria, criterionCompareLabel, criterionTitle } from './criteria';
 import { instantMs } from './dates';
 import { evaluateBackground } from './rules/background';
 import { evaluateLandlordReference, evaluateRentalHistory } from './rules/history';
@@ -66,6 +66,21 @@ export function sortIssues(issues: readonly Issue[], order: readonly string[]): 
     .map((x) => x.issue);
 }
 
+/**
+ * One fact, one Issue: C2 and C4 both check the landlord's dates for the same Residence, so the same
+ * "Landlord says Jan 2023 – now; application says Mar 2022 – now" would be listed twice (B-44). The first one in
+ * criterion order stays; each criterion result keeps its own copy for its evidence sheet.
+ */
+export function uniqueMismatches(issues: readonly Issue[]): Issue[] {
+  const seen = new Set<string>();
+  return issues.filter((i) => {
+    if (i.kind !== 'mismatch') return true;
+    if (seen.has(i.message)) return false;
+    seen.add(i.message);
+    return true;
+  });
+}
+
 export function summarize(results: readonly CriterionResult[]): ApplicantSummary {
   const missingCount = results.filter((r) => r.outcome === 'missing').length;
   return {
@@ -86,9 +101,11 @@ export function evaluateApplicant(
   return {
     applicantId: applicant.id,
     results,
-    issues: sortIssues(
-      results.flatMap((r) => r.issues),
-      active.map((c) => c.id),
+    issues: uniqueMismatches(
+      sortIssues(
+        results.flatMap((r) => r.issues),
+        active.map((c) => c.id),
+      ),
     ),
     summary: summarize(results),
   };
@@ -109,7 +126,8 @@ export interface CompareCell {
 export interface CompareTable {
   /** "Not a ranking. Columns are in the order applications were received." */
   columns: { applicantId: string; fullName: string; receivedAt: string; status: ApplicantStatus; summary: ApplicantSummary }[];
-  rows: { criterionId: string; code: Criterion['code']; title: string; cells: CompareCell[] }[];
+  /** `title` = full criterion text; `label` = short S-17 row label ("Income ≥ 3.0×"). */
+  rows: { criterionId: string; code: Criterion['code']; title: string; label: string; cells: CompareCell[] }[];
   /** Issue count per column (last row "Issues"). */
   issueCounts: number[];
   evaluations: ApplicantEvaluation[];
@@ -139,6 +157,7 @@ export function compareApplicants(
       criterionId: c.id,
       code: c.code,
       title: criterionTitle(c),
+      label: criterionCompareLabel(c),
       cells: evaluations.map((e) => ({ outcome: e.results[row].outcome, evidence: e.results[row].evidence })),
     })),
     issueCounts: evaluations.map((e) => e.issues.length),

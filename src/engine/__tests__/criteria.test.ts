@@ -2,6 +2,8 @@
 // §3.2 defaults, §3.12 guardrails, §3.13 lock & history.
 import {
   criteriaWarnings,
+  criterionCompareLabel,
+  criterionShortTitle,
   criterionTitle,
   customTitleError,
   defaultCriteria,
@@ -25,6 +27,42 @@ describe('§3.2 template', () => {
     ]);
     expect(criterionTitle(d[8])).toBe('Credit score of at least 600');
     expect(validateCriteria(d)).toEqual([]);
+  });
+  it('B-56: C7 "1 person" / "2 people" per bedroom', () => {
+    const c7 = defaultCriteria().find((c) => c.code === 'C7')!;
+    expect(criterionTitle({ ...c7, params: { perBedroom: 1 } } as Criterion)).toBe('Occupancy: up to 1 person per bedroom');
+    expect(criterionTitle(c7)).toBe('Occupancy: up to 2 people per bedroom');
+  });
+  it('B-42: short names (S-09) and row labels (S-17) follow the mockup; full titles unchanged', () => {
+    const d = defaultCriteria().map((c) => ({ ...c, enabled: true }));
+    expect(d.map(criterionShortTitle)).toEqual([
+      'Income ≥ 3.0× rent',
+      '12 months rental history',
+      'No eviction judgment, 5 yrs',
+      'Landlord would rent again',
+      'No unpaid landlord balance',
+      'Required documents',
+      'Occupancy ≤ 2 per bedroom',
+      'Pets case by case',
+      'Credit score ≥ 600',
+      'Criminal history review',
+    ]);
+    expect(d.map(criterionCompareLabel)).toEqual([
+      'Income ≥ 3.0×',
+      'Rental history',
+      'No eviction',
+      'Landlord ref.',
+      'Unpaid balance',
+      'Documents',
+      'Occupancy',
+      'Pets',
+      'Credit ≥ 600',
+      'Background',
+    ]);
+    const c2 = d[1] as Criterion;
+    expect(criterionShortTitle({ ...c2, params: { months: 1 } } as Criterion)).toBe('1 month rental history');
+    expect(criterionShortTitle({ ...c2, params: { months: 0 } } as Criterion)).toBe('Rental history');
+    expect(criterionShortTitle({ ...d[2], params: { years: 1 } } as Criterion)).toBe('No eviction judgment, 1 yr');
   });
   it('parameter ranges: 2.0–4.0×, 0–60 months, 1–7 years', () => {
     const d = defaultCriteria();
