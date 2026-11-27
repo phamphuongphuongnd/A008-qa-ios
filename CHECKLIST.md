@@ -49,7 +49,7 @@
 - [x] F-15 Decision file PDF (S-19) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [x] F-16 Move-in checklist (S-20) — ✅ máy ảo release 27/11 (còn 🟡 trong BUGS)
 - [x] F-17 Data cleanup (S-24) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
-- [ ] F-18 Backup & restore mã hoá + tự động + nhắc (S-22)
+- [x] F-18 Backup & restore mã hoá + tự động + nhắc (S-22) — ✅ máy ảo release + A13 27/11 (sao lưu đầu < 2 s trên A13)
 - [ ] F-19 Settings, App lock, Guide, Legal, Delete all (S-21, S-23, S-25 – S-27)
 - [ ] Thử máy dồn từ Phase 2: dev client mới (icon/splash), SQLite migration thật, files native, PDF + expo-print, formSheet/sheet kéo, ô ký trong ScrollView, 320 dp/200 %, S-01 gate + S-27 về S-01, App lock + withLockSuspended, Applicant mode qua khởi động lại, đồng hồ 72/48 h + thông báo → S-18, sao lưu nền + đo PBKDF2, iOS bookmark thư mục
 - [ ] Ghép nhánh, toàn bộ test xanh + cài chạy trên Galaxy A13 → gộp `dev` → `main`
