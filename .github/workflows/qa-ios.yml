@@ -96,7 +96,10 @@ jobs:
 
       - name: Local module linked (ios-files)
         if: steps.appcache.outputs.cache-hit != 'true'
-        run: grep -q "IosFiles" ios/Podfile.lock && echo "IosFiles pod linked" || { echo "::error::modules/ios-files not autolinked"; exit 1; }
+        run: |
+          for P in IosFiles EvenleaseCrypto; do
+            grep -q "$P" ios/Podfile.lock && echo "$P pod linked" || { echo "::error::local module pod $P not autolinked"; exit 1; }
+          done
 
       - name: xcodebuild Release (simulator, unsigned)
         if: steps.appcache.outputs.cache-hit != 'true'
@@ -113,6 +116,8 @@ jobs:
           CODE=$?
           set -e
           grep -E "error:|\*\* BUILD" build/xcodebuild.log | head -100 || true
+          # Local Swift modules really compiled (evenlease-crypto had never been built before r3).
+          grep -E "SwiftCompile.*(EvenleaseCryptoModule|IosFilesModule)|CompileSwift.*EvenleaseCrypto" build/xcodebuild.log | head -6 || echo "no SwiftCompile line for local modules"
           if [ $CODE -ne 0 ]; then tail -150 build/xcodebuild.log; exit $CODE; fi
           APP=$(ls -d build/dd/Build/Products/Release-iphonesimulator/*.app | head -1)
           mkdir -p build/app
