@@ -3,7 +3,7 @@
 > Brief tĩnh của app. **≤ 60 dòng, không ghi lịch sử** (lịch sử ở git + `memory/sessions/`).
 > Tiến độ: `CHECKLIST.md` · Tính năng: `product.md` · Kế hoạch phase: `PLAN.md` · Khảo sát: `research.md` · Ý tưởng gốc: `y-tuong.md`.
 
-**Đang ở:** Bước 4 — dev 6b1fea8 đóng băng, TESTCASES 200 case (124 T ✅, 76 M chưa chạy); iOS run Actions (repo A008-qa-ios) chờ đọc kết quả; Android máy ảo kẹt prebuild, chưa chạy (2026-11-26). Mockup v2 Indigo: https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (`design/v2-indigo/`)
+**Đang ở:** Bước 3→4→5 gộp lại để chốt: dev 0593a53 (jest 863, 37+ lỗi đã sửa 4 lượt); thử lại release R8 trên 3 máy ảo + A13 xong phần lớn. Còn: F-19 (xác nhận B-140 PIN dọc, màn khoá khi khởi động lạnh), iOS r3b chưa đọc (B-85 🔴? iPad S-15 mất Save), 🟡 B-131/B-132/B-133 → rồi gộp dev→main (2026-11-27). Mockup v2 Indigo: https://claude.ai/artifact/8BHE1J66vSHmZdEVKMBaZV (`design/v2-indigo/`)
 
 ## Brief
 - **Mã app / thư mục:** `A008-evenlease` → `apps/A008-evenlease/`
