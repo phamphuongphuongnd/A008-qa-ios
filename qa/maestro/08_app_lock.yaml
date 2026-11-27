@@ -3,7 +3,7 @@ name: 08_app_lock
 ---
 # S-23 on a simulator (no Face ID enrolled, no passcode) → app PIN path. Restart → lock screen → PIN unlocks.
 - runFlow: common/settings.yaml
-- tapOn: "App lock"
+- tapOn: "App lock.*"
 - waitForAnimationToEnd:
     timeout: 3000
 - takeScreenshot: ${LANE}_08a_s23

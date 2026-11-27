@@ -21,7 +21,15 @@ name: 05_decision_letter
     visible: "Choose a decision"
     timeout: 15000
 - takeScreenshot: ${LANE}_05a_s15
+- scrollUntilVisible:
+    element:
+      text: "Deny"
+    centerElement: true
+    timeout: 10000
 - tapOn: "Deny"
+- waitForAnimationToEnd:
+    timeout: 3000
+- takeScreenshot: ${LANE}_05a2_deny_selected
 - scrollUntilVisible:
     element:
       text: ".*unpaid balance.*"
@@ -39,9 +47,15 @@ name: 05_decision_letter
 - takeScreenshot: ${LANE}_05c_notice_required
 - tapOn: "Create notice"
 - extendedWaitUntil:
-    visible: "Preview PDF"
+    visible: ".*(Share PDF|Preview PDF).*"
     timeout: 15000
 - takeScreenshot: ${LANE}_05d_s16_letter
+# "Preview PDF" is a text button inside the letter body: below the fold on small iPhones (run 45936078073).
+- scrollUntilVisible:
+    element:
+      text: "Preview PDF"
+    centerElement: true
+    timeout: 15000
 - tapOn: "Preview PDF"
 - waitForAnimationToEnd:
     timeout: 8000

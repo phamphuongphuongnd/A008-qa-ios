@@ -6,10 +6,10 @@ name: 06_settings
 - takeScreenshot: ${LANE}_06a_settings
 - scrollUntilVisible:
     element:
-      text: "About"
+      text: ".*About.*"
     timeout: 15000
 - takeScreenshot: ${LANE}_06b_settings_bottom
-- tapOn: "About"
+- tapOn: ".*About.*"
 - extendedWaitUntil:
     visible: "No account.*"
     timeout: 10000

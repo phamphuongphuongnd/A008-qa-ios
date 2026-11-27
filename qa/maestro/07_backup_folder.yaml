@@ -5,7 +5,7 @@ name: 07_backup_folder
 # (On My iPhone), RESTART the app, back up again into the folder through the stored bookmark → "Backup saved.".
 # run-ios.sh then checks the files really are in the simulator's "On My iPhone" storage.
 - runFlow: common/settings.yaml
-- tapOn: "Backup & restore"
+- tapOn: ".*Backup & restore.*"
 - extendedWaitUntil:
     visible: "Back up now"
     timeout: 10000
@@ -57,7 +57,7 @@ name: 07_backup_folder
 - takeScreenshot: ${LANE}_07f_weekly_on
 # Restart: the security-scoped URL died with the process; only the bookmark is left.
 - runFlow: common/settings.yaml
-- tapOn: "Backup & restore"
+- tapOn: ".*Backup & restore.*"
 - extendedWaitUntil:
     visible: "Folder:.*"
     timeout: 10000

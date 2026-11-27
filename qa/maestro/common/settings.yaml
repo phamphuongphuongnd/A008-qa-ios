@@ -7,5 +7,5 @@ appId: com.maglobal.evenlease
     text: "Settings(, tab.*)?"
     index: 0
 - extendedWaitUntil:
-    visible: "Backup & restore"
+    visible: ".*Backup & restore.*"
     timeout: 15000
