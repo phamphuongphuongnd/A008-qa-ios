@@ -38,12 +38,22 @@ export function appLockRowValue(s: Pick<AppSettings, 'appLock' | 'appPinHash'>, 
   return t('system:lock.method.device');
 }
 
-export function biometricLabel(kind: BiometricKind, ios: boolean): string {
-  if (kind === 'face') return t(ios ? 'system:lock.method.faceId' : 'system:lock.method.face');
-  if (kind === 'fingerprint') return t(ios ? 'system:lock.method.touchId' : 'system:lock.method.fingerprint');
-  if (kind === 'iris') return t('system:lock.method.iris');
-  if (kind === 'faceOrFingerprint') return t('system:lock.method.faceOrFingerprint');
-  return t('system:lock.method.biometric');
+/**
+ * "Fingerprint or face" on its own (S-21 row value); `inSentence` → "fingerprint or face" for "Require … to open"
+ * (B-150: no capital mid-sentence). Face ID / Touch ID are names and keep their capitals.
+ */
+export function biometricLabel(kind: BiometricKind, ios: boolean, inSentence = false): string {
+  const key =
+    kind === 'face'
+      ? ios
+        ? 'faceId'
+        : 'face'
+      : kind === 'fingerprint'
+        ? ios
+          ? 'touchId'
+          : 'fingerprint'
+        : kind;
+  return inSentence ? t(`system:lock.methodInSentence.${key}`) : t(`system:lock.method.${key}`);
 }
 
 /** S-21 "Data cleanup" value: "None" or "2 rentals" (closed rentals still holding not-selected applicants' data). */
