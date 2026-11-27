@@ -32,14 +32,15 @@ function StartBody() {
   const [mode] = useApplicantMode();
   const rental = useIntakeRental(db, rentalId);
 
-  // Only reachable after S-07 turned the mode on for this rental.
+  // Only reachable after S-07 turned the mode on for this rental. "Back to Rentals": dismissTo, not replace — the tabs
+  // are usually underneath already (deep link / Back after the session ended), replace stacked a second Rentals.
   if (mode.phase !== 'start' || mode.rentalId !== rentalId || !rental)
     return (
       <Screen header={null}>
         <EmptyState
           icon={Smartphone}
           title={t('intake:s08a.notActive')}
-          primary={mode.phase === 'off' ? { label: t('intake:s08a.backToRentals'), onPress: () => router.replace(routes.rentals()) } : undefined}
+          primary={mode.phase === 'off' ? { label: t('intake:s08a.backToRentals'), onPress: () => router.dismissTo(routes.rentals()) } : undefined}
         />
       </Screen>
     );
