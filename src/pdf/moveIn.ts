@@ -7,7 +7,7 @@ import type { MoveInRoom } from '@/db/model';
 import type { MoveInDraft } from '@/features/movein/model';
 import { t } from '@/i18n';
 
-import { date, dateTime, html, pdfDocument, printToPdfAndShare, raw, section, table, type PdfAdapter, type PdfShareResult, type SafeHtml } from './shell';
+import { date, dateTime, html, pdfDocument, printToPdfAndShare, raw, refFileName, section, table, type PdfAdapter, type PdfShareResult, type SafeHtml } from './shell';
 
 export interface MoveInPdfInput {
   /** "1428 Maple St, Unit B, Columbus, OH 43215". */
@@ -114,10 +114,10 @@ ${section(t('system:s20.signatures'), html`<div class="sigs">${signatureBlock('l
   return pdfDocument({ title: t('system:s20.pdf.title'), subtitle: input.address, body });
 }
 
-/** "Move-in checklist - 1428 Maple St Unit B.pdf" (no tenant name in the file name). */
-export const moveInFileName = (street: string) => t('system:s20.pdf.fileName', { address: street });
+/** "Move-in checklist - rental 3 - 2026-11-27" (.pdf added at print): type + rental id + date, never the tenant's name or the address (TC-123, B-49). */
+export const moveInFileName = (rentalId: number, at?: Date) => refFileName(t('system:s20.pdf.title'), { kind: 'rental', id: rentalId }, at);
 
 /** Print + share sheet. */
-export function exportMoveInPdf(input: MoveInPdfInput, street: string, adapter?: PdfAdapter): Promise<PdfShareResult> {
-  return printToPdfAndShare(moveInHtml(input), moveInFileName(street), { dialogTitle: t('system:s20.exportPdf'), adapter });
+export function exportMoveInPdf(input: MoveInPdfInput, rentalId: number, adapter?: PdfAdapter, at?: Date): Promise<PdfShareResult> {
+  return printToPdfAndShare(moveInHtml(input), moveInFileName(rentalId, at), { dialogTitle: t('system:s20.exportPdf'), adapter });
 }

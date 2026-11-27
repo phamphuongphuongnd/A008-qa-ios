@@ -16,7 +16,7 @@ export function blankApplicationForRental(db: AppDb, rentalId: number): { html: 
       customQuestions: r.customQuestions,
       requiredDocuments: r.requiredLabels,
     }),
-    fileName: blankApplicationFileName(r.address),
+    fileName: blankApplicationFileName(rentalId),
   };
 }
 

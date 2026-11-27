@@ -346,7 +346,10 @@ export interface IncomeMetrics {
 export interface CriterionResult {
   criterionId: string;
   code: CriterionCode;
+  /** Full criterion text (`criterionTitle`): S-04, published page, reasons, letters, Decision file. */
   title: string;
+  /** Short name (`criterionShortTitle`): S-09 rows and the evidence sheet. */
+  shortTitle: string;
   outcome: Outcome;
   /** null when there is nothing to grade (Missing / Not reviewed). */
   evidence: Evidence | null;

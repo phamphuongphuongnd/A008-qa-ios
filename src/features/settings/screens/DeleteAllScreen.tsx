@@ -23,7 +23,9 @@ export default function DeleteAllScreen() {
     setBusy(true);
     try {
       await settingsActions.deleteAll();
-      router.replace(routes.onboarding());
+      // B-40: back down to the tabs; with `onboarded` off the root stack's guard swaps them for S-01 → stack [S-01].
+      // (Replacing S-27 with S-01 raced the settings store: S-01 was still guarded → empty S-02 instead.)
+      router.dismissTo(routes.rentals());
       showSnackbar({ message: t('system:s27.done') });
     } finally {
       setBusy(false);

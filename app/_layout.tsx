@@ -7,7 +7,6 @@ import {
   Inter_700Bold,
   useFonts,
 } from '@expo-google-fonts/inter';
-import { Stack } from 'expo-router';
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-navigation';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -24,8 +23,10 @@ import { useApplicantModeGuard } from '@/features/intake/applicantMode/hooks';
 import { settingsPersistence } from '@/features/intake/applicantMode/persistence';
 import { hydrateApplicantMode, useApplicantMode } from '@/features/intake/applicantMode/store';
 import { isActive as applicantModeOn } from '@/features/intake/applicantMode/machine';
-import { LockScreen } from '@/features/settings/components/LockScreen';
+import { LockScreen, LockShield } from '@/features/settings/components/LockScreen';
 import { useAppLockGate, useOnboarded } from '@/features/settings/hooks';
+import { isLockVisible } from '@/features/settings/lock';
+import { ROOT_STACK_SETTINGS, RootNavigator } from '@/navigation/RootNavigator';
 import { useNotificationSetup } from '@/notifications';
 import { RouterBridge } from '@/services/router';
 import { useTheme } from '@/theme';
@@ -39,7 +40,7 @@ const RUNTIME_FONTS =
   Platform.OS === 'android' ? {} : { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold };
 
 /** Deep links (evenlease://units/1, a timer notification → /review/rental/1/queue) keep the tabs underneath for Back. */
-export const unstable_settings = { initialRouteName: '(tabs)' };
+export const unstable_settings = ROOT_STACK_SETTINGS;
 
 /**
  * Root stack: the 3 tabs at the bottom, every other screen pushed above them (no tab bar), see docs/ROUTES.md.
@@ -47,7 +48,7 @@ export const unstable_settings = { initialRouteName: '(tabs)' };
  * - 1C: database migrations run before the first screen (below).
  * - 1D: AppThemeProvider (settings.theme; Settings › Appearance calls setThemePreference from '@/theme/preference'),
  *   system bars, SnackbarHost (showSnackbar from '@/ui').
- * - 2E: onboarding guard (Stack.Protected on `onboarded`), App lock gate (LockScreen over the stack), notification
+ * - 2E: onboarding guard (Stack.Protected on `onboarded`, in RootNavigator), App lock gate (LockScreen over the stack), notification
  *   channels + tap → `data.url`, automatic backup when due + background task registration (index.ts defines it).
  * - 2B: Applicant mode restored from settings after migrations; guard keeps the router inside `applicants/mode/*`.
  */
@@ -97,6 +98,7 @@ function RootStack() {
   const onboarded = useOnboarded();
   const lock = useAppLockGate();
   const [applicantMode] = useApplicantMode();
+  const lockShown = isLockVisible(onboarded, lock.locked, applicantModeOn(applicantMode));
   useEffect(() => {
     if (!onboarded) return;
     registerBackupTask();
@@ -120,29 +122,14 @@ function RootStack() {
       {/* A006 B-23: keeps `router` from @/services/router bound to the live tree after a config change. */}
       <RouterBridge />
       <ApplicantModeGuard />
-      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.surface0 } }}>
-        <Stack.Protected guard={onboarded}>
-          <Stack.Screen name="(tabs)" />
-        </Stack.Protected>
-        <Stack.Protected guard={!onboarded}>
-          <Stack.Screen name="onboarding/index" options={{ gestureEnabled: false }} />
-        </Stack.Protected>
-        {/* Sheets: S-07 Add applicant, S-15 Decision. */}
-        <Stack.Screen name="applicants/add" options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents' }} />
-        <Stack.Screen
-          name="review/applicant/[id]/decision"
-          options={{ presentation: 'formSheet', sheetAllowedDetents: 'fitToContents' }}
-        />
-        {/* Applicant mode (S-08a → S-08 → S-08b): full screen, no swipe back; leaving needs the landlord's lock (2B). */}
-        <Stack.Screen name="applicants/mode/start/[rentalId]" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="applicants/mode/form/[id]" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="applicants/mode/done/[id]" options={{ gestureEnabled: false }} />
-        <Stack.Screen name="dev/gallery" />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      {/* Tabs + every pushed screen; onboarding gate (B-40) inside, see src/navigation/RootNavigator.tsx.
+          B-70: while the lock is up, screen readers can't reach the screens behind it. */}
+      <LockShield hidden={lockShown}>
+        <RootNavigator onboarded={onboarded} contentStyle={{ backgroundColor: colors.surface0 }} />
+      </LockShield>
       <NotificationSetup />
       {/* 2E App lock; the applicant holding the phone (Applicant mode) never sees it — 2B has its own exit lock. */}
-      {onboarded && lock.locked && !applicantModeOn(applicantMode) ? <LockScreen pinBlockedUntil={lock.pinBlockedUntil} /> : null}
+      {lockShown ? <LockScreen pinBlockedUntil={lock.pinBlockedUntil} /> : null}
     </ThemeProvider>
   );
 }

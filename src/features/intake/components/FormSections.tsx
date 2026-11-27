@@ -9,6 +9,7 @@ import { View } from 'react-native';
 import type { PetKind } from '@/engine';
 import { formatDate } from '@/engine';
 import { t } from '@/i18n';
+import { font } from '@/theme';
 import {
   Banner,
   Button,
@@ -504,7 +505,7 @@ export function ReviewSection({
             <TextButton label={t('common:actions.edit')} accessibilityLabel={`${t('common:actions.edit')} ${s.title}`} onPress={() => goTo(s.step)} />
           </View>
           {s.rows.map((r, i) => (
-            <KeyValue key={i} label={r.label} value={r.value} />
+            <ReviewRow key={i} label={r.label} value={r.value} />
           ))}
           {s.step === 3 && warnings.includes('coverShortOfThreeYears') ? (
             <Txt variant="callout" color="warn">
@@ -527,5 +528,22 @@ export function ReviewSection({
         </>
       ) : null}
     </>
+  );
+}
+
+/**
+ * Review row: the question takes the free width and wraps; the answer keeps its own width (up to half the row), so a
+ * short answer like "No" never breaks into "N/o" at 320 dp / 200 % text next to a long question (B-74a).
+ */
+function ReviewRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 4 }} accessible accessibilityLabel={`${label}: ${value}`}>
+      <Txt color="inkMuted" style={[font(400, 14, 20), { flex: 1 }]}>
+        {label}
+      </Txt>
+      <Txt tabular style={[font(500, 14, 20), { textAlign: 'right', flexShrink: 0, maxWidth: '50%' }]}>
+        {value}
+      </Txt>
+    </View>
   );
 }

@@ -11,7 +11,7 @@
 import { formatDate, formatUsd } from '@/engine';
 import { MARK_BARS, MARK_HOUSE } from '@/ui/logoPaths';
 
-import { expoPdfAdapter } from './shellNative';
+import { expoPdfAdapter, PDF_FOOTER_IN_PAGE_MARGIN } from './shellNative';
 
 export const APP_NAME = 'Evenlease';
 export const PDF_FOOTER = 'Evenlease is a checklist, not legal advice. Laws vary by state and city.';
@@ -85,12 +85,27 @@ export const usd = formatUsd;
 /** 'YYYY-MM-DD' → "Dec 2, 2026". */
 export const date = formatDate;
 
+const pad2 = (n: number) => String(n).padStart(2, '0');
+
+/** UTC instant (`…Z`) → the same instant as local wall-clock `YYYY-MM-DDTHH:MM` at `offsetMin` (default: device zone). */
+function utcToWall(ts: string, offsetMin?: number): string | null {
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return null;
+  const off = offsetMin ?? -d.getTimezoneOffset();
+  const w = new Date(d.getTime() + off * 60_000);
+  return `${w.getUTCFullYear()}-${pad2(w.getUTCMonth() + 1)}-${pad2(w.getUTCDate())}T${pad2(w.getUTCHours())}:${pad2(w.getUTCMinutes())}`;
+}
+
 /**
- * Timestamp with the device offset → "Dec 2, 2026, 9:14 AM", using the wall-clock time written in the string (the time
- * the landlord saw), not the printing device's zone.
+ * Timestamp → "Dec 2, 2026, 9:14 AM".
+ * - With the device offset (`…-05:00`, how the app stores times): the wall-clock time written in the string (the time
+ *   the landlord saw), not the printing device's zone.
+ * - UTC (`…Z`, e.g. older rows or `toISOString()`): converted to the device's local time (`offsetMin` for tests) — never
+ *   printed as UTC wall-clock (B-52).
  */
-export function dateTime(ts: string): string {
-  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(ts);
+export function dateTime(ts: string, offsetMin?: number): string {
+  const wall = /z$/i.test(ts) ? utcToWall(ts, offsetMin) : ts;
+  const m = wall ? /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})/.exec(wall) : null;
   if (!m) return escapeHtml(ts);
   const h = Number(m[2]);
   const h12 = h % 12 === 0 ? 12 : h % 12;
@@ -164,6 +179,44 @@ export interface PdfDocumentInput {
   body: SafeHtml;
   /** Extra footer line above the fixed disclaimer (optional). */
   footerNote?: string | null;
+  /**
+   * Also draw the footer in the page's bottom margin (`@page @bottom-left`), so it sits at the bottom of the LAST page
+   * too (B-57). Default: on Android (Chromium WebView printing). Tests pass it explicitly.
+   */
+  footerInPageMargin?: boolean;
+}
+
+/** Text → a CSS string literal body (quotes, backslashes, `<` and line breaks escaped). */
+function cssString(text: string): string {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/</g, '\\3C ')
+    .replace(/\r?\n/g, '\\A ');
+}
+
+/**
+ * B-57: the outer layout table repeats its <tfoot> at the bottom of every page EXCEPT the last, where Chromium draws it
+ * right under the content (mid-page). `position: fixed` is not an option (Android draws it in the middle of page 2), and
+ * expo-print's WebView runs no script. Chromium ≥ 131 draws `@page` margin boxes at the bottom of every page, last
+ * included — so on Android the footer moves into the bottom margin and the <tfoot> is hidden. Gate: `reading-flow`
+ * (Chromium 137+, never without margin boxes) — an older WebView keeps the <tfoot> footer instead of printing none.
+ */
+function pageMarginFooterCss(lines: readonly string[]): string {
+  return `
+@supports (reading-flow: normal) {
+  @page {
+    margin-bottom: 0.9in;
+    @bottom-left {
+      content: "${cssString(lines.join('\n'))}";
+      width: 7.3in; vertical-align: top; text-align: left; white-space: pre-wrap;
+      border-top: 1px solid #000; padding-top: 4pt; margin-top: 10pt;
+      font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 8.5pt; line-height: 1.4; color: #000;
+    }
+  }
+  table.page > tfoot { display: none; }
+}
+`;
 }
 
 /**
@@ -172,9 +225,11 @@ export interface PdfDocumentInput {
  * returned by `printToPdfAndShare`.
  */
 export function pdfDocument(input: PdfDocumentInput): string {
+  const inMargin = input.footerInPageMargin ?? PDF_FOOTER_IN_PAGE_MARGIN === true;
+  const footerLines = [input.footerNote, PDF_FOOTER].filter((l): l is string => !!l);
   const doc = html`<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${input.title}</title><style>${raw(PDF_CSS)}</style></head>
+<title>${input.title}</title><style>${raw(PDF_CSS)}${raw(inMargin ? pageMarginFooterCss(footerLines) : '')}</style></head>
 <body><table class="page" role="presentation">
 <thead><tr><td><div class="page-header"><span class="brand">${raw(PDF_LOGO)}<span class="app">${APP_NAME}</span></span><span>${input.title}</span></div></td></tr></thead>
 <tfoot><tr><td><div class="page-footer">${input.footerNote ? html`<div class="muted">${input.footerNote}</div>` : ''}<div>${PDF_FOOTER}</div></div></td></tr></tfoot>
@@ -194,6 +249,19 @@ export interface PdfAdapter {
   moveToCache(uri: string, fileName: string): Promise<string>;
   isSharingAvailable(): Promise<boolean>;
   share(uri: string, options: { mimeType: string; UTI: string; dialogTitle?: string }): Promise<void>;
+}
+
+/** Local calendar date of `at` → "2026-11-27" (file names). */
+export function fileDate(at: Date = new Date()): string {
+  return `${at.getFullYear()}-${pad2(at.getMonth() + 1)}-${pad2(at.getDate())}`;
+}
+
+/**
+ * Shared-file name (before `safeFileName`): type + record id + date — "Decision file - rental 3 - 2026-11-27". Never a
+ * person's name or the address: file names show in share sheets, mail attachments and other apps (TC-123, B-49).
+ */
+export function refFileName(type: string, ref: { kind: 'rental' | 'letter'; id: number }, at: Date = new Date()): string {
+  return `${type} - ${ref.kind} ${ref.id} - ${fileDate(at)}`;
 }
 
 /** "Adverse action — Priya Raman" → "Adverse action - Priya Raman.pdf" (safe characters, ≤ 80 chars). */

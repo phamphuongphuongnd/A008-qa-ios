@@ -144,6 +144,13 @@ export function canMarkUnreachable(attempts: readonly Attempt[]): boolean {
   return failed.length >= 3 && new Set(failed.map((a) => a.method)).size >= 2;
 }
 
+const CONFIRMED_VIA: Record<NonNullable<LandlordReference['confirmSource']>, string> = {
+  county_records: ' via county records',
+  management_website: " via the management company's website",
+  lease_shown: ' via a lease the applicant showed',
+  other: '',
+};
+
 export function evaluateLandlordReference(c: CriterionOf<'C4'>, applicant: ApplicantInput, title: string): RuleResult {
   const receivedOn = dateOf(applicant.receivedAt);
   const residence = c4Residence(applicant);
@@ -171,9 +178,12 @@ export function evaluateLandlordReference(c: CriterionOf<'C4'>, applicant: Appli
   const rent = compareReferenceRent(residence, ref);
   const mismatches = [rent.message, dates.mismatch ? dates.message : null].filter((x): x is string => !!x);
   const outcome = ref.rentAgain === 'yes' ? 'met' : ref.rentAgain === 'no' ? 'not_met' : 'needs_review';
+  // The reason is the evidence, not the criterion again (mockup S-09: "Yes · owner confirmed via county records").
   const reason =
     outcome === 'met'
-      ? 'Previous landlord would rent to them again'
+      ? ref.ownerConfirmed
+        ? `Yes · owner confirmed${ref.confirmSource ? CONFIRMED_VIA[ref.confirmSource] : ''}`
+        : 'Yes · owner not confirmed yet'
       : outcome === 'not_met'
         ? 'Previous landlord would not rent to them again'
         : "Landlord wouldn't say whether they would rent to them again";

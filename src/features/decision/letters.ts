@@ -178,7 +178,7 @@ export async function exportLetter(
   if (blocked) return { ok: false, ...blocked };
   const docHtml = letterDocument(ctx, input.kind, input.body, localDate(deps.now()));
   const letterId = upsertLetter(deps.db, ctx, input.kind, input.body);
-  const printed = await printToPdfAndShare(docHtml, letterFileName(input.kind, ctx.bundle.applicant.fullName), { adapter: deps.pdf });
+  const printed = await printToPdfAndShare(docHtml, letterFileName(input.kind, letterId, deps.now()), { adapter: deps.pdf });
   try {
     const saved = await deps.files.saveCopy({
       owner: { applicantId: input.applicantId },

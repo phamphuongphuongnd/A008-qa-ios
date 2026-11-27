@@ -1,13 +1,13 @@
 import { evaluateApplicant } from '@/engine';
-import { getApplicant, getApplicantBundle, listApplicants, listIncomes, listResidences } from '@/db/repos/applicants';
+import { getApplicant, getApplicantBundle, listApplicants, listIncomes, listResidences, purgeApplicant } from '@/db/repos/applicants';
 import { addDocument } from '@/db/repos/verify';
 import { loadSampleRental } from '@/db/repos/sample';
 import { makeTestDb, makeTestFiles } from '@/db/testing/testDb';
 import { loadRentalForEngine, toEngineApplicant } from '@/db/toEngine';
 import type { AppDb } from '@/db/types';
 
-import { emptyResidence, type ApplicationForm } from '../form/model';
-import { clearSignature, createDraft, discardDraft, loadApplication, saveDraft, saveSignature, submitApplication, type SignatureFiles } from '../form/service';
+import { emptyResidence, isBlankForm, type ApplicationForm } from '../form/model';
+import { clearSignature, createDraft, discardBlankDraft, discardDraft, loadApplication, saveDraft, saveSignature, submitApplication, type SignatureFiles } from '../form/service';
 import { loadIntakeRental, rentalAddress, rentalFullAddress } from '../rental';
 import { localIso } from '../time';
 
@@ -207,5 +207,38 @@ describe('application service (DB)', () => {
     expect(discardDraft(db, files, saved)).toBe(false);
     expect(getApplicant(db, saved)).not.toBeNull();
     expect(loadApplication(db, 12345)).toBeNull();
+  });
+
+  // B-62: applicant mode "Start" then the landlord exits before anything is typed → no empty draft left behind.
+  it('a blank draft is removed when applicant mode ends; a typed one is kept', () => {
+    const files = makeTestFiles();
+    const blankId = createDraft(db, { rentalId, mode: 'applicant', now: NOW });
+    const shown = loadApplication(db, blankId)!.form;
+    // Defaults the form shows on its own (1 occupant, voucher "No", an empty residence row) are not typing.
+    expect(isBlankForm({ ...shown, hasVoucher: false, residences: [emptyResidence()] })).toBe(true);
+    expect(discardBlankDraft(db, files, blankId, shown)).toBe(true);
+    expect(getApplicant(db, blankId)).toBeNull();
+
+    const typedId = createDraft(db, { rentalId, mode: 'applicant', now: NOW });
+    const base = loadApplication(db, typedId)!.form;
+    // Typed but not autosaved yet: the screen's form wins.
+    expect(discardBlankDraft(db, files, typedId, { ...base, phone: '555' })).toBe(false);
+    saveDraft(db, typedId, { ...base, email: 'a@b.co' }, 1, NOW);
+    expect(discardBlankDraft(db, files, typedId, null)).toBe(false);
+    expect(getApplicant(db, typedId)).not.toBeNull();
+    // A submitted applicant is never touched.
+    const saved = listApplicants(db, rentalId)[0].id;
+    expect(discardBlankDraft(db, files, saved)).toBe(false);
+  });
+
+  it('purging a draft leaves no anonymous row (never counted as an applicant)', () => {
+    const files = makeTestFiles();
+    const id = createDraft(db, { rentalId, mode: 'applicant', now: NOW });
+    saveDraft(db, id, { ...loadApplication(db, id)!.form, fullName: 'Half Done' }, 2, NOW);
+    purgeApplicant(db, files, id);
+    expect(getApplicant(db, id)).toBeNull();
+    const saved = listApplicants(db, rentalId)[0].id;
+    purgeApplicant(db, files, saved);
+    expect(getApplicant(db, saved)?.deletedAt).not.toBeNull();
   });
 });

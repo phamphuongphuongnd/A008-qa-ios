@@ -10,6 +10,7 @@ import {
   activeCriteria,
   formatDate,
   formatUsd,
+  reviewModeHint,
   type ApplicantStatus,
   type ConditionKind,
   type CriterionCode,
@@ -51,10 +52,19 @@ const STATUS_TONE: Record<ApplicantStatus, ChipTone> = {
   offer_expired: 'neutral',
 };
 
+/**
+ * Status shown for an applicant: First-come's front applicant still stored as "new" is In review (§3.14) — the
+ * stored status catches up when S-18 opens (`syncQueueStatus`), the screens must not wait for that (B-65).
+ */
+export function shownStatus(status: ApplicantStatus, queueState?: QueueState | null): ApplicantStatus {
+  return queueState === 'in_review' && status === 'new' ? 'in_review' : status;
+}
+
 /** Applicant status chip ("In review", "Denied"…). First-come applicants not yet at the front read "Waiting". */
 export function statusChip(status: ApplicantStatus, queueState?: QueueState | null): { label: string; tone: ChipTone } {
   if (queueState === 'waiting') return { label: t('decision:status.waiting'), tone: 'outline' };
-  return { label: t(`decision:status.${status}`), tone: STATUS_TONE[status] };
+  const s = shownStatus(status, queueState);
+  return { label: t(`decision:status.${s}`), tone: STATUS_TONE[s] };
 }
 
 /** "Received Dec 2, 9:14 AM". */
@@ -130,7 +140,7 @@ export function applicantDetailView(r: ApplicantReview): ApplicantDetailView {
       outcome: issue.kind === 'missing' ? 'missing' : issue.kind === 'needs_review' ? 'needs_review' : issue.outcome,
       evidence: issue.kind === 'mismatch' ? 'mismatch' : undefined,
       title: issue.message,
-      detail: result?.title ?? '',
+      detail: result?.shortTitle ?? '',
       action: { label: t(`decision:${ISSUE_ACTION_KEYS[issue.action]}` as 'decision:issueAction.addReport'), href: issueHref(issue.action, r.applicant) },
     };
   });
@@ -145,7 +155,7 @@ export function applicantDetailView(r: ApplicantReview): ApplicantDetailView {
     issues: items.length ? { title: t('decision:s09.issuesTitle', { count: items.length }), items } : null,
     criteria: r.evaluation.results.map((x) => ({
       key: x.criterionId,
-      name: x.title,
+      name: x.shortTitle,
       outcome: x.outcome,
       evidence: x.evidence ?? undefined,
       reason: x.reason,
@@ -259,7 +269,7 @@ export function evidenceSheetView(d: EvidenceDetail): EvidenceSheetView {
   }
   if (d.documents.length) rows.push({ label: t('decision:evidenceSheet.files'), value: t('decision:evidenceSheet.fileCount', { count: d.documents.length }) });
   return {
-    title: r.title,
+    title: r.shortTitle,
     outcome: r.outcome,
     evidence: r.evidence ?? undefined,
     reason: r.reason,
@@ -563,18 +573,21 @@ export type CompareViewCell = { outcome: Outcome; evidence?: Evidence } | { text
 
 export interface CompareView {
   state: 'empty' | 'all_hidden' | 'table';
+  /** Guide "First-come rules (Seattle)" only where it applies: First-come mode or a WA rental (B-46). */
+  firstComeGuide: boolean;
   columns: CompareViewColumn[];
   rows: { key: string; label: string; bold?: boolean; cells: Record<string, CompareViewCell> }[];
 }
 
 /** S-17: columns in received order (never re-sorted), last row "Issues". */
 export function compareView(d: CompareData): CompareView {
-  if (!d.enough) return { state: 'empty', columns: [], rows: [] };
+  const firstComeGuide = d.rentalRow.reviewMode === 'first_come' || reviewModeHint(d.rentalRow.state) != null;
+  if (!d.enough) return { state: 'empty', firstComeGuide, columns: [], rows: [] };
   const cols = d.table.columns.map((c) => ({ key: c.applicantId, title: shortName(c.fullName), subtitle: shortStamp(c.receivedAt) }));
-  if (!cols.length) return { state: 'all_hidden', columns: [], rows: [] };
+  if (!cols.length) return { state: 'all_hidden', firstComeGuide, columns: [], rows: [] };
   const rows: CompareView['rows'] = d.table.rows.map((r) => ({
     key: r.criterionId,
-    label: r.title,
+    label: r.label,
     cells: Object.fromEntries(
       r.cells.map((cell, i) => [cols[i].key, cell.evidence ? { outcome: cell.outcome, evidence: cell.evidence } : { outcome: cell.outcome }]),
     ),
@@ -585,7 +598,7 @@ export function compareView(d: CompareData): CompareView {
     bold: true,
     cells: Object.fromEntries(d.table.issueCounts.map((n, i) => [cols[i].key, { text: String(n), tone: n > 0 ? 'warn' : 'muted', bold: n > 0 }])),
   });
-  return { state: 'table', columns: cols, rows };
+  return { state: 'table', firstComeGuide, columns: cols, rows };
 }
 
 /** What a tap on an S-17 cell opens. */
@@ -603,7 +616,8 @@ export function compareCellTap(d: CompareData, rowKey: string, applicantId: stri
   const result = d.table.evaluations[i]?.results.find((r) => r.criterionId === rowKey);
   if (!result) return null;
   const sheet = evidenceSheetView(evidenceDetail(result, bundle, d.applicants[i]));
-  return { kind: 'evidence', sheet: { ...sheet, title: t('decision:s17.sheetTitle', { name: shortName(d.table.columns[i].fullName), criterion: sheet.title }) } };
+  const label = d.table.rows.find((r) => r.criterionId === rowKey)?.label ?? sheet.title;
+  return { kind: 'evidence', sheet: { ...sheet, title: t('decision:s17.sheetTitle', { name: shortName(d.table.columns[i].fullName), criterion: label }) } };
 }
 
 // ---------------------------------------------------------------------------
@@ -614,6 +628,8 @@ export interface QueueButton {
   action: QueueAction;
   label: string;
   variant: 'primary' | 'secondary';
+  /** Shown but not yet usable ("Move to next (incomplete)" while the 72 h clock runs — mockup S-18). */
+  disabled?: boolean;
 }
 
 export interface QueueRowView {
@@ -637,11 +653,22 @@ const QUEUE_BUTTON: Record<QueueAction, { key: string; variant: 'primary' | 'sec
 };
 
 export function queueRowView(row: QueueRow, currentId: string | null): QueueRowView {
-  const status = row.state === 'waiting' ? t('decision:status.waiting') : t(`decision:status.${row.status}`);
+  const status = row.state === 'waiting' ? t('decision:status.waiting') : t(`decision:status.${shownStatus(row.status, row.state)}`);
   const line = `${shortStamp(row.receivedAt)} · ${status}`;
   // An expired offer leaves one way on (mockup S-18); the row itself still opens S-09.
   const actions = row.actions.includes('offer_expired_move_next') ? (['offer_expired_move_next'] as QueueAction[]) : row.actions;
   const timer = row.timer && row.timer.status !== 'resolved' ? { label: row.timer.label, calm: false } : null;
+  const button = (a: QueueAction, disabled = false): QueueButton => ({
+    action: a,
+    label: t(QUEUE_BUTTON[a].key as 'decision:s18.review'),
+    variant: QUEUE_BUTTON[a].variant,
+    ...(disabled ? { disabled } : {}),
+  });
+  const buttons = actions.map((a) => button(a));
+  // Mockup S-18: while the 72 h clock runs, "Move to next (incomplete)" is there but disabled until it ends (§3.14).
+  if (row.state === 'in_review' && row.timer?.kind === 'missing_info' && row.timer.status === 'running') {
+    buttons.push(button('move_to_next_incomplete', true));
+  }
   return {
     key: row.applicantId,
     rowId: row.rowId,
@@ -650,7 +677,7 @@ export function queueRowView(row: QueueRow, currentId: string | null): QueueRowV
     name: row.fullName,
     line,
     timer,
-    buttons: actions.map((a) => ({ action: a, label: t(QUEUE_BUTTON[a].key as 'decision:s18.review'), variant: QUEUE_BUTTON[a].variant })),
+    buttons,
     a11y: [t('ui:queue.position', { n: row.position }), row.fullName, line, timer?.label].filter(Boolean).join(', '),
   };
 }

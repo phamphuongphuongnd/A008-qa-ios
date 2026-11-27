@@ -40,14 +40,50 @@ export function canEnableLock(cap: AuthCapability, s: Pick<AppSettings, 'appPinH
   return landlordUnlockMethod(cap, s) !== 'needs_pin';
 }
 
-/** After `ms` in the background the app locks again (only when App lock is on). */
+/**
+ * A moment on two clocks: `wall` = Date.now(), `mono` = a monotonic clock (performance.now(); the landlord can't set
+ * it). The monotonic one may stop while the phone sleeps deeply, the wall one can be moved back (B-76) — so time away
+ * is the larger of the two, and a wall clock that went backwards counts as "long enough".
+ */
+export interface ClockReading {
+  wall: number;
+  mono?: number | null;
+}
+
+/** Time spent away between two readings (see ClockReading). Infinity when the wall clock was moved back. */
+export function awayMs(from: ClockReading, to: ClockReading): number {
+  const wall = to.wall - from.wall;
+  if (wall < 0) return Infinity;
+  const mono = from.mono != null && to.mono != null ? to.mono - from.mono : 0;
+  return Math.max(wall, mono);
+}
+
+/** After "Lock after" in the background the app locks again (only when App lock is on). */
 export function shouldLockOnReturn(
   s: Pick<AppSettings, 'appLock' | 'lockAfter'>,
-  backgroundedAt: number | null,
-  now: number,
+  backgroundedAt: ClockReading | number | null,
+  now: ClockReading | number,
 ): boolean {
   if (!s.appLock || backgroundedAt == null) return false;
-  return now - backgroundedAt >= LOCK_AFTER_MS[s.lockAfter];
+  const from = typeof backgroundedAt === 'number' ? { wall: backgroundedAt } : backgroundedAt;
+  const to = typeof now === 'number' ? { wall: now } : now;
+  return awayMs(from, to) >= LOCK_AFTER_MS[s.lockAfter];
+}
+
+/**
+ * Root layout: the lock screen is up (and LockShield hides the screens behind it) only after onboarding and never in
+ * Applicant mode — the applicant holding the phone has 2B's own exit lock.
+ */
+export function isLockVisible(onboarded: boolean, locked: boolean, applicantModeActive: boolean): boolean {
+  return onboarded && locked && !applicantModeActive;
+}
+
+/** The props LockShield (components/LockScreen.tsx) puts around the app's screens: hidden from screen readers while locked (B-70). */
+export function lockShieldA11y(hidden: boolean) {
+  return {
+    importantForAccessibility: hidden ? ('no-hide-descendants' as const) : ('auto' as const),
+    accessibilityElementsHidden: hidden,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -103,8 +139,10 @@ export function pinWaitMs(failures: number): number {
 
 export interface LockState {
   locked: boolean;
-  /** When the app last went to the background (ms), null while in front. */
+  /** When the app last went to the background (wall ms), null while in front. */
   backgroundedAt: number | null;
+  /** The same moment on the monotonic clock (B-76: moving the phone's clock back must not skip the lock). */
+  backgroundedMono: number | null;
   /** System pickers / share sheet / camera open: going to the background then must not lock. */
   suspended: number;
   /** Wrong app PINs in a row and the time before which no PIN is accepted. */
@@ -114,8 +152,9 @@ export interface LockState {
 
 export type LockEvent =
   | { type: 'start'; settings: Pick<AppSettings, 'appLock'> }
-  | { type: 'background'; now: number }
-  | { type: 'foreground'; now: number; settings: Pick<AppSettings, 'appLock' | 'lockAfter'> }
+  /** `now` = Date.now(); `mono` = performance.now() (optional: tests and old callers use the wall clock only). */
+  | { type: 'background'; now: number; mono?: number }
+  | { type: 'foreground'; now: number; mono?: number; settings: Pick<AppSettings, 'appLock' | 'lockAfter'> }
   | { type: 'unlocked' }
   | { type: 'pin_failed'; now: number }
   | { type: 'suspend' }
@@ -123,7 +162,7 @@ export type LockEvent =
   /** App lock turned off in S-23 (or all data deleted). */
   | { type: 'disabled' };
 
-export const INITIAL_LOCK: LockState = { locked: false, backgroundedAt: null, suspended: 0, pinFailures: 0, pinBlockedUntil: 0 };
+export const INITIAL_LOCK: LockState = { locked: false, backgroundedAt: null, backgroundedMono: null, suspended: 0, pinFailures: 0, pinBlockedUntil: 0 };
 
 export function lockReducer(state: LockState, e: LockEvent): LockState {
   switch (e.type) {
@@ -131,10 +170,11 @@ export function lockReducer(state: LockState, e: LockEvent): LockState {
       return { ...state, locked: e.settings.appLock };
     case 'background':
       if (state.suspended > 0 || state.backgroundedAt != null) return state;
-      return { ...state, backgroundedAt: e.now };
+      return { ...state, backgroundedAt: e.now, backgroundedMono: e.mono ?? null };
     case 'foreground': {
-      const lock = state.suspended === 0 && shouldLockOnReturn(e.settings, state.backgroundedAt, e.now);
-      return { ...state, backgroundedAt: null, locked: state.locked || lock };
+      const from = state.backgroundedAt == null ? null : { wall: state.backgroundedAt, mono: state.backgroundedMono };
+      const lock = state.suspended === 0 && shouldLockOnReturn(e.settings, from, { wall: e.now, mono: e.mono });
+      return { ...state, backgroundedAt: null, backgroundedMono: null, locked: state.locked || lock };
     }
     case 'unlocked':
       return { ...state, locked: false, pinFailures: 0, pinBlockedUntil: 0 };

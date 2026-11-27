@@ -1,10 +1,12 @@
 import { Children, Fragment, isValidElement, type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View, type StyleProp, type ViewStyle } from 'react-native';
 import { ChevronRight } from 'lucide-react-native';
 
 import { font, useTheme, withAlpha } from '@/theme';
 
 import type { IconComponent } from './Button';
+import { keyValueStacked } from './textLayout';
+import { TOUCH_MIN } from './touch';
 import { Txt } from './Txt';
 
 /** Surface for cards and list groups: surface-1, radius 16, 1 px line, card shadow in light. */
@@ -173,12 +175,18 @@ export function ListRow({
   );
 }
 
-/** Uppercase muted heading above a group, optional link on the right ("See all"). */
+/**
+ * Uppercase muted heading above a group; on the right an optional note ("Sorted by received", muted) or link
+ * ("See all", accent, 48 touch frame). B-41: it owns the 8 below it — no negative margin, so the group under it can
+ * never cover the label (it did inside the plain `<View>` wrappers of S-06 / S-09).
+ */
 export function SectionHeader({
   title,
+  meta,
   action,
 }: {
   title: string;
+  meta?: string;
   action?: { label: string; onPress: () => void };
 }) {
   const { colors } = useTheme();
@@ -187,8 +195,9 @@ export function SectionHeader({
       <Txt accessibilityRole="header" style={[font(600, 13, 18, 0.02), { color: colors.inkMuted, textTransform: 'uppercase', flex: 1 }]}>
         {title}
       </Txt>
+      {meta && !action ? <Txt style={[font(500, 13, 18), { color: colors.inkMuted, flexShrink: 1, textAlign: 'right' }]}>{meta}</Txt> : null}
       {action ? (
-        <Pressable onPress={action.onPress} hitSlop={12} accessibilityRole="button" accessibilityLabel={action.label}>
+        <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.label} style={styles.sectionAction}>
           <Txt style={[font(600, 13, 18), { color: colors.accent }]}>{action.label}</Txt>
         </Pressable>
       ) : null}
@@ -196,13 +205,18 @@ export function SectionHeader({
   );
 }
 
-/** Label … value line (summaries, report details). Value is tabular. */
+/**
+ * Label … value line (summaries, report details). Value is tabular. The value keeps its own width (≤ 60 %) and the
+ * label wraps; from 150 % text the value goes under the label — a short value never breaks mid-word (B-74a "N/o").
+ */
 export function KeyValue({ label, value }: { label: string; value: string }) {
   const { colors } = useTheme();
+  const { fontScale } = useWindowDimensions();
+  const stacked = keyValueStacked(fontScale);
   return (
-    <View style={styles.kv} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Txt style={[font(400, 14, 20), { color: colors.inkMuted, flexShrink: 1 }]}>{label}</Txt>
-      <Txt tabular style={[font(500, 14, 20), { textAlign: 'right', flexShrink: 1 }]}>
+    <View style={stacked ? styles.kvStacked : styles.kv} accessible accessibilityLabel={`${label}: ${value}`}>
+      <Txt style={[font(400, 14, 20), { color: colors.inkMuted }, !stacked && styles.kvLabel]}>{label}</Txt>
+      <Txt tabular style={[font(500, 14, 20), !stacked && styles.kvValue]}>
         {value}
       </Txt>
     </View>
@@ -215,6 +229,10 @@ const styles = StyleSheet.create({
   ico: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   main: { flex: 1, minWidth: 0, gap: 2 },
   value: { textAlign: 'right', flexShrink: 1, maxWidth: '45%' },
-  section: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 4, marginTop: 4, marginBottom: -6 },
+  section: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 4, marginTop: 4, paddingBottom: 8 },
+  sectionAction: { minHeight: TOUCH_MIN, justifyContent: 'center' },
   kv: { flexDirection: 'row', justifyContent: 'space-between', gap: 12, paddingVertical: 4 },
+  kvLabel: { flex: 1, flexShrink: 1 },
+  kvValue: { textAlign: 'right', flexShrink: 0, maxWidth: '60%' },
+  kvStacked: { gap: 2, paddingVertical: 4 },
 });

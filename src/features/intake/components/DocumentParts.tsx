@@ -1,8 +1,8 @@
 /** S-10 pieces: one card per required document type, the income check, the file viewer sheet. */
 import { Image } from 'expo-image';
-import { Check, FileText, Trash2 } from 'lucide-react-native';
+import { Check, ExternalLink, FileText, Maximize2, Trash2 } from 'lucide-react-native';
 import { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import type { DocumentRow, Income } from '@/db';
 import { db } from '@/db';
@@ -26,10 +26,13 @@ import {
   StatusBadge,
   TextButton,
   Txt,
+  showSnackbar,
 } from '@/ui';
 
+import { openStoredPdf } from '../documents/viewerNative';
 import { incomeCheckFor, markChecked, PAY_FREQUENCIES, removeDocument, setIncomeDetails, type DocumentSlot } from '../documents/service';
 import { checkedLine, incomeKindLabel, slotChip, slotHint, thumbLabel, tx } from '../screenModels';
+import { ZoomViewer } from './ZoomViewer';
 
 function Thumb({ doc, label, onPress }: { doc: DocumentRow; label: string; onPress: () => void }) {
   const { colors } = useTheme();
@@ -179,12 +182,21 @@ export function IncomeCheck({ doc, incomes, title }: { doc: DocumentRow; incomes
   );
 }
 
-/** Full-screen-ish viewer of one file: zoomable image (PDF: icon), Mark as checked / Unmark, Delete. */
+/**
+ * One file: preview, "View full screen" (pinch / drag / double-tap zoom, Android + iOS) or "Open PDF" (system print
+ * preview, no copy), Mark as checked / Unmark, Delete (B-43).
+ */
 export function FileSheet({ doc, title, onClose }: { doc: DocumentRow | null; title: string; onClose: () => void }) {
   const { colors } = useTheme();
   const [askDelete, setAskDelete] = useState(false);
+  const [full, setFull] = useState(false);
   if (!doc) return null;
-  const image = isImageMime(doc.mime) && !doc.filePath.startsWith('sample/');
+  const real = !doc.filePath.startsWith('sample/');
+  const image = isImageMime(doc.mime) && real;
+  const pdf = doc.mime === 'application/pdf' && real;
+  const openPdf = async () => {
+    if (!(await openStoredPdf(doc.filePath))) showSnackbar({ message: t('intake:s10.openPdfFailed') });
+  };
   return (
     <>
       <Sheet
@@ -203,15 +215,34 @@ export function FileSheet({ doc, title, onClose }: { doc: DocumentRow | null; ti
         }
       >
         {image ? (
-          <ScrollView maximumZoomScale={4} minimumZoomScale={1} style={{ height: 360, borderRadius: 8, backgroundColor: colors.surface2 }}>
-            <Image source={{ uri: files.uri(doc.filePath) }} style={{ width: '100%', height: 360 }} contentFit="contain" accessibilityLabel={title} />
-          </ScrollView>
+          <>
+            <Pressable
+              onPress={() => setFull(true)}
+              accessibilityRole="imagebutton"
+              accessibilityLabel={title}
+              accessibilityHint={t('intake:s10.viewFull')}
+              style={{ height: 360, borderRadius: 8, overflow: 'hidden', backgroundColor: colors.surface2 }}
+            >
+              <Image source={{ uri: files.uri(doc.filePath) }} style={{ width: '100%', height: '100%' }} contentFit="contain" accessibilityIgnoresInvertColors />
+            </Pressable>
+            <Button variant="secondary" block icon={Maximize2} label={t('intake:s10.viewFull')} onPress={() => setFull(true)} />
+            {/* Inside the sheet's own modal: iOS cannot present a second modal next to it. */}
+            <ZoomViewer uri={files.uri(doc.filePath)} title={title} visible={full} onClose={() => setFull(false)} />
+          </>
         ) : (
           <View style={{ alignItems: 'center', gap: 8, paddingVertical: 24 }}>
             <FileText color={colors.inkMuted} size={40} />
             <Txt color="inkMuted">{t('intake:s10.pdf')}</Txt>
           </View>
         )}
+        {pdf ? (
+          <>
+            <Button variant="secondary" block icon={ExternalLink} label={t('intake:s10.openPdf')} onPress={openPdf} />
+            <Txt variant="caption" color="inkMuted">
+              {t('intake:s10.openPdfHelp')}
+            </Txt>
+          </>
+        ) : null}
         {doc.checkedAt ? (
           <Txt variant="callout" color="inkMuted">
             {checkedLine([doc.checkedAt])}

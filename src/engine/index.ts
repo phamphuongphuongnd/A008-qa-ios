@@ -25,6 +25,8 @@ export {
   MAX_CUSTOM_CRITERIA,
   MAX_CUSTOM_TITLE,
   activeCriteria,
+  criterionCompareLabel,
+  criterionShortTitle,
   criterionTitle,
   customTitleError,
   defaultCriteria,
@@ -48,7 +50,7 @@ export {
 export type { CriteriaWarning, CriteriaWarningCode } from './guardrails';
 
 /** Evaluation (§3.1) + Compare (S-17). */
-export { byReceived, compareApplicants, evaluateApplicant, evaluateCriterion, sortIssues, summarize } from './evaluate';
+export { byReceived, compareApplicants, evaluateApplicant, evaluateCriterion, sortIssues, summarize, uniqueMismatches } from './evaluate';
 export type { CompareCell, CompareTable } from './evaluate';
 
 /** Rule helpers the screens need (S-10, S-11, S-14). */

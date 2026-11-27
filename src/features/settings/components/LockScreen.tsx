@@ -1,9 +1,11 @@
 /**
  * App lock gate (S-23): covers the whole app while `useAppLockGate().locked`. Asks for Face ID / fingerprint /
  * phone passcode at once; phones with neither use the app PIN. Rendered by app/_layout.tsx over the
- * stack: `{locked ? <LockScreen pinBlockedUntil={...} /> : null}`.
+ * stack: `{shown ? <LockScreen pinBlockedUntil={...} /> : null}` with `shown = isLockVisible(...)` (../lock.ts), and the
+ * stack inside `<LockShield hidden={shown}>`
+ * so screen readers can't reach the data behind the lock (B-70).
  */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,9 +14,23 @@ import { font, useTheme } from '@/theme';
 import { Button, Logo, Txt } from '@/ui';
 
 import { useSettings } from '../hooks';
+import { lockShieldA11y } from '../lock';
 import { unlockLandlord, unlockWithPin } from '../lockController';
 import { expoAuthAdapter } from '../lockNative';
 import { PinUnlock } from './PinFields';
+
+/**
+ * Wraps the app's screens. While the lock is up, the whole tree under it leaves the accessibility tree — Android
+ * `no-hide-descendants` (TalkBack can neither read nor tap it), iOS `accessibilityElementsHidden` — B-70.
+ * (`accessibilityViewIsModal` on the lock screen only works on iOS.)
+ */
+export function LockShield({ hidden, children }: { hidden: boolean; children: ReactNode }) {
+  return (
+    <View style={styles.shield} {...lockShieldA11y(hidden)}>
+      {children}
+    </View>
+  );
+}
 
 export function LockScreen({ pinBlockedUntil }: { pinBlockedUntil: number }) {
   'use no memo';
@@ -88,6 +104,8 @@ export function LockScreen({ pinBlockedUntil }: { pinBlockedUntil: number }) {
 }
 
 const styles = StyleSheet.create({
+  shield: { flex: 1 },
   root: { alignItems: 'center', gap: 16, paddingHorizontal: 24, zIndex: 100 },
-  actions: { alignSelf: 'stretch', maxWidth: 420, width: '100%', marginTop: 'auto' },
+  // B-76: centred on wide screens ('stretch' + maxWidth pinned it to the left edge).
+  actions: { alignSelf: 'center', maxWidth: 420, width: '100%', marginTop: 'auto' },
 });

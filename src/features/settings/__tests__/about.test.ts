@@ -7,20 +7,23 @@ const ROOT = path.resolve(__dirname, '../../../..');
 const json = (rel: string) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 
 describe('S-21 About', () => {
-  it('version from app config + native build number: "Version 1.0 (1)"', () => {
-    const android = appVersion({ expoConfig: { version: '1.0.0' }, platform: { android: { versionCode: 1 } } });
-    expect(android).toEqual({ version: '1.0', build: '1' });
-    expect(versionLabel(android)).toBe('Version 1.0 (1)');
-    expect(aboutLine(android)).toBe('Version 1.0 (1) · No account · No servers');
+  it('B-73: full version + native build number: "Version 1.0.0 (1)"', () => {
+    const native = appVersion({ nativeApplicationVersion: '1.0.0', nativeBuildVersion: '7', expoConfig: { version: '1.0.0' } });
+    expect(native).toEqual({ version: '1.0.0', build: '7' });
+    expect(versionLabel(native)).toBe('Version 1.0.0 (7)');
+    expect(aboutLine(native)).toBe('Version 1.0.0 (7) · No account · No servers');
+    // Native values win over app config (the installed binary is what support needs).
+    expect(appVersion({ nativeApplicationVersion: '1.0.1', nativeBuildVersion: '9', expoConfig: { version: '1.0.0' }, platform: { android: { versionCode: 1 } } })).toEqual({ version: '1.0.1', build: '9' });
+    // Fallbacks: expo-constants config / platform build number.
+    expect(versionLabel(appVersion({ expoConfig: { version: '1.0.0' }, platform: { android: { versionCode: 1 } } }))).toBe('Version 1.0.0 (1)');
     expect(versionLabel(appVersion({ expoConfig: { version: '1.2.3' }, platform: { ios: { buildNumber: '14' } } }))).toBe('Version 1.2.3 (14)');
-    // Expo Go / tests: no native build number.
-    expect(versionLabel(appVersion({ expoConfig: { version: '1.0.0' }, platform: { ios: { buildNumber: null } } }))).toBe('Version 1.0');
+    expect(versionLabel(appVersion({ nativeBuildVersion: ' ', expoConfig: { version: '1.0.0' }, platform: { ios: { buildNumber: null } } }))).toBe('Version 1.0.0');
     expect(versionLabel(appVersion({}))).toBeNull();
     expect(aboutLine(appVersion({}))).toBe('No account · No servers');
   });
 
   it('app.json version is what the About line reads', () => {
-    expect(appVersion({ expoConfig: { version: json('app.json').expo.version } }).version).toBe('1.0');
+    expect(appVersion({ expoConfig: { version: json('app.json').expo.version } }).version).toBe('1.0.0');
   });
 
   it('"Send feedback" is hidden in 1.0 (no support email yet), mailto once one is set', () => {

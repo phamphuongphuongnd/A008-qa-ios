@@ -1,5 +1,6 @@
 import {
   INITIAL_LOCK,
+  awayMs,
   canEnableLock,
   hashPin,
   landlordUnlockMethod,
@@ -86,6 +87,30 @@ describe('lock state machine', () => {
     expect(away(30_000).locked).toBe(false);
     expect(away(61_000).locked).toBe(true);
     expect(away(61_000).backgroundedAt).toBeNull();
+  });
+
+  it('B-76: moving the wall clock back while away still locks (monotonic clock / backwards clock)', () => {
+    // Away 70 s by the monotonic clock, wall clock set back 30 s → wall says 40 s.
+    const setBack = run([
+      { type: 'background', now: 100_000, mono: 5_000 },
+      { type: 'foreground', now: 140_000, mono: 75_000, settings: on },
+    ]);
+    expect(setBack.locked).toBe(true);
+    expect(setBack.backgroundedMono).toBeNull();
+    // Wall clock moved back past the moment we left: can't tell how long → lock.
+    expect(run([{ type: 'background', now: 100_000, mono: 5_000 }, { type: 'foreground', now: 40_000, mono: 6_000, settings: on }]).locked).toBe(true);
+    // Phone asleep (monotonic clock stopped) but 2 min passed on the wall clock → lock.
+    expect(run([{ type: 'background', now: 0, mono: 5_000 }, { type: 'foreground', now: 120_000, mono: 5_100, settings: on }]).locked).toBe(true);
+    // Short trip on both clocks → no lock.
+    expect(run([{ type: 'background', now: 0, mono: 5_000 }, { type: 'foreground', now: 30_000, mono: 35_000, settings: on }]).locked).toBe(false);
+  });
+
+  it('awayMs takes the larger clock; a backwards wall clock is Infinity', () => {
+    expect(awayMs({ wall: 0, mono: 0 }, { wall: 10, mono: 50 })).toBe(50);
+    expect(awayMs({ wall: 0, mono: 0 }, { wall: 90, mono: 50 })).toBe(90);
+    expect(awayMs({ wall: 0 }, { wall: 90, mono: 50 })).toBe(90);
+    expect(awayMs({ wall: 100, mono: 0 }, { wall: 99, mono: 1 })).toBe(Infinity);
+    expect(shouldLockOnReturn(on, 0, 61_000)).toBe(true);
   });
 
   it('a system sheet we opened (share, picker) never locks', () => {

@@ -4,6 +4,7 @@ import { makeTestDb } from '@/db/testing/testDb';
 
 import { makeBackupActions, type BackupEnv } from '../actions';
 import { autoBackupDue, autoBackupFailedAt, backupErrorText, backupReminder, filesToPrune, runAutoBackup, snoozeBackupReminder, backupSnoozedUntil } from '../auto';
+import { DEVICE_KEYS, setDeviceValue } from '../deviceStore';
 import { BackupError } from '../format';
 import { setBackupPassword } from '../service';
 import { bytes, makeFakeFolder, makeFakeIO, testRng } from '../testing/fakes';
@@ -115,12 +116,26 @@ describe('S-22 actions', () => {
     const r = await t.actions.backUpNow();
     expect(r.where).toBe('shared');
     expect(t.shared[0]).toMatch(/^file:\/\/\/cache\/Evenlease-backup-.*\.evenlease$/);
-    expect(getSettings(t.db).lastBackupAt).not.toBeNull();
+    // B-68: the share sheet can't tell saved from cancelled → nothing recorded until the landlord confirms.
+    expect(getSettings(t.db).lastBackupAt).toBeNull();
+    expect(t.refresh).not.toHaveBeenCalled();
+    if (r.where !== 'shared') throw new Error('expected shared');
+    await t.actions.confirmShared(r.made);
+    expect(getSettings(t.db)).toMatchObject({ lastBackupAt: r.made.createdAt, lastBackupBytes: r.made.bytes.length });
     expect(t.refresh).toHaveBeenCalled();
 
     updateSettings(t.db, { backupFolderUri: 'content://tree/x' });
+    updateSettings(t.db, { lastBackupAt: null });
     expect((await t.actions.backUpNow()).where).toBe('folder');
     expect(t.folder.files.size).toBe(1);
+    expect(getSettings(t.db).lastBackupAt).not.toBeNull(); // a folder write is sure → recorded at once
+  });
+
+  it('B-68: share sheet cancelled (not confirmed) → no "Last backup", reminder not pushed back', async () => {
+    const t = await env();
+    expect((await t.actions.backUpNow()).where).toBe('shared');
+    expect(getSettings(t.db).lastBackupAt).toBeNull();
+    expect(t.refresh).not.toHaveBeenCalled();
   });
 
   it('no share sheet → nothing recorded', async () => {
@@ -138,6 +153,8 @@ describe('S-22 actions', () => {
     expect(await t.actions.setAutomatic('weekly')).toBe('done');
     expect(getSettings(t.db)).toMatchObject({ autoBackup: 'weekly', backupFolderUri: 'content://tree/Evenlease' });
     expect(t.actions.folderLabel()).toBe('Evenlease');
+    setDeviceValue(t.db, DEVICE_KEYS.backupFolderLabel, 'primary:Documents'); // saved by an older build (B-76)
+    expect(t.actions.folderLabel()).toBe('Documents');
     expect(t.folder.files.size).toBe(1);
     expect(await t.actions.setAutomatic('off')).toBe('off');
     expect(getSettings(t.db).autoBackup).toBe('off');

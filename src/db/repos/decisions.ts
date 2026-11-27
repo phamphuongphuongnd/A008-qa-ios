@@ -98,6 +98,15 @@ export function resolveTimer(db: AppDb, id: number, at = new Date().toISOString(
   db.update(timers).set({ resolvedAt: at }).where(eq(timers.id, id)).run();
 }
 
+/**
+ * Undo of a rental close (B-61): the clocks stopped by the close run again (same end time). Their old notifications
+ * were cancelled, so the ids are cleared for `syncTimerNotifications` to schedule them again.
+ */
+export function reopenTimers(db: AppDb, ids: readonly number[]): void {
+  if (!ids.length) return;
+  db.update(timers).set({ resolvedAt: null, notificationIds: [] }).where(inArray(timers.id, [...ids])).run();
+}
+
 export function setTimerNotifications(db: AppDb, id: number, notificationIds: string[]): void {
   db.update(timers).set({ notificationIds }).where(eq(timers.id, id)).run();
 }

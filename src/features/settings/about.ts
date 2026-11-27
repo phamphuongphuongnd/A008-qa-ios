@@ -15,32 +15,40 @@ export function feedbackMailto(email: string = FEEDBACK_EMAIL): string | null {
   return e ? `mailto:${e}?subject=${encodeURIComponent(t('system:about.feedbackSubject'))}` : null;
 }
 
-/** The parts of expo-constants the version line needs (native values: the build number EAS gave this binary). */
+/**
+ * Where the version line reads from. Native values first (expo-application: what the installed binary says — the
+ * build number EAS gave it, B-73), then app config via expo-constants (dev / tests).
+ */
 export interface VersionSource {
+  nativeApplicationVersion?: string | null;
+  nativeBuildVersion?: string | null;
   expoConfig?: { version?: string | null } | null;
   platform?: { android?: { versionCode?: number | null } | null; ios?: { buildNumber?: string | null } | null } | null;
 }
 
 export interface AppVersion {
-  /** "1.0" (a trailing ".0" patch is dropped, as on the store listing). */
+  /** "1.0.0" in full (B-73: support needs the exact version). */
   version: string | null;
-  /** "1" — Android versionCode / iOS CFBundleVersion; null in Expo Go / tests. */
+  /** "1" — Android versionCode / iOS CFBundleVersion; null in tests. */
   build: string | null;
 }
 
+const filled = (v: string | number | null | undefined): string | null => (v != null && String(v).trim() !== '' ? String(v).trim() : null);
+
 export function appVersion(c: VersionSource): AppVersion {
-  const raw = c.expoConfig?.version?.trim() || null;
-  const build = c.platform?.android?.versionCode ?? c.platform?.ios?.buildNumber ?? null;
-  return { version: raw ? raw.replace(/^(\d+\.\d+)\.0$/, '$1') : null, build: build != null && String(build) !== '' ? String(build) : null };
+  return {
+    version: filled(c.nativeApplicationVersion) ?? filled(c.expoConfig?.version),
+    build: filled(c.nativeBuildVersion) ?? filled(c.platform?.android?.versionCode) ?? filled(c.platform?.ios?.buildNumber),
+  };
 }
 
-/** "Version 1.0 (1)" · "Version 1.0" without a build number · null without a version. */
+/** "Version 1.0.0 (1)" · "Version 1.0.0" without a build number · null without a version. */
 export function versionLabel(v: AppVersion): string | null {
   if (!v.version) return null;
   return v.build ? t('system:about.versionBuild', { version: v.version, build: v.build }) : t('system:s21.version', { version: v.version });
 }
 
-/** Mockup line under the logo: "Version 1.0 (1) · No account · No servers". */
+/** Line under the logo (mockup "Version 1.0 (1) · No account · No servers"): "Version 1.0.0 (1) · No account · No servers". */
 export function aboutLine(v: AppVersion): string {
   return [versionLabel(v), t('system:about.noAccount')].filter(Boolean).join(' · ');
 }
@@ -57,6 +65,7 @@ export const LICENSES: readonly { name: string; license: string }[] = [
   { name: '@shopify/flash-list', license: 'MIT' },
   { name: 'drizzle-orm', license: 'Apache-2.0' },
   { name: 'expo', license: 'MIT' },
+  { name: 'expo-application', license: 'MIT' },
   { name: 'expo-background-task', license: 'MIT' },
   { name: 'expo-clipboard', license: 'MIT' },
   { name: 'expo-constants', license: 'MIT' },

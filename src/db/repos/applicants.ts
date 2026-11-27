@@ -74,7 +74,10 @@ export function setApplicantStatus(db: AppDb, id: number, status: ApplicantStatu
   updateApplicant(db, id, { status });
 }
 
-/** Form part 3: replaces every residence of the applicant (order kept). Ids of rows still referenced stay stable. */
+/**
+ * Form part 3: replaces every residence of the applicant (order kept). Ids of rows still referenced stay stable.
+ * Inside a transaction pass `tx` as `db` (nests as a savepoint); the root `db` cannot `begin` twice on expo-sqlite.
+ */
 export function saveResidences(db: AppDb, applicantId: number, rows: (Omit<NewResidence, 'applicantId'> & { id?: number })[]): number[] {
   return db.transaction((tx) => {
     const existing = tx.select({ id: residences.id }).from(residences).where(eq(residences.applicantId, applicantId)).all();
@@ -164,10 +167,11 @@ export function getApplicantBundle(db: AppDb, id: number): ApplicantBundle | nul
  * - default (`keepRecord: true`): the applicant row stays as a tombstone with no personal data — rental, received time,
  *   status and `deletedAt` only — so the Decision file can say "Applicant 3 — data deleted Jan 10" and First-come
  *   order stays provable.
- * - `keepRecord: false`: the row goes too (a draft / a mistaken entry, or the sample).
+ * - `keepRecord: false`: the row goes too (a mistaken entry, or the sample). A draft always goes (never received).
  */
 export function purgeApplicant(db: AppDb, files: FileStore, id: number, opts: { keepRecord?: boolean; at?: string } = {}): void {
-  const keepRecord = opts.keepRecord ?? true;
+  // A draft was never received: no anonymous row for it (it would be counted and listed as "Applicant n" — B-62).
+  const keepRecord = (opts.keepRecord ?? true) && getApplicant(db, id)?.draft !== true;
   const at = opts.at ?? new Date().toISOString();
   db.transaction((tx) => {
     // Children first (explicit, not relying on cascade, so a keepRecord tombstone loses them too).

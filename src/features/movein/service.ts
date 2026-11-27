@@ -8,6 +8,7 @@ import { createMoveIn, getMoveIn, updateMoveIn } from '@/db/repos/movein';
 import { getRental } from '@/db/repos/rentals';
 import { getSettings } from '@/db/repos/settings';
 import type { AppDb, MoveIn, Rental } from '@/db/types';
+import { localIso } from '@/features/decision/time';
 import type { PdfAdapter, PdfShareResult } from '@/pdf/shell';
 import { exportMoveInPdf, type MoveInPdfInput } from '@/pdf/moveIn';
 
@@ -79,8 +80,11 @@ export function applyMoveInEdit(db: AppDb, files: FileDeleter, id: number, row: 
   return { clearedSignatures };
 }
 
-/** Stores a signature (its SVG already saved under rentals/{id}/); replaces and deletes an older one. */
-export function signMoveIn(db: AppDb, files: FileDeleter, row: MoveIn, role: SignatureRole, path: string, at: string = new Date().toISOString()): void {
+/**
+ * Stores a signature (its SVG already saved under rentals/{id}/); replaces and deletes an older one. `at` is local ISO
+ * with the device offset (product.md §3.1), so the PDF prints the time the people signed (B-52).
+ */
+export function signMoveIn(db: AppDb, files: FileDeleter, row: MoveIn, role: SignatureRole, path: string, at: string = localIso()): void {
   const before = draftOf(row);
   const after = sign(before, role, path, at);
   save(db, row.id, after, at);
@@ -93,7 +97,7 @@ export interface MoveInFileReader {
   text(path: string): Promise<string | null>;
 }
 
-export async function moveInPdfInput(db: AppDb, row: MoveIn, read: MoveInFileReader, opts: { includePhotos: boolean }): Promise<{ input: MoveInPdfInput; street: string }> {
+export async function moveInPdfInput(db: AppDb, row: MoveIn, read: MoveInFileReader, opts: { includePhotos: boolean }): Promise<{ input: MoveInPdfInput }> {
   const rental = getRental(db, row.rentalId);
   if (!rental) throw new Error('rental missing');
   const tenant = row.applicantId != null ? listApplicants(db, row.rentalId).find((a) => a.id === row.applicantId) : undefined;
@@ -107,7 +111,6 @@ export async function moveInPdfInput(db: AppDb, row: MoveIn, read: MoveInFileRea
   }
   const svg = async (role: SignatureRole) => (d.signatures[role]?.path ? read.text(d.signatures[role]!.path) : null);
   return {
-    street: [rental.street, rental.unit].filter(Boolean).join(' '),
     input: {
       address: rentalAddress(rental),
       tenantName: tenant?.fullName || null,
@@ -123,6 +126,6 @@ export async function moveInPdfInput(db: AppDb, row: MoveIn, read: MoveInFileRea
 /** "Export PDF" / "Share" (both signatures required — the button is disabled otherwise). */
 export async function exportMoveIn(db: AppDb, row: MoveIn, read: MoveInFileReader, opts: { includePhotos: boolean; adapter?: PdfAdapter }): Promise<PdfShareResult> {
   if (!bothSigned(draftOf(row))) throw new Error('both signatures needed');
-  const { input, street } = await moveInPdfInput(db, row, read, opts);
-  return exportMoveInPdf(input, street, opts.adapter);
+  const { input } = await moveInPdfInput(db, row, read, opts);
+  return exportMoveInPdf(input, row.rentalId, opts.adapter);
 }

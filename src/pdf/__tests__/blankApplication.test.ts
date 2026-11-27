@@ -4,7 +4,7 @@ import { makeTestDb } from '@/db/testing/testDb';
 import { blankApplicationForRental, shareBlankApplication } from '@/features/intake/blankPdf';
 
 import { blankApplicationFileName, blankApplicationHtml } from '../blankApplication';
-import { PDF_FOOTER, safeFileName, type PdfAdapter } from '../shell';
+import { fileDate, PDF_FOOTER, safeFileName, type PdfAdapter } from '../shell';
 
 const input = {
   address: '1428 Maple St, Unit B',
@@ -54,7 +54,8 @@ describe('blank application PDF (F-06)', () => {
   });
 
   it('file name', () => {
-    expect(safeFileName(blankApplicationFileName('1428 Maple St, Unit B'))).toBe('Rental application - 1428 Maple St Unit B.pdf');
+    // B-49: type + rental id + date (like every shared file), no address.
+    expect(safeFileName(blankApplicationFileName(3, new Date(2026, 10, 27)))).toBe('Rental application - rental 3 - 2026-11-27.pdf');
   });
 
   it('builds from the database and shares through the PDF adapter', async () => {
@@ -67,7 +68,7 @@ describe('blank application PDF (F-06)', () => {
       { code: 'CX', enabled: true, order: 100, params: { title: 'Landlord-only check', answeredBy: 'landlord' } },
     ]);
     const built = blankApplicationForRental(db, rentalId)!;
-    expect(built.fileName).toBe('Rental application - 1428 Maple St Unit B');
+    expect(built.fileName).toBe(`Rental application - rental ${rentalId} - ${fileDate()}`);
     expect(built.html).toContain('Can you start on Jan 1?');
     expect(built.html).not.toContain('Landlord-only check');
     expect(blankApplicationForRental(db, 999)).toBeNull();
@@ -80,7 +81,7 @@ describe('blank application PDF (F-06)', () => {
       share: async (u) => void calls.push(`share:${u}`),
     };
     const r = await shareBlankApplication(db, rentalId, adapter);
-    expect(r).toEqual({ uri: 'file:///cache/pdf/Rental application - 1428 Maple St Unit B.pdf', numberOfPages: 3, shared: true });
+    expect(r).toEqual({ uri: `file:///cache/pdf/Rental application - rental ${rentalId} - ${fileDate()}.pdf`, numberOfPages: 3, shared: true });
     expect(calls[0]).toBe('print:true');
     await expect(shareBlankApplication(db, 999, adapter)).rejects.toThrow();
   });
