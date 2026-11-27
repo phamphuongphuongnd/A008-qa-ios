@@ -12,6 +12,7 @@ import { db } from '@/db';
 import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
+import { syncTimers } from '@/notifications';
 import { routes } from '@/routes';
 import { router } from '@/services/router';
 import {
@@ -46,6 +47,8 @@ export default function OrderQueueScreen() {
   const rentalId = idParam(p.id);
   useEffect(() => {
     if (rentalId != null) syncQueueStatus(db, rentalId, localIso());
+    // B-58: clocks started while notifications were off get them as soon as they are allowed.
+    void syncTimers();
   }, [rentalId]);
   const data = useOrderQueue(rentalId);
   const [missingFor, setMissingFor] = useState<QueueRow | null>(null);

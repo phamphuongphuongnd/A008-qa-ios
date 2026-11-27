@@ -12,6 +12,7 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
   const scheduled = new Map<string, { title: string; at: Date; data: { url: string; key: string } }>();
   const cancelled: string[] = [];
   let asked = 0;
+  let priv = false;
   const notifier: QueueNotifier = {
     async schedule(x) {
       const id = `n${++n}`;
@@ -30,8 +31,22 @@ export function fakeNotifier(initial: PermissionState = 'granted') {
       perm = 'granted';
       return perm;
     },
+    isPrivate: () => priv,
   };
-  return { notifier, scheduled, cancelled, askedCount: () => asked };
+  return {
+    notifier,
+    scheduled,
+    cancelled,
+    askedCount: () => asked,
+    /** The landlord changes the permission in the system settings. */
+    setPermission: (p: PermissionState) => {
+      perm = p;
+    },
+    /** Applicant mode on / off. */
+    setPrivate: (on: boolean) => {
+      priv = on;
+    },
+  };
 }
 
 /** Sample rental (§8) in a fresh DB, with row ids by first name. */
