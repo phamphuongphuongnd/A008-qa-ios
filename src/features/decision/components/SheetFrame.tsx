@@ -19,11 +19,22 @@ import { useTheme } from '@/theme';
 type ViewRef = ComponentRef<typeof View>;
 export type SheetScrollRef = ComponentRef<typeof ScrollView>;
 
+/** Usable height inside the iPad formSheet card (card ≈ 660 pt; leaves room for its rounded corners). */
+const IPAD_CARD_HEIGHT = 600;
+
 /** Height of the sheet: the window under the status bar, minus a small margin so the native sheet never clips it. */
-export function decisionSheetHeight(windowHeight: number, insets: { top: number; bottom: number }, os: string = Platform.OS): number {
+export function decisionSheetHeight(
+  windowHeight: number,
+  insets: { top: number; bottom: number },
+  os: string = Platform.OS,
+  isPad: boolean = Platform.OS === 'ios' && Platform.isPad === true,
+): number {
   // iOS formSheet stops a little under the top inset and pads the bottom inset itself.
   const margin = os === 'ios' ? insets.bottom + 24 : 12;
-  return Math.max(240, Math.round(windowHeight - insets.top - margin));
+  const full = Math.max(240, Math.round(windowHeight - insets.top - margin));
+  // B-85: on an iPad the formSheet is a centred card (≈ 590 × 660 pt on a 13" iPad), not the whole window — a full-height
+  // frame was clipped by the card and "Save decision" sat below its edge. Stay inside the card.
+  return isPad ? Math.min(full, IPAD_CARD_HEIGHT) : full;
 }
 
 /** Pixels of `frame` (window coordinates) hidden by a keyboard whose top edge is at `keyboardTop`. */

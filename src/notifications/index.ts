@@ -80,6 +80,14 @@ export function refreshReminders(): Promise<void> {
   );
 }
 
+/** True when notifications are allowed right now (no prompt). B-131: the queue sheet only promises a reminder then. */
+export function notificationsAllowed(): Promise<boolean> {
+  return expoNotifications.permission().then(
+    (s) => s === 'granted',
+    () => false,
+  );
+}
+
 /** Permission prompt at most once (2D: First-come turned on; 2E: a reminder turned on). */
 export function askNotificationPermission(): Promise<boolean> {
   return ensureNotificationPermission(db, expoNotifications).catch(() => false);

@@ -10,6 +10,12 @@ describe('S-15 sheet frame (B-48)', () => {
     expect(decisionSheetHeight(200, { top: 24, bottom: 0 }, 'android')).toBe(240);
   });
 
+  it('iPad: stays inside the centred formSheet card so Save decision is reachable (B-85)', () => {
+    expect(decisionSheetHeight(1376, { top: 24, bottom: 20 }, 'ios', true)).toBe(600);
+    // A short iPad window (split view) is still limited by the window, not the card.
+    expect(decisionSheetHeight(500, { top: 24, bottom: 20 }, 'ios', true)).toBe(432);
+  });
+
   it('keyboard overlap uses the higher keyboard top (Samsung reports screenY wrong)', () => {
     const frame = { y: 36, height: 878 }; // bottom at 914
     expect(keyboardOverlap(frame, { screenY: 614, height: 300 }, 914)).toBe(300);

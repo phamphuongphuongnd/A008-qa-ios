@@ -192,7 +192,7 @@
 | TC-156 | F-02 §6 | Chọn First-come lần đầu | Hộp xin quyền thông báo của Android hiện 1 lần → **Từ chối** (thử đường bị từ chối) | M | ✅ |
 | TC-157 | F-03 S-04 | Bật C9, C10; tắt voucher C1; C7 = 1; Cx "Has kids?" rồi "Has renter's insurance" | Cảnh báo voucher [Keep on]; cảnh báo C7; Cx chứa từ cấm bị chặn; Cx thứ 2 thêm được | M | ✅ |
 | TC-158 | F-06 S-07 | Add applicant → "Print a blank application" | PDF đơn trống có câu Cx + giấy tờ; share sheet | M | ✅ |
-| TC-159 | F-04 S-08 | H1 Alex nhập tay đủ 7 phần; Received on để mặc định | Thanh tiến độ 7 phần, "Draft saved"; bàn phím đẩy footer; First-come cảnh báo "Use the time you actually received it" | M | ❌ B-53 |
+| TC-159 | F-04 S-08 | H1 Alex nhập tay đủ 7 phần; Received on để mặc định | Thanh tiến độ 7 phần, "Draft saved"; bàn phím đẩy footer; First-come cảnh báo "Use the time you actually received it" | M | ✅ 27/11 (R-2) |
 | TC-160 | F-04 | Bắt đầu đơn rồi back ra giữa chừng (huỷ) | Hỏi "Discard changes?" / nháp được giữ; Discard xoá nháp | M | ❌ B-47 |
 | TC-161 | F-03 §3.13 | Sau khi có H1 → S-04 | Banner khoá; "Edit criteria" bắt lý do; sửa xong lịch sử ghi | M | ✅ |
 | TC-162 | F-05 S-08a | H2 Bea: "Hand the phone to the applicant" → Start → điền → ký → Submit | Toàn màn, ẩn tab; chữ "Do not enter your Social Security number."; S-08b "Thank you, Bea." + giờ nhận | M | ❌ B-53 |
@@ -200,7 +200,7 @@
 | TC-164 | F-05 | Kill app (vuốt khỏi Recents) trong Applicant mode rồi mở lại | Vẫn Applicant mode, khoá; không thấy Rental / hồ sơ khác | M | ✅ |
 | TC-165 | F-05 S-08b | Chạm 3 lần; rồi để yên 60 s | Hiện vân tay / mã máy; huỷ → ở lại; để yên 60 s → tự hỏi xác thực | M | ⏭ cần S-08b, chặn bởi B-53 |
 | TC-166 | F-05 | "Landlord" → vân tay đúng → "Exit applicant mode?" | Về S-06; nháp khách được giữ nếu chưa Submit | M | ✅ |
-| TC-167 | F-04 | H3 Chris: nhập + "Attach photos of the paper form" (Camera) | Ảnh ở "Other files"; source paper; C7 Not met + cảnh báo cam; C4 Needs review "No previous landlord…" | M | ❌ B-53 |
+| TC-167 | F-04 | H3 Chris: nhập + "Attach photos of the paper form" (Camera) | Ảnh đơn giấy hiện ở thẻ "Paper form" của đơn (S-08), mở / xoá được (B-160); source paper; C7 Not met + cảnh báo cam; C4 Needs review "No previous landlord…" | M | ✅ 27/11 (R-2) |
 | TC-168 | F-12 S-18 | Order queue | Banner First-come; #1 Alex In review, #2/#3 chờ; Bea/Chris "Make a decision" khoá + "decide on #1 first" | M | ✅* dữ liệu chèn tay — thử lại sau B-53 |
 | TC-169 | F-12 §6 | #1 → "Request missing info" (Text) → bật lại quyền thông báo trong Settings Android → chỉnh giờ máy tới còn 1 h 50 | Hàng hiện "Missing info — … h left"; thông báo "Alex Rivera — 2 hours left…" tới; chạm → mở S-18 | M | ❌ B-58 |
 | TC-170 | F-12 | Chỉnh giờ qua 72 h | Thông báo hết giờ; nút "Move to next (incomplete)" → Bea In review | M | ❌ B-58 |

@@ -12,7 +12,7 @@ import { db } from '@/db';
 import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
-import { syncTimers } from '@/notifications';
+import { notificationsAllowed, syncTimers } from '@/notifications';
 import { routes } from '@/routes';
 import { useTheme } from '@/theme';
 import { router } from '@/services/router';
@@ -58,6 +58,11 @@ export default function OrderQueueScreen() {
   const { colors } = useTheme();
   const [missingFor, setMissingFor] = useState<QueueRow | null>(null);
   const [method, setMethod] = useState<MissingInfoMethod | null>(null);
+  // B-131: promise the 2-hour reminder only while notifications are allowed (not after "Don't allow" / "Not now").
+  const [remindersOn, setRemindersOn] = useState(true);
+  useEffect(() => {
+    if (missingFor) void notificationsAllowed().then(setRemindersOn);
+  }, [missingFor]);
   const [confirm, setConfirm] = useState<Confirm>(null);
   const [busy, setBusy] = useState(false);
 
@@ -198,7 +203,7 @@ export default function OrderQueueScreen() {
               onChange={setMethod}
               accessibilityLabel={t('decision:s18.howTold')}
             />
-            <Hint>{t('decision:s18.reminder')}</Hint>
+            <Hint>{t(remindersOn ? 'decision:s18.reminder' : 'decision:s18.reminderOff')}</Hint>
           </View>
         ) : null}
       </Sheet>

@@ -7,6 +7,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { FileText, Printer, ShieldAlert, Smartphone, X } from 'lucide-react-native';
 import { useState } from 'react';
 import { View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { db } from '@/db';
 import { withLockSuspended } from '@/features/settings/lockController';
@@ -24,6 +25,7 @@ import { useIntakeRental } from '../hooks/useIntakeData';
 export default function AddApplicantScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const rentalId = parseId(useLocalSearchParams<{ rentalId?: string }>().rentalId);
   const rental = useIntakeRental(db, rentalId);
   const [needPin, setNeedPin] = useState(false);
@@ -69,7 +71,7 @@ export default function AddApplicantScreen() {
   };
 
   return (
-    <View id="S-07" style={{ backgroundColor: colors.surface0, paddingHorizontal: 20, paddingTop: 20, paddingBottom: 28, gap: 14 }}>
+    <View id="S-07" style={{ backgroundColor: colors.surface0, paddingHorizontal: 20, paddingTop: 20, paddingBottom: Math.max(28, insets.bottom + 20), gap: 14 }}>
       <Txt variant="title2" accessibilityRole="header">
         {t('intake:s07.title')}
       </Txt>
