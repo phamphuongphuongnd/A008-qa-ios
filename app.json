@@ -106,6 +106,7 @@
       ],
       "@react-native-community/datetimepicker",
       "./plugins/withReleasePermissions",
+      "./plugins/withProguardRules",
       "./plugins/withTabletRotation"
     ],
     "experiments": {
