@@ -262,7 +262,9 @@
     "requireDevice": "Require your phone passcode to open",
     "requirePin": "Require an app PIN to open",
     "pinAndLock": "Save PIN and turn on",
-    "pinSaved": "App PIN saved."
+    "pinSaved": "App PIN saved.",
+    "turnOffTitle": "Turn off App lock?",
+    "turnOffHint": "Enter your app PIN to turn the lock off."
   },
   "lock": {
     "title": "Evenlease is locked",
