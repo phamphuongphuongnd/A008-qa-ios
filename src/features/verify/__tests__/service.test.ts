@@ -8,6 +8,8 @@ import { makeTestDb, makeTestFiles } from '@/db/testing/testDb';
 import { loadRentalForEngine } from '@/db/toEngine';
 import type { AppDb } from '@/db/types';
 
+import { sameForm } from '../common';
+
 import {
   attachReportFiles,
   chooseBackgroundOutcome,
@@ -204,6 +206,9 @@ describe('S-14 background review service', () => {
     const assessed = { ...form, seriousness: 'Shoplifting, single offense.', rehabilitation: 'Six years clean', other: 'Explained it' };
     expect(chooseBackgroundOutcome(db, jordan, assessed, 'withdraw', NOW).ok).toBe(true);
     expect(getBackground(db, jordan)).toMatchObject({ outcome: 'withdraw', assessment: { seriousness: 'Shoplifting, single offense.' } });
+    // B-122: the outcome saves the whole form, the last answer typed (still focused, never blurred) included — so the
+    // screen may mark exactly this form as saved (useSheetForm.savedThen) and leave without "Discard changes?".
+    expect(sameForm(loadBackgroundSheet(db, jordan)!.form, assessed)).toBe(true);
     // The Applicant's status is not changed here — the withdrawal is a Decision on S-15.
     expect(getApplicantBundle(db, jordan)!.applicant.status).toBe('conditional_offer');
     expect(verifyProgress(getApplicantBundle(db, jordan)!).background).toBe('done');

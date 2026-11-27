@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { haptics } from '@/ui';
 
@@ -46,5 +46,26 @@ export function useSheetForm<F extends object>(initial: F, recordKey: string, sa
     return false;
   };
 
-  return { form, errors, dirty: !sameForm(form, savedForm), edit, commit };
+  /**
+   * B-122: the form was saved by another action (S-14 "Continue with the offer" / "Withdraw" save it with the outcome)
+   * → mark it saved, then run `go` (leave / open the next screen) only AFTER the re-render, once `dirty` is false and the
+   * screen's discard guard has switched off. Navigating in the same handler was blocked by the still-dirty guard
+   * ("Discard changes?" although everything was saved — e.g. the last field still focused, never blurred).
+   */
+  const afterSave = useRef<null | (() => void)>(null);
+  const [savedTick, setSavedTick] = useState(0);
+  const savedThen = (go: () => void, saved: F = form) => {
+    setErrors([]);
+    setForm(saved);
+    setSavedForm(saved);
+    afterSave.current = go;
+    setSavedTick((n) => n + 1);
+  };
+  useEffect(() => {
+    const go = afterSave.current;
+    afterSave.current = null;
+    go?.();
+  }, [savedTick]);
+
+  return { form, errors, dirty: !sameForm(form, savedForm), edit, commit, savedThen };
 }
