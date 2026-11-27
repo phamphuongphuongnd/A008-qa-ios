@@ -3,7 +3,7 @@
  * prevention was still on, so the dialog came back forever). Runs on a real expo-router stack.
  */
 import { Stack, router } from 'expo-router';
-import { isValidElement, type ReactNode } from 'react';
+import { isValidElement, useEffect, type ReactNode } from 'react';
 
 import { renderApp, stackShape, step, unmountApp } from '@/navigation/testing/routerHarness';
 
@@ -19,7 +19,9 @@ let dirty = true;
 
 function FormScreen() {
   const guard: ReactNode = useDiscardGuard(dirty);
-  dialog = isValidElement<DialogProps>(guard) ? guard.props : null;
+  useEffect(() => {
+    dialog = isValidElement<DialogProps>(guard) ? guard.props : null;
+  });
   return null;
 }
 
