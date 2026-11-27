@@ -3,17 +3,17 @@
  * open", "Lock after" Immediately / 1 min / 5 min, and the app PIN on phones with no biometrics or passcode.
  * Turning the lock on asks to unlock once (proves it works on this phone).
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View } from 'react-native';
 
 import { t } from '@/i18n';
 import { AppBar, Button, FieldShell, ListGroup, ListRow, Screen, Segmented, Sheet, SwitchRow, Txt, showSnackbar } from '@/ui';
 
-import { PinSetup } from '../components/PinFields';
+import { PinSetup, PinUnlock } from '../components/PinFields';
 import { isIos, useAuthCapability, useSettings } from '../hooks';
 import { settingsActions } from '../index';
-import { LOCK_AFTER_OPTIONS, type LockAfter } from '../lock';
-import { unlockLandlord } from '../lockController';
+import { LOCK_AFTER_OPTIONS, turnOffNeedsPin, type LockAfter } from '../lock';
+import { lockStore, unlockLandlord, unlockWithPin } from '../lockController';
 import { expoAuthAdapter } from '../lockNative';
 import { appLockView } from '../view';
 
@@ -23,12 +23,26 @@ export default function AppLockScreen() {
   const cap = useAuthCapability();
   const [pinSheet, setPinSheet] = useState<null | 'enable' | 'change'>(null);
   const [busy, setBusy] = useState(false);
+  /** B-145: the PIN check before turning the lock off. */
+  const [offAsk, setOffAsk] = useState(false);
+  const [offMessage, setOffMessage] = useState<string | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  const blockedSeconds = Math.max(0, Math.ceil((lockStore.get().pinBlockedUntil - now) / 1000));
+  useEffect(() => {
+    if (blockedSeconds <= 0) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [blockedSeconds]);
 
   if (!cap) return <Screen header={<AppBar title={t('system:s23.title')} />}>{null}</Screen>;
   const view = appLockView(settings, cap, isIos);
 
   const toggle = async (on: boolean) => {
     if (!on) {
+      if (turnOffNeedsPin(view.usesAppPin, settings.appPinHash)) {
+        setOffMessage(null);
+        return setOffAsk(true);
+      }
       settingsActions.setAppLock(false, cap);
       return;
     }
@@ -70,6 +84,30 @@ export default function AppLockScreen() {
         </View>
       ) : null}
       <Txt color="inkMuted">{t('system:s23.applicantModeNote')}</Txt>
+
+      <Sheet
+        visible={offAsk}
+        onClose={() => {
+          setOffAsk(false);
+          setOffMessage(null);
+        }}
+        title={t('system:s23.turnOffTitle')}
+      >
+        <Txt color="inkMuted">{t('system:s23.turnOffHint')}</Txt>
+        <PinUnlock
+          blockedSeconds={blockedSeconds}
+          error={offMessage}
+          onSubmit={async (pin) => {
+            const r = await unlockWithPin(pin, settings);
+            setNow(Date.now());
+            if (r === 'success') {
+              setOffAsk(false);
+              setOffMessage(null);
+              settingsActions.setAppLock(false, cap);
+            } else if (r === 'wrong') setOffMessage(t('system:lock.wrongPin'));
+          }}
+        />
+      </Sheet>
 
       <Sheet visible={pinSheet != null} onClose={() => setPinSheet(null)} title={t('system:s23.pinTitle')}>
         <Txt color="inkMuted">{t('system:s23.pinHint')}</Txt>

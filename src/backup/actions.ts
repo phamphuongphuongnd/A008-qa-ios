@@ -36,6 +36,8 @@ export interface BackupEnv {
   share: (uri: string) => Promise<boolean>;
   /** Re-plan reminders (never throws). */
   refreshReminders: () => Promise<void>;
+  /** Open screens re-read these tables (@/db markTablesChanged) — restore's truncating deletes send no change event. */
+  tablesChanged: (tables: readonly string[]) => void;
   /** After a restore: cancel the old data's notifications, schedule running timers + reminders (never throws). */
   afterRestore?: () => Promise<void>;
 }
@@ -47,7 +49,7 @@ export interface BackupEnv {
 export type BackUpResult = { where: 'folder' | 'shared'; made: MadeBackup } | { where: 'not_shared' };
 
 export function makeBackupActions(env: BackupEnv) {
-  const deps = (): BackupDeps => ({ db: env.db, io: env.io, rng: env.rng, appVersion: env.appVersion, now: env.now });
+  const deps = (): BackupDeps => ({ db: env.db, io: env.io, rng: env.rng, appVersion: env.appVersion, now: env.now, tablesChanged: env.tablesChanged });
 
   return {
     /** First backup: password typed twice (validate with `validateBackupPassword`), derived once, kept on the phone. */

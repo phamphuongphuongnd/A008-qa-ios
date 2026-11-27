@@ -5,16 +5,17 @@
  * stack inside `<LockShield hidden={shown}>`
  * so screen readers can't reach the data behind the lock (B-70).
  */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { t } from '@/i18n';
 import { font, useTheme } from '@/theme';
 import { Button, Logo, Txt } from '@/ui';
+import { useKeyboardOverlap } from '@/ui/keyboard';
 
 import { useSettings } from '../hooks';
-import { lockShieldA11y } from '../lock';
+import { lockScreenPadding, lockShieldA11y } from '../lock';
 import { unlockLandlord, unlockWithPin } from '../lockController';
 import { expoAuthAdapter } from '../lockNative';
 import { PinUnlock } from './PinFields';
@@ -42,6 +43,14 @@ export function LockScreen({ pinBlockedUntil }: { pinBlockedUntil: number }) {
   const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const asked = useRef(false);
+  // B-140: the PIN pad opens the keyboard over the bottom of this full-screen layer — measure how much it covers.
+  const rootRef = useRef<ComponentRef<typeof View>>(null);
+  const scrollRef = useRef<ComponentRef<typeof ScrollView>>(null);
+  const { overlap, onLayout } = useKeyboardOverlap(rootRef);
+  const pad = lockScreenPadding(overlap, insets);
+  useEffect(() => {
+    if (overlap > 0) scrollRef.current?.scrollToEnd({ animated: true });
+  }, [overlap]);
 
   const ask = async () => {
     setBusy(true);
@@ -71,10 +80,12 @@ export function LockScreen({ pinBlockedUntil }: { pinBlockedUntil: number }) {
   }, [blockedSeconds]);
 
   return (
-    <View
-      style={[StyleSheet.absoluteFill, styles.root, { backgroundColor: colors.surface0, paddingTop: insets.top + 48, paddingBottom: insets.bottom + 24 }]}
-      accessibilityViewIsModal
-    >
+    <View ref={rootRef} onLayout={onLayout} style={[StyleSheet.absoluteFill, styles.layer, { backgroundColor: colors.surface0 }]} accessibilityViewIsModal>
+      <ScrollView
+        ref={scrollRef}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.root, { paddingTop: pad.top, paddingBottom: pad.bottom }]}
+      >
       <Logo height={44} />
       <Txt accessibilityRole="header" style={[font(700, 22, 28), { textAlign: 'center' }]}>
         {t('system:lock.title')}
@@ -99,13 +110,16 @@ export function LockScreen({ pinBlockedUntil }: { pinBlockedUntil: number }) {
           <Button label={t('system:lock.unlock')} onPress={ask} loading={busy} block />
         )}
       </View>
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   shield: { flex: 1 },
-  root: { alignItems: 'center', gap: 16, paddingHorizontal: 24, zIndex: 100 },
+  layer: { zIndex: 100 },
+  // flexGrow: the actions stay pinned to the bottom (marginTop auto) — above the keyboard when it is up.
+  root: { flexGrow: 1, alignItems: 'center', gap: 16, paddingHorizontal: 24 },
   // B-76: centred on wide screens ('stretch' + maxWidth pinned it to the left edge).
   actions: { alignSelf: 'center', maxWidth: 420, width: '100%', marginTop: 'auto' },
 });
