@@ -38,7 +38,7 @@
 - [x] F-04 Application form chủ nhà nhập + ảnh đơn giấy (S-07, S-08) — ✅ máy ảo release 27/11 (nhập qua giao diện)
 - [x] F-05 Applicant mode (S-08a, S-08b) — ✅ máy ảo release 27/11 (S-08b, thoát, nháp)
 - [x] F-06 Blank application PDF — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
-- [ ] F-07 Documents + income check (S-10)
+- [x] F-07 Documents + income check (S-10) — ✅ A13 27/11 (Phương: phóng to ảnh toàn màn được; B-160 ở S-08 là lỗi riêng)
 - [x] F-08 Landlord + employer reference (S-11, S-12) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [x] F-09 Screening report ngoài (S-13) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
 - [x] F-10 Background review bước 2 (S-14) — ✅ máy ảo 26/11 (còn 🟡 trong BUGS)
