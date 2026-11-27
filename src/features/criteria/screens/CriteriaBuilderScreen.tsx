@@ -1,5 +1,5 @@
 /** S-04 Criteria builder — product.md §5 S-04, §3.2, §3.12, §3.13; mockup v2 "Criteria" + "Guardrails". */
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { FileQuestion, Plus } from 'lucide-react-native';
 import { Children, useEffect, useRef, useState, type ComponentRef, type ReactNode } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
@@ -8,6 +8,7 @@ import { MAX_CUSTOM_CRITERIA, WARNING_MESSAGES, formatUsd } from '@/engine';
 import type { SmokingPolicy } from '@/db/schema';
 import { t } from '@/i18n';
 import { parseId, routes } from '@/routes';
+import { router } from '@/services/router';
 import { font, useTheme } from '@/theme';
 import {
   AppBar,

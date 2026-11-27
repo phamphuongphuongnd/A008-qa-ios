@@ -2,7 +2,6 @@
  * S-04 criterion card (mockup v2 `.el-cb`): code tile, title + help, on/off switch, inline parameters, warnings.
  * Driven by `CriterionCardModel` (screenModels.ts); every change goes back as a reducer action.
  */
-import { router } from 'expo-router';
 import { Trash2 } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
@@ -11,6 +10,7 @@ import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
 import { t } from '@/i18n';
 import { routes } from '@/routes';
+import { router } from '@/services/router';
 import { font, useTheme } from '@/theme';
 import { Banner, ChoicePills, Glyph, IconButton, Stepper, Switch, TextButton, TextField, Txt } from '@/ui';
 

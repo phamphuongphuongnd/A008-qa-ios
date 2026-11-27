@@ -1,9 +1,10 @@
 /** S-03 Rental editor — product.md §5 S-03, mockup v2 "Rental editor" (create: step 1 of 3; edit: Save). */
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState, type ComponentRef } from 'react';
 import { StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
 
 import { parseId, routes } from '@/routes';
+import { router } from '@/services/router';
 import { t } from '@/i18n';
 import { GUIDE } from '@/features/guide/articles';
 import { GuideLink } from '@/features/guide/components/GuideLink';
