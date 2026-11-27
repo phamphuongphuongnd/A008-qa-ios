@@ -108,7 +108,15 @@ export default function RentalHubScreen() {
       ) : null}
       {hub.pendingNoticeCount > 0 ? <Banner tone="warn">{t('units:s06.pendingNotices', { count: hub.pendingNoticeCount })}</Banner> : null}
 
-      {hub.applicants.length === 0 ? (
+      {hub.applicants.length === 0 && hub.deletedCount > 0 ? (
+        // B-62: every applicant's data was deleted (S-24) — not "No applicants yet".
+        <EmptyState
+          icon={Users}
+          title={t('units:s06.empty.deletedTitle')}
+          body={t('units:s06.empty.deletedBody', { count: hub.deletedCount })}
+          style={{ paddingTop: 28 }}
+        />
+      ) : hub.applicants.length === 0 ? (
         <EmptyState
           icon={Users}
           title={t('units:s06.empty.title')}

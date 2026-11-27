@@ -1,6 +1,7 @@
 /**
  * Read models for S-02 Rentals and S-06 Rental hub (synchronous; the hooks wrap them in `useLive`).
  */
+import { listApplicants } from '@/db/repos/applicants';
 import { listPendingNotices } from '@/db/repos/decisions';
 import { isCriteriaLocked } from '@/db/repos/criteria';
 import { getRental, listRentals } from '@/db/repos/rentals';
@@ -62,6 +63,11 @@ export interface RentalCard {
   isSample: boolean;
 }
 
+/** Received (not draft) applicants whose data was deleted — only the anonymous record is left (B-62). */
+function deletedApplicantCount(db: AppDb, rentalId: number): number {
+  return listApplicants(db, rentalId, { deleted: true }).filter((a) => a.deletedAt).length;
+}
+
 function card(db: AppDb, r: Rental): RentalCard {
   const data = loadRentalForEngine(db, r.id);
   const summary = summarizeRental({
@@ -69,6 +75,7 @@ function card(db: AppDb, r: Rental): RentalCard {
     rental: data!.rental,
     criteria: data!.criteria,
     applicants: data!.applicants,
+    deletedCount: deletedApplicantCount(db, r.id),
   });
   return {
     id: r.id,
@@ -114,6 +121,8 @@ export interface RentalHub {
   applicants: HubApplicantRow[];
   /** For "Compare applicants · 4" / "Order queue · 4". */
   applicantCount: number;
+  /** Received applicants whose data was deleted (anonymous records, S-24) — B-62. */
+  deletedCount: number;
   /** "Move-in checklist" card when someone is Approved. */
   moveInApplicantId: number | null;
   /** Decisions still waiting for their FCRA notice. */
@@ -126,7 +135,8 @@ export function loadRentalHub(db: AppDb, rentalId: number): RentalHub | null {
   const rental = getRental(db, rentalId);
   const data = rental ? loadRentalForEngine(db, rentalId) : null;
   if (!rental || !data) return null;
-  const summary = summarizeRental({ stored: rental.status, rental: data.rental, criteria: data.criteria, applicants: data.applicants });
+  const deletedCount = deletedApplicantCount(db, rentalId);
+  const summary = summarizeRental({ stored: rental.status, rental: data.rental, criteria: data.criteria, applicants: data.applicants, deletedCount });
   return {
     rental,
     address: addressLine(rental),
@@ -138,6 +148,7 @@ export function loadRentalHub(db: AppDb, rentalId: number): RentalHub | null {
     statusLabel: rentalStatusLabel(summary.status),
     applicants: hubApplicantRows(data.rental, data.criteria, data.applicants),
     applicantCount: data.applicants.length,
+    deletedCount,
     moveInApplicantId: moveInApplicantId(data.applicants),
     pendingNoticeCount: listPendingNotices(db, rentalId).length,
     criteriaLocked: isCriteriaLocked(db, rentalId),
