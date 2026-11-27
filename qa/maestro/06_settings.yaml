@@ -11,7 +11,7 @@ name: 06_settings
 - takeScreenshot: ${LANE}_06b_settings_bottom
 - tapOn: ".*About.*"
 - extendedWaitUntil:
-    visible: "No account.*"
+    visible: ".*No account.*"
     timeout: 10000
 - takeScreenshot: ${LANE}_06c_about
 - tapOn:

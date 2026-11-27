@@ -19,7 +19,10 @@ name: 08_app_lock
       - inputText: "2580"
       - tapOn: "Type the PIN again"
       - inputText: "2580"
-      - hideKeyboard
+      # iOS: hideKeyboard cannot find a dismiss action (run 45941654415) → tap the title instead
+      - tapOn:
+          text: "Set an app PIN"
+          optional: true
       - tapOn: "Save PIN and turn on"
 - waitForAnimationToEnd:
     timeout: 3000

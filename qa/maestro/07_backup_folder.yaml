@@ -18,7 +18,10 @@ name: 07_backup_folder
 - inputText: "qa-backup-pass-1"
 - tapOn: "Type it again"
 - inputText: "qa-backup-pass-1"
-- hideKeyboard
+# iOS: hideKeyboard cannot find a dismiss action (run 45941654415) → tap the title instead
+- tapOn:
+    text: "Set a backup password"
+    optional: true
 - takeScreenshot: ${LANE}_07b_password
 - tapOn: "Save and back up"
 - waitForAnimationToEnd:
