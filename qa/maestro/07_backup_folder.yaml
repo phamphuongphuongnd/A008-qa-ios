@@ -23,6 +23,11 @@ name: 07_backup_folder
     text: "Set a backup password"
     optional: true
 - takeScreenshot: ${LANE}_07b_password
+# SE / Pro Max: the keyboard (not drawn in screenshots) leaves the sheet short; the button is inside its scroll area.
+- scrollUntilVisible:
+    element:
+      text: "Save and back up"
+    timeout: 8000
 - tapOn: "Save and back up"
 - waitForAnimationToEnd:
     timeout: 15000
@@ -48,7 +53,7 @@ name: 07_backup_folder
     text: "Browse"
     optional: true
 - tapOn:
-    text: "On My iPhone"
+    text: "On My i(Phone|Pad)"
     optional: true
 - waitForAnimationToEnd:
     timeout: 3000
