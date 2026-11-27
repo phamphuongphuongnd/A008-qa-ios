@@ -36,9 +36,11 @@ export function useRentals(filter: 'open' | 'closed') {
 
 /** S-02 cleanup card ("2 closed rentals still hold applicant data"); "Later" hides it for this app session. The backup
  * card is 2E's `useBackupReminder()` (@/backup). */
-export function useCleanupReminder() {
+export function useCleanupReminder(now: Date = new Date()) {
   'use no memo';
-  const count = useLive(() => loadCleanupReminderCount(db), [], ['settings', 'rentals', 'applicants']);
+  // Re-counted each minute / on return to the foreground (`now` from useClock, B-59), not only when the data changes.
+  const minute = now.toISOString().slice(0, 16);
+  const count = useLive(() => loadCleanupReminderCount(db, now), [minute], ['settings', 'rentals', 'applicants']);
   const [hidden, setHidden] = useState(false);
   return { count: hidden ? 0 : count, later: () => setHidden(true) };
 }

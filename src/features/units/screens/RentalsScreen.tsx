@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { View } from 'react-native';
 
 import { routes } from '@/routes';
+import { useClock } from '@/services/clock';
 import { t } from '@/i18n';
 import { Banner, ConfirmDialog, EmptyState, IconButton, LargeTitle, Screen, Segmented, showSnackbar } from '@/ui';
 
@@ -19,8 +20,10 @@ type Filter = 'open' | 'closed';
 export default function RentalsScreen() {
   const [filter, setFilter] = useState<Filter>('open');
   const { cards, counts } = useRentals(filter);
-  const backup = useBackupReminder();
-  const cleanup = useCleanupReminder();
+  // B-59: reminder cards are recomputed each minute and when the app comes back to the foreground.
+  const now = useClock();
+  const backup = useBackupReminder(now);
+  const cleanup = useCleanupReminder(now);
   const actions = useRentalActions();
   const [deleting, setDeleting] = useState<{ id: number; title: string; message: string } | null>(null);
   const view = rentalsView(filter, counts);
