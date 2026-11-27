@@ -3,7 +3,7 @@
  * prevention was still on, so the dialog came back forever). Runs on a real expo-router stack.
  */
 import { Stack, router } from 'expo-router';
-import { isValidElement, useEffect, type ReactNode } from 'react';
+import { isValidElement, useEffect, useState, type ReactNode } from 'react';
 
 import { renderApp, stackShape, step, unmountApp } from '@/navigation/testing/routerHarness';
 
@@ -16,11 +16,18 @@ type DialogProps = { visible: boolean; onKeep: () => void; onDiscard: () => void
 
 let dialog: DialogProps | null = null;
 let dirty = true;
+let saveAndLeave: (() => void) | null = null;
 
 function FormScreen() {
-  const guard: ReactNode = useDiscardGuard(dirty);
+  const [saved, setSaved] = useState(false);
+  const guard: ReactNode = useDiscardGuard(dirty && !saved);
   useEffect(() => {
     dialog = isValidElement<DialogProps>(guard) ? guard.props : null;
+    // What S-15 / S-14 do on Save: flag saved and go back in the same handler.
+    saveAndLeave = () => {
+      setSaved(true);
+      router.back();
+    };
   });
   return null;
 }
@@ -54,6 +61,14 @@ describe('useDiscardGuard (B-47)', () => {
     await step(() => router.back());
     expect(dialog?.visible).toBe(true);
     await step(() => dialog!.onDiscard());
+    expect(stackShape()).toEqual(['index']);
+  });
+
+  it('Save that clears dirty and goes back in the same handler leaves without asking', async () => {
+    await renderApp(files);
+    await step(() => router.push('/form'));
+    await step(() => saveAndLeave!());
+    expect(dialog?.visible).toBe(false);
     expect(stackShape()).toEqual(['index']);
   });
 
